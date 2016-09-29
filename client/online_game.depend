@@ -1,0 +1,71 @@
+# depslib dependency file v1.0
+1475148951 source:d:\salvo\desktop\programmazione\online_game\src\main.cpp
+	<SDL2/SDL.h>
+	<SDL2/SDL_net.h>
+	<cstdio>
+	<cstring>
+	<cstdlib>
+	<time.h>
+	<map>
+	"game_client.h"
+
+1474912505 source:d:\salvo\desktop\programmazione\online_game\src\packet_io.cpp
+	"packet_io.h"
+	<cstdio>
+	<cstring>
+
+1474912511 d:\salvo\desktop\programmazione\online_game\include\packet_io.h
+	<SDL2/SDL_net.h>
+
+1475017077 source:d:\salvo\desktop\programmazione\online_game\src\game_obj.cpp
+	"game_obj.h"
+	"player.h"
+	"bullet.h"
+
+1475011600 d:\salvo\desktop\programmazione\online_game\include\game_obj.h
+	<SDL2/SDL.h>
+	"packet_io.h"
+
+1475149488 d:\salvo\desktop\programmazione\online_game\include\player.h
+	"game_obj.h"
+	"interpolator.h"
+	<cstdlib>
+
+1474934716 source:d:\salvo\desktop\programmazione\online_game\src\game_world.cpp
+	"game_world.h"
+	<cstring>
+
+1474935063 d:\salvo\desktop\programmazione\online_game\include\game_world.h
+	"game_obj.h"
+	<map>
+
+1475018324 source:d:\salvo\desktop\programmazione\online_game\src\game_client.cpp
+	"game_client.h"
+	"player.h"
+
+1475017688 d:\salvo\desktop\programmazione\online_game\include\game_client.h
+	<SDL2/SDL_net.h>
+	"packet_io.h"
+	"game_world.h"
+
+1475149510 source:d:\salvo\desktop\programmazione\online_game\src\player.cpp
+	"player.h"
+	<cstring>
+
+1475150772 d:\salvo\desktop\programmazione\online_game\include\interpolator.h
+	<deque>
+	<SDL2/SDL.h>
+	<cstdio>
+
+1475002210 d:\salvo\desktop\programmazione\online_game\include\main.h
+
+1475003893 source:d:\salvo\desktop\programmazione\online_game\src\interpolator.cpp
+
+1475149460 d:\salvo\desktop\programmazione\online_game\include\bullet.h
+	"game_obj.h"
+	"interpolator.h"
+
+1475149522 source:d:\salvo\desktop\programmazione\online_game\src\bullet.cpp
+	"bullet.h"
+	<cstdio>
+

@@ -1,0 +1,82 @@
+# depslib dependency file v1.0
+1475003422 source:d:\salvo\desktop\programmazione\online_server\src\main.cpp
+	<SDL2/SDL_net.h>
+	<cstdio>
+	<cstdlib>
+	<time.h>
+	"server.h"
+
+1474912466 d:\salvo\desktop\programmazione\online_server\include\packet_io.h
+	<SDL2/SDL_net.h>
+
+1475149646 d:\salvo\desktop\programmazione\online_server\include\server.h
+	<SDL2/SDL.h>
+	<SDL2/SDL_net.h>
+	<cstdio>
+	<map>
+	"packet_io.h"
+	"user.h"
+	"game_world.h"
+
+1474912487 source:d:\salvo\desktop\programmazione\online_server\src\packet_io.cpp
+	"packet_io.h"
+	<cstdio>
+	<cstring>
+
+1475148089 source:d:\salvo\desktop\programmazione\online_server\src\server.cpp
+	"server.h"
+
+1474935136 d:\salvo\desktop\programmazione\online_server\include\user.h
+	<SDL2/SDL_net.h>
+	<cstring>
+	"input_net.h"
+	"player.h"
+
+1474935141 source:d:\salvo\desktop\programmazione\online_server\src\user.cpp
+	"user.h"
+	"game_world.h"
+	"server.h"
+
+1475017565 source:d:\salvo\desktop\programmazione\online_server\src\input_net.cpp
+	"input_net.h"
+
+1475148462 d:\salvo\desktop\programmazione\online_server\include\input_net.h
+	"packet_io.h"
+	"input_handler.h"
+
+1475148418 d:\salvo\desktop\programmazione\online_server\include\input_handler.h
+	<SDL2/SDL.h>
+
+1475148019 d:\salvo\desktop\programmazione\online_server\include\game_obj.h
+	"packet_io.h"
+
+1475085493 source:d:\salvo\desktop\programmazione\online_server\src\game_world.cpp
+	"game_world.h"
+	<cstring>
+	"server.h"
+
+1475011537 d:\salvo\desktop\programmazione\online_server\include\game_world.h
+	"game_obj.h"
+	<set>
+
+1475148627 source:d:\salvo\desktop\programmazione\online_server\src\player.cpp
+	"player.h"
+	<cstdio>
+	<cstring>
+	<cstdlib>
+	"server.h"
+	"bullet.h"
+
+1475148552 d:\salvo\desktop\programmazione\online_server\include\player.h
+	"game_obj.h"
+	"input_handler.h"
+
+1475149172 source:d:\salvo\desktop\programmazione\online_server\src\bullet.cpp
+	"bullet.h"
+	<math.h>
+	"server.h"
+
+1475087538 d:\salvo\desktop\programmazione\online_server\include\bullet.h
+	"game_obj.h"
+	"player.h"
+
