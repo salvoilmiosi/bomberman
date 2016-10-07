@@ -14,16 +14,24 @@ class player: public entity {
 private:
     struct position {
         float ix, iy;
+        float imoving;
+        float idirection;
     };
 
     float x, y;
-    uint8_t r, g, b;
+
+    int player_num;
 
     bool is_self;
     bool alive;
     bool spawned;
 
+    bool moving;
+    uint8_t direction;
+
     char player_name[NAME_SIZE];
+
+    int death_time;
 
     interpolator<position> interp;
 

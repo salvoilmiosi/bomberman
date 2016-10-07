@@ -111,7 +111,7 @@ char *packet_ext::readString() {
     if (str_len > remaining()) {
         str_len = remaining() - 1;
     }
-    strncpy(buffer, (const char *)data_ptr, str_len);
+    strncpy(buffer, reinterpret_cast<const char *>(data_ptr), str_len);
     data_ptr += str_len;
     return buffer;
 }

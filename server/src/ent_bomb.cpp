@@ -52,10 +52,14 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
             break;
         }
 
-        for (entity *ent : world->getEntities()) {
-            if (ent->getTileX() == x && ent->getTileY() == y) {
-                if (ent && ent->getType() == TYPE_BOMB) {
-                    bomb *b = (bomb *)ent;
+        entity **tile_ents = world->findEntities(x, y);
+        for (uint8_t j=0; j<SEARCH_SIZE; ++j) {
+            entity *ent = tile_ents[j];
+            if (! ent) break;
+            switch (ent->getType()) {
+            case TYPE_BOMB:
+                {
+                    bomb *b = dynamic_cast<bomb *>(ent);
                     if (bomb_id == b->getID()) {
                         continue;
                     }
@@ -64,14 +68,20 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
                         *trunc = true;
                         return i;
                     }
-                } else if (ent && ent->getType() == TYPE_ITEM) {
-                    game_item *it = (game_item *)ent;
+                }
+                break;
+            case TYPE_ITEM:
+                {
+                    game_item *it = dynamic_cast<game_item *>(ent);
                     it->explode();
                     if (!piercing) {
                         *trunc = true;
                         return i;
                     }
                 }
+                break;
+            default:
+                break;
             }
         }
 
@@ -119,8 +129,48 @@ void bomb::tick() {
     --life_ticks;
 }
 
+void explosion::checkPlayers(int dx, int dy) {
+    int x = tx;
+    int y = ty;
+    while(true) {
+        if (dx < 0) {
+            --x;
+            ++dx;
+        } else if (dx > 0) {
+            ++x;
+            --dx;
+        } else if (dy < 0) {
+            --y;
+            ++dy;
+        } else if (dy > 0) {
+            ++y;
+            --dy;
+        } else {
+            break;
+        }
+
+        entity **ents = world->findEntities(x, y, TYPE_PLAYER);
+        for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
+            if (!ents[i]) break;
+            player *p = dynamic_cast<player*>(ents[i]);
+            p->kill();
+        }
+    }
+}
+
 void explosion::tick() {
-    // TODO check players in area of explosion
+    entity **ents = world->findEntities(tx, ty, TYPE_PLAYER);
+    for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
+        if (!ents[i]) break;
+        player *p = dynamic_cast<player*>(ents[i]);
+        p->kill();
+    }
+
+    checkPlayers(-len_l, 0);
+    checkPlayers(0, -len_t);
+    checkPlayers(len_r, 0);
+    checkPlayers(0, len_b);
+
     if (life_ticks == 0) {
         destroy();
     }

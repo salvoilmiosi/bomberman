@@ -16,10 +16,7 @@ bomb::bomb(game_world *world, uint16_t id, packet_ext &packet) : entity(world, T
 
 void bomb::render(SDL_Renderer *renderer) {
     static const SDL_Rect src_rects[] = {
-        {96,  0, 16, 16},
-        {112, 0, 16, 16},
-        {96,  0, 16, 16},
-        {80,  0, 16, 16}
+        TILE(6, 0), TILE(7, 0), TILE(6, 0), TILE(5, 0)
     };
 
     int time_since_create = SDL_GetTicks() - create_time;
@@ -31,87 +28,38 @@ void bomb::render(SDL_Renderer *renderer) {
 
 void explosion::render(SDL_Renderer *renderer) {
     static const SDL_Rect src_rects_c[] = {
-        {64,  64, 16, 16},
-        {112, 48, 16, 16},
-        {96,  48, 16, 16},
-        {80,  48, 16, 16},
-        {64,  48, 16, 16},
-        {80,  48, 16, 16},
-        {96,  48, 16, 16},
-        {112, 48, 16, 16},
-        {64,  64, 16, 16}
+        TILE(4, 4), TILE(7, 3), TILE(6, 3), TILE(5, 3), TILE(4, 3),
+        TILE(5, 3), TILE(6, 3), TILE(7, 3), TILE(4, 4)
     };
 
     static const SDL_Rect src_rects_l[] = {
-        {0,  16, 16, 16},
-        {16, 16, 16, 16},
-        {32, 16, 16, 16},
-        {48, 16, 16, 16},
-        {64, 16, 16, 16},
-        {48, 16, 16, 16},
-        {32, 16, 16, 16},
-        {16, 16, 16, 16},
-        {0,  16, 16, 16}
+        TILE(0, 1), TILE(1, 1), TILE(2, 1), TILE(3, 1), TILE(4, 1),
+        TILE(3, 1), TILE(2, 1), TILE(1, 1), TILE(0, 1)
     };
 
     static const SDL_Rect src_rects_t[] = {
-        {64,  32, 16, 16},
-        {80,  32, 16, 16},
-        {96,  32, 16, 16},
-        {112, 32, 16, 16},
-        {112, 16, 16, 16},
-        {112, 32, 16, 16},
-        {96,  32, 16, 16},
-        {80,  32, 16, 16},
-        {64,  32, 16, 16}
+        TILE(4, 2), TILE(5, 2), TILE(6, 2), TILE(7, 2), TILE(7, 1),
+        TILE(7, 2), TILE(6, 2), TILE(5, 2), TILE(4, 2)
     };
 
     static const SDL_Rect src_rects_r[] = {
-        {48,  64, 16, 16},
-        {48,  48, 16, 16},
-        {16,  80, 16, 16},
-        {16,  64, 16, 16},
-        {16,  48, 16, 16},
-        {16,  64, 16, 16},
-        {16,  80, 16, 16},
-        {48,  48, 16, 16},
-        {48,  64, 16, 16}
+        TILE(3, 4), TILE(3, 3), TILE(1, 5), TILE(1, 4), TILE(1, 3),
+        TILE(1, 4), TILE(1, 5), TILE(3, 3), TILE(3, 4)
     };
 
     static const SDL_Rect src_rects_b[] = {
-        {48,  32, 16, 16},
-        {64,  80, 16, 16},
-        {112, 80, 16, 16},
-        {96,  80, 16, 16},
-        {80,  80, 16, 16},
-        {96,  80, 16, 16},
-        {112, 80, 16, 16},
-        {64,  80, 16, 16},
-        {48,  32, 16, 16}
+        TILE(3, 2), TILE(4, 5), TILE(7, 5), TILE(6, 5), TILE(5, 5),
+        TILE(6, 5), TILE(7, 5), TILE(4, 5), TILE(3, 2)
     };
 
     static const SDL_Rect src_rects_h[] = {
-        {32, 64, 16, 16},
-        {32, 48, 16, 16},
-        {0,  80, 16, 16},
-        {0,  64, 16, 16},
-        {0,  48, 16, 16},
-        {0,  64, 16, 16},
-        {0,  80, 16, 16},
-        {32, 48, 16, 16},
-        {32, 64, 16, 16}
+        TILE(2, 4), TILE(2, 3), TILE(0, 5), TILE(0, 4), TILE(0, 3),
+        TILE(0, 4), TILE(0, 5), TILE(2, 3), TILE(2, 4)
     };
 
     static const SDL_Rect src_rects_v[] = {
-        {48,  80, 16, 16},
-        {32,  80, 16, 16},
-        {112, 64, 16, 16},
-        {96,  64, 16, 16},
-        {80,  64, 16, 16},
-        {96,  64, 16, 16},
-        {112, 64, 16, 16},
-        {32,  80, 16, 16},
-        {48,  80, 16, 16}
+        TILE(3, 5), TILE(2, 5), TILE(7, 4), TILE(6, 4), TILE(5, 4),
+        TILE(6, 4), TILE(7, 4), TILE(2, 5), TILE(3,5)
     };
 
     int time_since_explode = SDL_GetTicks() - explode_time;

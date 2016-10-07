@@ -35,6 +35,7 @@ private:
     void writeEntity(packet_ext &packet);
 
     uint8_t destroyTiles(int dx, int dy, bool *trunc);
+    void checkPlayers(int dx, int dy);
 };
 
 class bomb : public entity {

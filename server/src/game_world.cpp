@@ -81,3 +81,18 @@ void game_world::startRound(int num_players) {
         }
     }
 }
+
+entity **game_world::findEntities(int tx, int ty, uint8_t type) {
+    static entity *ents[SEARCH_SIZE];
+    int i = 0;
+
+    memset(ents, 0, sizeof(ents));
+    for (entity *ent : entities) {
+        if (ent && ent->isNotDestroyed() && (type == 0 ? true : ent->getType() == type) && ent->getTileX() == tx && ent->getTileY() == ty) {
+            ents[i] = ent;
+            ++i;
+        }
+    }
+
+    return ents;
+}

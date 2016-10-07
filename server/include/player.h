@@ -14,9 +14,10 @@ private:
 
     input_handler *handler = nullptr;
 
-    uint32_t color = 0;
-
     char player_name[USER_NAME_SIZE];
+
+    uint8_t player_num;
+    static uint8_t max_playernum;
 
     bool alive = false;
     bool spawned = false;
@@ -32,6 +33,9 @@ private:
 
     float fx = 0.f;
     float fy = 0.f;
+
+    bool moving;
+    uint8_t direction;
 
 public:
     player(game_world *world, input_handler *handler);
@@ -59,6 +63,8 @@ public:
 
 private:
     void handleInput();
+
+    bool isWalkable(int tx, int ty);
 };
 
 #endif // __PLAYER_H__

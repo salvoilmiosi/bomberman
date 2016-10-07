@@ -14,6 +14,8 @@ static const uint8_t TYPE_EXPLOSION = 3;
 static const uint8_t TYPE_BROKEN_WALL = 4;
 static const uint8_t TYPE_ITEM = 5;
 
+static const size_t SEARCH_SIZE = 8;
+
 class entity {
 private:
     const uint8_t type;
@@ -101,10 +103,6 @@ public:
 
     void startRound(int num_players);
 
-    const std::set<entity *> getEntities() {
-        return entities;
-    }
-
     const game_map &getMap() {
         return g_map;
     }
@@ -112,6 +110,8 @@ public:
     bool gameHasStarted() {
         return game_started;
     }
+
+    entity **findEntities(int tx, int ty, uint8_t type = 0);
 };
 
 #endif // __GAME_WORLD_H__

@@ -194,7 +194,7 @@ void game_client::selfCmd(packet_ext &packet) {
 
     entity *ent = world.findID(self_id);
     if (ent && ent->getType() == TYPE_PLAYER) {
-        ((player *)ent)->setSelf(true);
+        dynamic_cast<player *>(ent)->setSelf(true);
     }
 }
 
