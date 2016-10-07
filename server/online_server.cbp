@@ -38,22 +38,28 @@
 			<Add library="SDL2" />
 			<Add library="SDL2_net" />
 		</Linker>
-		<Unit filename="include/bullet.h" />
-		<Unit filename="include/game_obj.h" />
+		<Unit filename="include/ent_bomb.h" />
+		<Unit filename="include/ent_broken_wall.h" />
+		<Unit filename="include/ent_item.h" />
+		<Unit filename="include/game_map.h" />
+		<Unit filename="include/game_server.h" />
 		<Unit filename="include/game_world.h" />
 		<Unit filename="include/input_handler.h" />
 		<Unit filename="include/input_net.h" />
+		<Unit filename="include/main.h" />
 		<Unit filename="include/packet_io.h" />
 		<Unit filename="include/player.h" />
-		<Unit filename="include/server.h" />
 		<Unit filename="include/user.h" />
-		<Unit filename="src/bullet.cpp" />
+		<Unit filename="src/ent_bomb.cpp" />
+		<Unit filename="src/ent_broken_wall.cpp" />
+		<Unit filename="src/ent_item.cpp" />
+		<Unit filename="src/game_map.cpp" />
+		<Unit filename="src/game_server.cpp" />
 		<Unit filename="src/game_world.cpp" />
 		<Unit filename="src/input_net.cpp" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/packet_io.cpp" />
 		<Unit filename="src/player.cpp" />
-		<Unit filename="src/server.cpp" />
 		<Unit filename="src/user.cpp" />
 		<Extensions>
 			<code_completion />

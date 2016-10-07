@@ -1,4 +1,6 @@
 #include "game_client.h"
+
+#include "game_world.h"
 #include "player.h"
 
 game_client::game_client() {
@@ -19,7 +21,7 @@ bool game_client::connect(const char *address, const char *username, int port) {
     SDLNet_ResolveHost(&server_ip, address, port);
 
     packet_ext packet(socket);
-    packet.writeInt(str2int("CONN"));
+    packet.writeInt(CMD_CONNECT);
     packet.writeString(username);
     packet.sendTo(server_ip);
 
@@ -35,28 +37,38 @@ bool game_client::connect(const char *address, const char *username, int port) {
         return false;
     }
 
-    Uint32 magic = accepter.readInt();
+    uint32_t magic = accepter.readInt();
     if (magic != MAGIC) {
         return false;
     }
 
-    Uint32 message = accepter.readInt();
-    if (message != str2int("ACPT")) {
+    uint32_t type = accepter.readInt();
+    char *message;
+    switch (type) {
+    case SERV_ACCEPT:
+        message = accepter.readString();
+        printf("%s\n", message);
+        return true;
+    case SERV_REJECT:
+        message = accepter.readString();
+        printf("%s\n", message);
+    default:
         return false;
     }
 
-    return true;
+    // should never happen
+    return false;
 }
 
 void game_client::disconnect() {
     packet_ext packet(socket);
-    packet.writeInt(str2int("DCON"));
+    packet.writeInt(CMD_DISCONNECT);
     packet.sendTo(server_ip);
 }
 
-bool game_client::sendInput(Uint8 cmd, bool down) {
+bool game_client::sendInput(uint8_t cmd, bool down) {
     packet_ext packet(socket);
-    packet.writeInt(str2int("INPU"));
+    packet.writeInt(CMD_INPUT);
     packet.writeInt(str2int("KBRD"));
     packet.writeChar(cmd);
     packet.writeChar(down ? 1 : 0);
@@ -65,15 +77,17 @@ bool game_client::sendInput(Uint8 cmd, bool down) {
 
 bool game_client::sendMouse(int x, int y) {
     packet_ext packet(socket);
-    packet.writeInt(str2int("INPU"));
+    packet.writeInt(CMD_INPUT);
     packet.writeInt(str2int("MOUS"));
     packet.writeInt(x);
     packet.writeInt(y);
     return packet.sendTo(server_ip);
 }
 
-bool game_client::receive() {
+bool game_client::tick() {
     static int last_recv_time;
+
+    world.tick();
 
     while (true) {
         packet_ext packet(socket, true);
@@ -86,29 +100,32 @@ bool game_client::receive() {
 
         int message = packet.readInt();
         switch (message) {
-        case str2int("MESG"):
+        case SERV_MESSAGE:
             messageCmd(packet);
             break;
-        case str2int("PING"):
+        case SERV_PING:
             pingCmd(packet);
             break;
-        case str2int("MSEC"):
+        case SERV_PING_MSECS:
             msecCmd(packet);
             break;
-        case str2int("STAT"):
+        case SERV_STATUS:
             statCmd(packet);
             break;
-        case str2int("SHOT"):
+        case SERV_SNAPSHOT:
             snapshotCmd(packet);
             break;
-        case str2int("ADDO"):
+        case SERV_ADD_ENT:
             addCmd(packet);
             break;
-        case str2int("REMO"):
+        case SERV_REM_ENT:
             remCmd(packet);
             break;
-        case str2int("SELF"):
+        case SERV_SELF:
             selfCmd(packet);
+            break;
+        case SERV_MAP:
+            mapCmd(packet);
             break;
         }
     }
@@ -139,15 +156,15 @@ void game_client::statCmd(packet_ext &packet) {
 }
 
 void game_client::snapshotCmd(packet_ext &packet) {
-    short num_objs = packet.readShort();
-    for(;num_objs > 0; --num_objs) {
-        Uint16 id = packet.readShort();
-        Uint8 type = packet.readChar();
+    short num_ents = packet.readShort();
+    for(;num_ents > 0; --num_ents) {
+        uint16_t id = packet.readShort();
+        uint8_t type = packet.readChar();
         short len = packet.readShort();
 
-        game_obj *obj = world.findID(id);
-        if (obj && obj->getType() == type) {
-            obj->readFromPacket(packet);
+        entity *ent = world.findID(id);
+        if (ent && ent->getType() == type) {
+            ent->readFromPacket(packet);
         } else {
             packet.skip(len);
         }
@@ -155,24 +172,32 @@ void game_client::snapshotCmd(packet_ext &packet) {
 }
 
 void game_client::addCmd(packet_ext &packet) {
-    Uint16 id = packet.readShort();
-    if (! world.findID(id)) {
-        game_obj *obj = game_obj::newObjFromPacket(id, packet);
-        if (obj) {
-            world.addObject(obj);
+    short num_ents = packet.readShort();
+    for(;num_ents > 0; --num_ents) {
+        uint16_t id = packet.readShort();
+        if (! world.findID(id)) {
+            entity *ent = entity::newObjFromPacket(&world, id, packet);
+            if (ent) {
+                world.addEntity(ent);
+            }
         }
     }
 }
 
 void game_client::remCmd(packet_ext &packet) {
-    Uint16 id = packet.readShort();
-    world.removeObject(world.findID(id));
+    uint16_t id = packet.readShort();
+    world.removeEntity(world.findID(id));
 }
 
 void game_client::selfCmd(packet_ext &packet) {
-    short id = packet.readShort();
-    game_obj *obj = world.findID(id);
-    if (obj && obj->getType() == TYPE_PLAYER) {
-        ((player *)obj)->setSelf(true);
+    uint16_t self_id = packet.readShort();
+
+    entity *ent = world.findID(self_id);
+    if (ent && ent->getType() == TYPE_PLAYER) {
+        ((player *)ent)->setSelf(true);
     }
+}
+
+void game_client::mapCmd(packet_ext &packet) {
+    world.handleMapPacket(packet);
 }

@@ -69,3 +69,141 @@
 	"bullet.h"
 	<cstdio>
 
+1475269165 source:d:\salvo\desktop\programmazione\online_game\client\src\bullet.cpp
+	"bullet.h"
+	<cstdio>
+
+1475149460 d:\salvo\desktop\programmazione\online_game\client\include\bullet.h
+	"game_obj.h"
+	"interpolator.h"
+
+1475419604 d:\salvo\desktop\programmazione\online_game\client\include\game_obj.h
+	<SDL2/SDL.h>
+	"packet_io.h"
+
+1475690071 d:\salvo\desktop\programmazione\online_game\client\include\packet_io.h
+	<SDL2/SDL_net.h>
+
+1475690071 d:\salvo\desktop\programmazione\online_game\client\include\interpolator.h
+	<deque>
+	<SDL2/SDL.h>
+	<cstdio>
+
+1475690071 source:d:\salvo\desktop\programmazione\online_game\client\src\game_client.cpp
+	"game_client.h"
+	"game_world.h"
+	"player.h"
+
+1475690071 d:\salvo\desktop\programmazione\online_game\client\include\game_client.h
+	<SDL2/SDL_net.h>
+	"packet_io.h"
+	"game_world.h"
+
+1475698503 d:\salvo\desktop\programmazione\online_game\client\include\game_world.h
+	"game_map.h"
+	<map>
+
+1475690061 d:\salvo\desktop\programmazione\online_game\client\include\player.h
+	"game_world.h"
+	<cstdlib>
+	"interpolator.h"
+	"healthbar.h"
+
+1475420421 source:d:\salvo\desktop\programmazione\online_game\client\src\game_obj.cpp
+	"game_obj.h"
+	"player.h"
+
+1475694138 source:d:\salvo\desktop\programmazione\online_game\client\src\game_world.cpp
+	"game_world.h"
+	<cstring>
+
+1475690048 source:d:\salvo\desktop\programmazione\online_game\client\src\main.cpp
+	<SDL2/SDL.h>
+	<SDL2/SDL_net.h>
+	<SDL2/SDL_image.h>
+	<cstdio>
+	<cstring>
+	<cstdlib>
+	<time.h>
+	<map>
+	"main.h"
+	"game_client.h"
+	"resources.h"
+
+1475690071 source:d:\salvo\desktop\programmazione\online_game\client\src\packet_io.cpp
+	"packet_io.h"
+	<cstdio>
+	<cstring>
+
+1475690071 source:d:\salvo\desktop\programmazione\online_game\client\src\player.cpp
+	"player.h"
+	<cstring>
+
+1475269848 d:\salvo\desktop\programmazione\online_game\client\include\healthbar.h
+	<SDL2/SDL.h>
+
+1475269122 source:d:\salvo\desktop\programmazione\online_game\client\src\health_bar.cpp
+	"healthbar.h"
+
+1475269581 source:d:\salvo\desktop\programmazione\online_game\client\src\healthbar.cpp
+	"healthbar.h"
+
+1475685508 d:\salvo\desktop\programmazione\online_game\client\include\game_map.h
+	"packet_io.h"
+	<SDL2/SDL.h>
+
+1475689724 source:d:\salvo\desktop\programmazione\online_game\client\src\game_map.cpp
+	"game_map.h"
+	<cstring>
+	<cstdio>
+	"main.h"
+	"resources.h"
+
+1475684441 d:\salvo\desktop\programmazione\online_game\client\include\main.h
+
+1475681283 source:d:\salvo\desktop\programmazione\online_game\client\resource\resources.rc
+	"../include/resources.h"
+
+1475685578 d:\salvo\desktop\programmazione\online_game\client\include\resources.h
+	<SDL2/SDL.h>
+
+1475685690 source:d:\salvo\desktop\programmazione\online_game\client\src\resources.cpp
+	"resources.h"
+	<SDL2/SDL_image.h>
+	<windows.h>
+	<cstdio>
+
+1475684612 source:d:\salvo\desktop\programmazione\online_game\client\src\obj_factory.cpp
+	"packet_io.h"
+	"game_world.h"
+	"player.h"
+
+1475702392 source:d:\salvo\desktop\programmazione\online_game\client\src\ent_factory.cpp
+	"packet_io.h"
+	"game_world.h"
+	"player.h"
+	"ent_bomb.h"
+	"ent_broken_wall.h"
+	"ent_item.h"
+
+1475699533 d:\salvo\desktop\programmazione\online_game\client\include\ent_bomb.h
+	"game_world.h"
+
+1475699613 source:d:\salvo\desktop\programmazione\online_game\client\src\ent_bomb.cpp
+	"ent_bomb.h"
+	"resources.h"
+
+1475699118 source:d:\salvo\desktop\programmazione\online_game\client\src\ent_broken_wall.cpp
+	"ent_broken_wall.h"
+	"resources.h"
+
+1475698827 d:\salvo\desktop\programmazione\online_game\client\include\ent_broken_wall.h
+	"game_world.h"
+
+1475703216 d:\salvo\desktop\programmazione\online_game\client\include\ent_item.h
+	"game_world.h"
+
+1475703488 source:d:\salvo\desktop\programmazione\online_game\client\src\ent_item.cpp
+	"ent_item.h"
+	"resources.h"
+

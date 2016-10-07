@@ -1,55 +1,64 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
-#include "game_obj.h"
+#include "game_world.h"
 #include "input_handler.h"
 
-static const float ACCEL = 0.7f;
-static const float MAX_SPEED = 10.f;
-static const float FRICTION = 0.8f;
+#include <deque>
 
-static const size_t NAME_SIZE = 32;
+static const size_t USER_NAME_SIZE = 32;
 
-static const int RESPAWN_TIME = 300;
-static const int MAX_HEALTH = 100;
-
-class player: public game_obj {
+class player: public entity {
 private:
-    input_handler *handler;
+    friend class bomb;
 
-    float speedx, speedy;
+    input_handler *handler = nullptr;
 
-    Uint32 color;
+    uint32_t color = 0;
 
-    char player_name[NAME_SIZE];
+    char player_name[USER_NAME_SIZE];
 
-    int fire_timer;
+    bool alive = false;
+    bool spawned = false;
 
-    short health_points;
+    float speed = 0.f;
+    int explosion_size = 0;
+    int num_bombs = 0;
 
-    int respawn_ticks;
+    bool movement_keys_down[4] = {0};
+    bool movement_keys_pressed[4] = {0};
+
+    std::deque<uint8_t> movement_priority;
+
+    float fx = 0.f;
+    float fy = 0.f;
 
 public:
-    float fx, fy;
+    player(game_world *world, input_handler *handler);
 
 public:
-    player(input_handler *handler);
-
-public:
-    void respawn();
+    void respawn(float x, float y);
+    void kill();
 
     void setName(const char *name);
-
-    void tick(class game_server *server);
-
-    void writeObject(packet_ext &packet);
-
-    void hit(short damage, float knockback_x, float knockback_y);
-    void heal(short amount);
-
-    bool isAlive() {
-        return health_points > 0;
+    const char *getName() {
+        return player_name;
     }
+
+    void tick();
+
+    uint8_t getTileX() const {
+        return fx / TILE_SIZE + 0.5f;
+    }
+
+    uint8_t getTileY() const {
+        return fy / TILE_SIZE + 0.5f;
+    }
+
+    void writeEntity(packet_ext &packet);
+
+private:
+    void handleInput();
 };
 
 #endif // __PLAYER_H__

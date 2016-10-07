@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL_net.h>
 
-static constexpr Uint32 str2int(const char *str) {
+static constexpr uint32_t str2int(const char *str) {
     return
         str[0] << (8 * 3) |
         str[1] << (8 * 2) |
@@ -13,12 +13,12 @@ static constexpr Uint32 str2int(const char *str) {
 
 static const int PACKET_SIZE = 1024;
 
-static const Uint32 MAGIC = str2int("GAME");
+static const uint32_t MAGIC = str2int("GAME");
 
 class packet_ext {
 private:
     UDPpacket *packet;
-    Uint8 *data_ptr;
+    uint8_t *data_ptr;
 
     UDPsocket socket;
 
@@ -27,17 +27,17 @@ public:
     virtual ~packet_ext();
 
 public:
-    void writeInt(const Uint32 num);
-    Uint32 readInt();
+    void writeInt(const uint32_t num);
+    uint32_t readInt();
 
-    void writeChar(const Uint8 num);
-    Uint8 readChar();
+    void writeChar(const uint8_t num);
+    uint8_t readChar();
 
-    void writeShort(const Uint16 num);
-    Uint16 readShort();
+    void writeShort(const uint16_t num);
+    uint16_t readShort();
 
     void writeLong(const Uint64 num);
-    Uint16 readLong();
+    uint16_t readLong();
 
     void writeString(const char *str, short max_len = 0);
     char *readString();

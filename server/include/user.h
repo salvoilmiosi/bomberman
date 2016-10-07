@@ -5,16 +5,17 @@
 #include <cstring>
 
 #include "input_net.h"
-#include "player.h"
+
+static const size_t NAME_SIZE = 32;
 
 class user {
 private:
     const IPaddress address;
     char username[NAME_SIZE];
 
-    Uint16 userid;
+    uint16_t userid;
 
-    static Uint16 maxuserid;
+    static uint16_t maxuserid;
 
     int ping_time;
     bool has_pinged;
@@ -23,40 +24,28 @@ private:
     int attempts;
 
     input_net handler;
-    player *obj;
+    class player *ent;
 
 public:
-    user(const IPaddress &address, const char *name);
+    user(class game_world *world, const IPaddress &address, const char *name);
+    virtual ~user();
 
 public:
     const char *getName() {
         return username;
     }
 
-    void setName(const char *name) {
-        strncpy(username, name, NAME_SIZE);
-        if (obj) {
-            obj->setName(name);
-        }
-    }
+    void setName(const char *name);
+
+    void setPlayer(class player *p);
 
     const IPaddress &getAddress() {
         return address;
     }
 
 public:
-    void connected(class game_server *server);
-    void disconnected(class game_server *server);
-
-    void setPlayer(player *p) {
-        obj = p;
-        if (obj) {
-            obj->setName(username);
-        }
-    }
-
     player *getPlayer() {
-        return obj;
+        return ent;
     }
 
     bool pingCmd(bool force = false);
@@ -69,13 +58,15 @@ public:
 
     int aliveTime();
 
-    Uint16 getID() {
+    uint16_t getID() {
         return userid;
     }
 
     int pingAttempts() {
         return attempts;
     }
+
+    void destroyPlayer();
 };
 
 #endif // __USER_H__

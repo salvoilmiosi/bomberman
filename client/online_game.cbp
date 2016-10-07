@@ -38,21 +38,35 @@
 			<Add library="SDL2main" />
 			<Add library="SDL2" />
 			<Add library="SDL2_net" />
+			<Add library="SDL2_image" />
 		</Linker>
-		<Unit filename="include/bullet.h" />
+		<Unit filename="include/ent_bomb.h" />
+		<Unit filename="include/ent_broken_wall.h" />
+		<Unit filename="include/ent_item.h" />
 		<Unit filename="include/game_client.h" />
-		<Unit filename="include/game_obj.h" />
+		<Unit filename="include/game_map.h" />
 		<Unit filename="include/game_world.h" />
+		<Unit filename="include/healthbar.h" />
 		<Unit filename="include/interpolator.h" />
+		<Unit filename="include/main.h" />
 		<Unit filename="include/packet_io.h" />
 		<Unit filename="include/player.h" />
-		<Unit filename="src/bullet.cpp" />
+		<Unit filename="include/resources.h" />
+		<Unit filename="resource/resources.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="src/ent_bomb.cpp" />
+		<Unit filename="src/ent_broken_wall.cpp" />
+		<Unit filename="src/ent_factory.cpp" />
+		<Unit filename="src/ent_item.cpp" />
 		<Unit filename="src/game_client.cpp" />
-		<Unit filename="src/game_obj.cpp" />
+		<Unit filename="src/game_map.cpp" />
 		<Unit filename="src/game_world.cpp" />
+		<Unit filename="src/healthbar.cpp" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/packet_io.cpp" />
 		<Unit filename="src/player.cpp" />
+		<Unit filename="src/resources.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

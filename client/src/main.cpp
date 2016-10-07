@@ -1,62 +1,45 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
+#include <SDL2/SDL_image.h>
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <time.h>
 #include <map>
 
+#include "main.h"
 #include "game_client.h"
+#include "resources.h"
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 
-static game_client client;
-
-static const char *const WINDOW_TITLE = "Online game base";
-static const int WINDOW_WIDTH = 800;
-static const int WINDOW_HEIGHT = 600;
-
-static const int FPS = 300;
-static const int TICKRATE = 300;
-
-static const int PORT = 27015;
-
 static const int NUM_KEYS = 512;
 static const int NUM_MOUSE_BUTTONS = 16;
 
-static Uint8 key_bindings[NUM_KEYS];
-static Uint8 mouse_bindings[NUM_MOUSE_BUTTONS];
+static uint8_t key_bindings[NUM_KEYS];
+static uint8_t mouse_bindings[NUM_MOUSE_BUTTONS];
 
-bool tick() {
-    if (!client.receive()) {
-        return false;
-    }
-
-    client.tick();
-
-    return true;
-}
+static game_client client;
 
 void render() {
     static SDL_Rect win_rect = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 50, 255);
     SDL_RenderFillRect(renderer, &win_rect);
-    for (auto it : client.getObjects()) {
-        it.second->render(renderer);
-    }
+    client.getWorld().render(renderer);
     SDL_RenderPresent(renderer);
 }
 
 bool sendInput(SDL_Scancode key, bool down) {
-    Uint8 cmd = key_bindings[key];
+    uint8_t cmd = key_bindings[key];
     if (!cmd) return false;
 
     return client.sendInput(cmd, down);
 }
 
-bool sendMouseInput(Uint8 button, bool down) {
-    Uint8 cmd = mouse_bindings[button];
+bool sendMouseInput(uint8_t button, bool down) {
+    uint8_t cmd = mouse_bindings[button];
     if (!cmd) return false;
 
     return client.sendInput(cmd, down);
@@ -94,11 +77,9 @@ void setupBindings() {
     key_bindings[SDL_SCANCODE_RIGHT] = 4;
     key_bindings[SDL_SCANCODE_D] = 4;
     key_bindings[SDL_SCANCODE_SPACE] = 5;
-    key_bindings[SDL_SCANCODE_E] = 6;
 
     memset(mouse_bindings, 0, NUM_MOUSE_BUTTONS);
-    mouse_bindings[SDL_BUTTON_LEFT] = 7;
-    mouse_bindings[SDL_BUTTON_RIGHT] = 6;
+    mouse_bindings[SDL_BUTTON_LEFT] = 5;
 }
 
 int main(int argc, char **argv) {
@@ -110,6 +91,10 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Could not init SDL_net\n");
         return 1;
     }
+    if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
+        fprintf(stderr, "Could not init SDL_image\n");
+        return 1;
+    }
 
     srand(time(NULL));
 
@@ -119,11 +104,15 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    SDL_SetWindowIcon(window, icon_surface);
+
     renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         fprintf(stderr, "Could not create renderer\n");
         return 1;
     }
+
+    loadResources(renderer);
 
     setupBindings();
 
@@ -159,7 +148,7 @@ int main(int argc, char **argv) {
 		lastTime = now;
 		bool shouldRender = true;
 		while (unprocessed >= 1) {
-			if (!tick()) {
+			if (!client.tick()) {
                 quit = true;
 			}
 
@@ -205,6 +194,10 @@ int main(int argc, char **argv) {
     client.disconnect();
 
     SDL_DestroyWindow(window);
+
+    clearResources();
+
+    IMG_Quit();
     SDLNet_Quit();
     SDL_Quit();
     return 0;

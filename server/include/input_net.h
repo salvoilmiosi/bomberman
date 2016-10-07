@@ -4,8 +4,8 @@
 #include "packet_io.h"
 #include "input_handler.h"
 
-static const Uint32 INPUT_KEYBOARD = str2int("KBRD");
-static const Uint32 INPUT_MOUSE = str2int("MOUS");
+static const uint32_t CMD_INPUT_KEYBOARD = str2int("KBRD");
+static const uint32_t CMD_INPUT_MOUSE = str2int("MOUS");
 
 class input_net: public input_handler {
 private:
@@ -21,11 +21,11 @@ public:
     void handlePacket(packet_ext &packet);
 
 public:
-    bool isDown(Uint8 input_cmd) {
+    bool isDown(uint8_t input_cmd) {
         return cmds[input_cmd];
     }
 
-    bool isPressed(Uint8 input_cmd) {
+    bool isPressed(uint8_t input_cmd) {
         bool ret = cmds[input_cmd];
         cmds[input_cmd] = false;
         return ret;

@@ -1,31 +1,31 @@
 #include <SDL2/SDL_net.h>
 #include <cstdio>
 #include <cstdlib>
-#include <time.h>
+#include <ctime>
 
-#include "server.h"
+#include "game_world.h"
+#include "main.h"
+
+std::default_random_engine random_engine;
 
 int main(int argc, char **argv) {
-    SDL_Init(SDL_INIT_VIDEO);
+    srand(time(0));
+    random_engine.seed(rand());
 
-    srand(time(NULL));
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        fprintf(stderr, "Could not inid SDL\n");
+    }
 
     if (SDLNet_Init() < 0) {
         fprintf(stderr, "Could not init SDL_net\n");
         return 1;
-    } else {
-        game_server server;
-        if (server.isOpen()) {
-            printf("Server listening on port %d\n", PORT);
-        } else {
-            fprintf(stderr, "Could not open server socket: %s\n", SDLNet_GetError());
-            return 1;
-        }
-
-        int err = server.run();
-
-        printf("Server quit, returned %d\n", err);
     }
+
+    game_world world;
+
+    int err = world.startServer();
+
+    printf("Server quit, returned %d\n", err);
 
     SDLNet_Quit();
     SDL_Quit();

@@ -12,7 +12,7 @@ class interpolator {
 private:
     struct snapshot {
         T obj;
-        Uint32 time;
+        uint32_t time;
     };
 
     snapshot last_shot;
@@ -41,14 +41,13 @@ public:
         shots.push_back(pos);
     }
 
-    void interpolate(float *result, float T::* member) {
+    float interpolate(float T::* member) {
         if (shots.empty()) {
-            return;
+            return last_shot.obj.*member;
         }
 
         if (shots.size() <= 1) {
-            *result = shots.back().obj.*member;
-            return;
+            return shots.back().obj.*member;
         }
 
         float time = SDL_GetTicks();
@@ -60,15 +59,14 @@ public:
                 float time_end = it.time;
 
                 float time_amt = (time - time_start) / (time_end - time_start);
-                *result = pos_start + time_amt * (pos_end - pos_start);
-                return;
+                return pos_start + time_amt * (pos_end - pos_start);
             } else {
                 pos_start = it.obj.*member;
                 time_start = it.time;
             }
         }
 
-        *result = pos_start;
+        return pos_start;
     }
 
     void clear() {

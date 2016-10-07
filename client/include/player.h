@@ -1,38 +1,34 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
-#include "game_obj.h"
-
-#include "interpolator.h"
+#include "game_world.h"
 
 #include <cstdlib>
 
+#include "interpolator.h"
+#include "healthbar.h"
+
 static const size_t NAME_SIZE = 32;
 
-class player: public game_obj {
+class player: public entity {
 private:
     struct position {
         float ix, iy;
     };
 
     float x, y;
-    Uint8 r, g, b;
+    uint8_t r, g, b;
 
     bool is_self;
+    bool alive;
+    bool spawned;
 
     char player_name[NAME_SIZE];
 
     interpolator<position> interp;
 
-    short health_points;
-
-    bool death_animation;
-    Uint32 death_time;
-    Uint32 damage_time;
-    Uint32 heal_time;
-
 public:
-    player(Uint16 id, packet_ext &packet);
+    player(game_world *world, uint16_t id, packet_ext &packet);
 
 public:
     void tick();

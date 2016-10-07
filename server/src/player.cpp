@@ -1,126 +1,109 @@
 #include "player.h"
 
+#include "ent_bomb.h"
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 
-#include "server.h"
-#include "bullet.h"
-
-player::player(input_handler *handler) : game_obj(TYPE_PLAYER), handler(handler) {
+player::player(game_world *world, input_handler *handler) : entity(world, TYPE_PLAYER), handler(handler) {
     if (!handler) {
         fprintf(stderr, "Player must have a handler\n");
     }
 
     memset(player_name, 0, NAME_SIZE);
 
-    Uint8 r = rand() % 0xff;
-    Uint8 g = rand() % 0xff;
-    Uint8 b = rand() % 0xff;
+    uint8_t r = rand() % 0xff;
+    uint8_t g = rand() % 0xff;
+    uint8_t b = rand() % 0xff;
     color = (r << 24) | (g << 16) | (b << 8) | 0xff;
 
-    respawn();
+    do_send_updates = false;
 }
 
-void player::respawn() {
-    fx = rand() % 800;
-    fy = rand() % 600;
+void player::respawn(float x, float y) {
+    fx = x;
+    fy = y;
 
-    speedx = 0.f;
-    speedy = 0.f;
+    spawned = true;
+    alive = true;
 
-    fire_timer = 0;
-
-    respawn_ticks = 0;
-
-    health_points = MAX_HEALTH;
+    speed = 3.f;
+    explosion_size = 1;
+    num_bombs = 1;
 
     do_send_updates = true;
+}
+
+void player::kill() {
+    alive = false;
 }
 
 void player::setName(const char *name) {
     strncpy(player_name, name, NAME_SIZE);
 }
 
-void player::tick(game_server *server) {
-    if (!isAlive()) {
-        if (respawn_ticks > 0) {
-            --respawn_ticks;
-            if (respawn_ticks < 200) {
-                do_send_updates = false;
+void player::handleInput() {
+    // how the fuck do I make this better
+    movement_keys_down[0] = handler->isDown(USR_UP);
+    movement_keys_down[1] = handler->isDown(USR_DOWN);
+    movement_keys_down[2] = handler->isDown(USR_LEFT);
+    movement_keys_down[3] = handler->isDown(USR_RIGHT);
+
+    for (int i=0; i<4; ++i) {
+        if (movement_keys_down[i]) {
+            if (!movement_keys_pressed[i]) {
+                movement_keys_pressed[i] = true;
+                movement_priority.push_front(i);
             }
-            return;
         } else {
-            respawn();
+            movement_keys_pressed[i] = false;
         }
     }
 
-    if (handler->isDown(USR_UP)) {
-        speedy -= ACCEL;
-        if (speedy < -MAX_SPEED) speedy = -MAX_SPEED;
-    } else if (handler->isDown(USR_DOWN)) {
-        speedy += ACCEL;
-        if (speedy > MAX_SPEED) speedy = MAX_SPEED;
-    } else {
-        speedy *= FRICTION;
-    }
-    if (handler->isDown(USR_LEFT)) {
-        speedx -= ACCEL;
-        if (speedx < -MAX_SPEED) speedx = -MAX_SPEED;
-    } else if (handler->isDown(USR_RIGHT)) {
-        speedx += ACCEL;
-        if (speedx > MAX_SPEED) speedx = MAX_SPEED;
-    } else {
-        speedx *= FRICTION;
-    }
-    fx += speedx;
-    fy += speedy;
-    if (speedx > 0 && fx > 800) speedx = -speedx;
-    if (speedx < 0 && fx < 0)   speedx = -speedx;
-    if (speedy > 0 && fy > 600) speedy = -speedy;
-    if (speedy < 0 && fy < 0)   speedy = -speedy;
-
-    if (handler->isDown(USR_FIRE)) {
-        if (fire_timer <= 0) {
-            fire_timer = 5;
-            bullet *b = new bullet(this, handler->getMouseX(), handler->getMouseY());
-            speedx -= b->getSpeedX() * RECOIL;
-            speedy -= b->getSpeedY() * RECOIL;
-            server->addObject(b);
+    while(! movement_priority.empty()) {
+        uint8_t prio = movement_priority.front();
+        if (movement_keys_down[prio]) {
+            switch (prio) {
+            case 0:
+                fy -= speed;
+                break;
+            case 1:
+                fy += speed;
+                break;
+            case 2:
+                fx -= speed;
+                break;
+            case 3:
+                fx += speed;
+                break;
+            }
+            break;
+        } else {
+            movement_priority.pop_front();
         }
     }
 
-    if (fire_timer > 0) {
-        --fire_timer;
-    }
-
-    if (handler->isPressed(USR_ACTION)) {
-        heal(10);
-    }
-}
-
-void player::heal(short amt) {
-    health_points += 10;
-    if (health_points > MAX_HEALTH) {
-        health_points = MAX_HEALTH;
+    if (handler->isPressed(USR_FIRE)) {
+        if (num_bombs > 0) {
+            world->addEntity(new bomb(world, this));
+            --num_bombs;
+        }
     }
 }
 
-void player::hit(short damage, float knockback_x, float knockback_y) {
-    health_points -= damage;
-    speedx += knockback_x;
-    speedy += knockback_y;
-
-    if (!isAlive()) {
-        respawn_ticks = RESPAWN_TIME;
+void player::tick() {
+    if (alive) {
+        handleInput();
     }
 }
 
-void player::writeObject(packet_ext &packet) {
-    packet.writeShort(NAME_SIZE + 19);
+void player::writeEntity(packet_ext &packet) {
+    packet.writeShort(NAME_SIZE + 16);
     packet.writeInt(fx);
     packet.writeInt(fy);
     packet.writeString(player_name, NAME_SIZE);
     packet.writeInt(color);
-    packet.writeShort(health_points);
+    packet.writeChar(alive ? 1 : 0);
+    packet.writeChar(spawned ? 1 : 0);
 }

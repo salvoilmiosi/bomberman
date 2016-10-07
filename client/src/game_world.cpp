@@ -7,35 +7,48 @@ game_world::game_world() {
 }
 
 game_world::~game_world() {
-	for (auto it : objects) {
+	for (auto it : entities) {
 		if (it.second) delete it.second;
 	}
 }
 
-void game_world::addObject(game_obj *obj) {
-    objects[obj->getID()] = obj;
+void game_world::addEntity(entity *ent) {
+    entities[ent->getID()] = ent;
 }
 
-void game_world::removeObject(game_obj *obj) {
-    if (obj == nullptr) return;
+void game_world::removeEntity(entity *ent) {
+    if (ent == nullptr) return;
 
-    objects.erase(obj->getID());
-    delete obj;
+    entities.erase(ent->getID());
+    delete ent;
+}
+
+void game_world::render(SDL_Renderer *renderer) {
+    g_map.render(renderer);
+
+    for (auto it : entities) {
+        it.second->render(renderer);
+    }
 }
 
 void game_world::tick() {
-    for (auto it : objects) {
+    for (auto it : entities) {
         if (it.second) {
             it.second->tick();
         }
     }
 }
 
-game_obj *game_world::findID(Uint16 id) {
-    auto it = objects.find(id);
-    if (it != objects.end()) {
+entity *game_world::findID(uint16_t id) {
+    auto it = entities.find(id);
+    if (it != entities.end()) {
         return it->second;
     } else {
         return nullptr;
     }
+}
+
+SDL_Rect game_world::tileRect(int x, int y) {
+    SDL_Rect rect = {x * TILE_SIZE + g_map.left(), y * TILE_SIZE + g_map.top(), TILE_SIZE, TILE_SIZE};
+    return rect;
 }

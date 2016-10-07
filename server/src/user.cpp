@@ -1,17 +1,20 @@
 #include "user.h"
 
-#include "game_world.h"
-#include "server.h"
+#include "player.h"
 
-Uint16 user::maxuserid = 0;
+uint16_t user::maxuserid = 0;
 
-user::user(const IPaddress &address, const char *name) : address(address) {
+user::user(game_world *world, const IPaddress &address, const char *name) : address(address) {
     userid = maxuserid++;
     has_pinged = false;
     ping_msecs = -1;
     attempts = 0;
-    obj = nullptr;
+
+    ent = new player(world, &handler);
     setName(name);
+}
+
+user::~user() {
 }
 
 bool user::pingCmd(bool force) {
@@ -45,16 +48,21 @@ int user::getPing() {
     return ping_msecs;
 }
 
-void user::connected(game_server *server) {
-    player *p = new player(&handler);
-
-    setPlayer(p);
-
-    server->addObject(p);
+void user::setName(const char *name) {
+    strncpy(username, name, USER_NAME_SIZE);
+    if (ent) {
+        ent->setName(name);
+    }
 }
 
-void user::disconnected(game_server *server) {
-    if (obj) {
-        server->removeObject(obj);
+void user::setPlayer(player *p) {
+    ent = p;
+    if (ent) {
+        ent->setName(username);
     }
+}
+
+void user::destroyPlayer() {
+    if (ent)
+        ent->destroy();
 }

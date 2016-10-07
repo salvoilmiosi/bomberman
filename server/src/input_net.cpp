@@ -5,17 +5,17 @@ input_net::input_net() {
 }
 
 void input_net::handlePacket(packet_ext &packet) {
-    Uint32 type = packet.readInt();
+    uint32_t type = packet.readInt();
 
     switch(type) {
-    case INPUT_KEYBOARD:
+    case CMD_INPUT_KEYBOARD:
         {
-            Uint8 cmd = packet.readChar();
+            uint8_t cmd = packet.readChar();
             bool down = packet.readChar() != 0;
             cmds[cmd] = down;
         }
         break;
-    case INPUT_MOUSE:
+    case CMD_INPUT_MOUSE:
         {
             mouse_x = packet.readInt();
             mouse_y = packet.readInt();
