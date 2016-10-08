@@ -11,12 +11,15 @@
 static const size_t NAME_SIZE = 32;
 
 class player: public entity {
-private:
+public:
     struct position {
         float ix, iy;
         float imoving;
         float idirection;
+        float ipunching;
     };
+
+private:
 
     float x, y;
 
@@ -28,6 +31,7 @@ private:
 
     bool moving;
     uint8_t direction;
+    bool punching;
 
     char player_name[NAME_SIZE];
 

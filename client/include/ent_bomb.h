@@ -2,6 +2,7 @@
 #define __ENT_BOMB_H__
 
 #include "game_world.h"
+#include "interpolator.h"
 
 class explosion: public entity {
 private:
@@ -25,17 +26,27 @@ public:
 };
 
 class bomb: public entity {
+public:
+    struct position {
+        float ix, iy, iz;
+    };
+
 private:
-    uint8_t x, y;
+    float fx;
+    float fy;
+    float fz;
+
     uint16_t player_id;
 
     int create_time;
+
+    interpolator<position> interp;
 
 public:
     bomb(game_world *world, uint16_t id, packet_ext &packet);
 
 public:
-    void tick() {}
+    void tick();
 
     void render(SDL_Renderer *renderer);
 

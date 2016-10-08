@@ -6,6 +6,7 @@
 #include <cstdlib>
 
 #include "main.h"
+#include "ent_item.h"
 
 game_map::game_map() {
     tiles = nullptr;
@@ -29,6 +30,8 @@ void game_map::createMap(int w, int h, int num_players) {
 
     std::vector<point> spawns = {{1,1},{width-2,1},{1,height-2},{width-2,height-2}};
     std::shuffle(spawns.begin(), spawns.end(), random_engine);
+
+    spawn_pts.clear();
 
     for (;num_players > 0; --num_players) {
         spawn_pts.push_back(spawns.back());
@@ -72,6 +75,19 @@ void game_map::createMap(int w, int h, int num_players) {
     for (int i=0; i<NUM_ITEMS; ++i) {
         tile *t = breakables[i];
         t->type = tile::TILE_ITEM;
+        if (i < 7) {
+            t->item_type = ITEM_BOMB;
+        } else if (i < 12) {
+            t->item_type = ITEM_FIRE;
+        } else if (i < 15) {
+            t->item_type = ITEM_ROLLERBLADE;
+        } else if (i < 18) {
+            t->item_type = ITEM_KICK;
+        } else if (i < 21) {
+            t->item_type = ITEM_PUNCH;
+        } else if (i < 23) {
+            t->item_type = ITEM_SKULL;
+        }
     }
 }
 
@@ -106,6 +122,10 @@ void game_map::writeToPacket(packet_ext &packet) {
     packet.writeShort(width);
     packet.writeShort(height);
     for (tile *t = tiles; t - tiles < width * height; ++t) {
-        packet.writeChar((uint8_t) t->type);
+        if (t->type == tile::TILE_ITEM) {
+            packet.writeChar((uint8_t) tile::TILE_BREAKABLE);
+        } else {
+            packet.writeChar((uint8_t) t->type);
+        }
     }
 }

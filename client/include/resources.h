@@ -4,8 +4,9 @@
 #define IDI_ICON1 1
 #define IDB_ICON2 2
 #define IDB_TILESET 3
-#define IDB_PLAYERS 4
-#define IDB_FONT 5
+#define IDB_ITEMS 4
+#define IDB_PLAYERS 5
+#define IDB_FONT 6
 
 #ifdef __cplusplus
 
@@ -14,6 +15,7 @@
 #define TILE(x, y) {x * 16, y * 16, 16, 16}
 
 extern SDL_Texture *tileset_texture;
+extern SDL_Texture *items_texture;
 extern SDL_Texture *players_texture;
 extern SDL_Texture *font_texture;
 

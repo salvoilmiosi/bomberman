@@ -3,9 +3,12 @@
 
 #include "game_world.h"
 
-static const uint8_t ITEM_ADD_BOMB = 1;
-static const uint8_t ITEM_ADD_LENGTH = 2;
-static const uint8_t ITEM_ADD_SPEED = 3;
+static const uint8_t ITEM_BOMB = 1;
+static const uint8_t ITEM_FIRE = 2;
+static const uint8_t ITEM_ROLLERBLADE = 3;
+static const uint8_t ITEM_KICK = 4;
+static const uint8_t ITEM_PUNCH = 5;
+static const uint8_t ITEM_SKULL = 6;
 
 class game_item : public entity {
 private:
@@ -17,7 +20,7 @@ private:
     uint8_t item_type;
 
 public:
-    game_item(game_world *world, tile *t);
+    game_item(game_world *world, tile *t, uint8_t it_type);
 
 public:
     void tick();
@@ -36,6 +39,7 @@ public:
         return item_type;
     }
 
+    void pickup(class player *p);
     void explode();
 };
 

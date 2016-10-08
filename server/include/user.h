@@ -24,18 +24,17 @@ private:
     int attempts;
 
     input_net handler;
-    class player *ent;
+    class player *ent = nullptr;
 
 public:
-    user(class game_world *world, const IPaddress &address, const char *name);
-    virtual ~user();
+    user(const IPaddress &address, const char *name);
 
 public:
+    void createPlayer(class game_world *world, uint8_t player_num);
+
     const char *getName() {
         return username;
     }
-
-    void setName(const char *name);
 
     void setPlayer(class player *p);
 

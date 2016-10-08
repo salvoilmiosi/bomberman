@@ -5,6 +5,7 @@
 #include <cstdio>
 
 SDL_Texture *tileset_texture = nullptr;
+SDL_Texture *items_texture = nullptr;
 SDL_Texture *players_texture = nullptr;
 SDL_Texture *font_texture = nullptr;
 SDL_Surface *icon_surface = nullptr;
@@ -30,6 +31,9 @@ void loadResources(SDL_Renderer *renderer) {
     SDL_Surface *tileset_surface = loadSurface(IDB_TILESET);
     tileset_texture = SDL_CreateTextureFromSurface(renderer, tileset_surface);
 
+    SDL_Surface *items_surface = loadSurface(IDB_ITEMS);
+    items_texture = SDL_CreateTextureFromSurface(renderer, items_surface);
+
     SDL_Surface *players_surface = loadSurface(IDB_PLAYERS);
     players_texture = SDL_CreateTextureFromSurface(renderer, players_surface);
 
@@ -37,6 +41,7 @@ void loadResources(SDL_Renderer *renderer) {
     font_texture = SDL_CreateTextureFromSurface(renderer, font_surface);
 
     SDL_FreeSurface(tileset_surface);
+    SDL_FreeSurface(items_surface);
     SDL_FreeSurface(players_surface);
     SDL_FreeSurface(font_surface);
 
@@ -45,6 +50,7 @@ void loadResources(SDL_Renderer *renderer) {
 
 void clearResources() {
     SDL_DestroyTexture(tileset_texture);
+    SDL_DestroyTexture(items_texture);
     SDL_DestroyTexture(players_texture);
     SDL_DestroyTexture(font_texture);
 

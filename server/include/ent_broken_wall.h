@@ -11,6 +11,7 @@ private:
     int life_ticks;
 
     bool drop_item;
+    uint8_t item_type;
 
 public:
     broken_wall(game_world *world, tile *t);

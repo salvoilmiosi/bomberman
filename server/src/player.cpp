@@ -2,22 +2,19 @@
 
 #include "ent_bomb.h"
 #include "ent_item.h"
+#include "main.h"
 
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <algorithm>
 
-uint8_t player::max_playernum = 0;
-
-player::player(game_world *world, input_handler *handler) : entity(world, TYPE_PLAYER), handler(handler) {
+player::player(game_world *world, input_handler *handler, uint8_t player_num) : entity(world, TYPE_PLAYER), handler(handler), player_num(player_num) {
     if (!handler) {
         fprintf(stderr, "Player must have a handler\n");
     }
 
     memset(player_name, 0, NAME_SIZE);
-
-    player_num = max_playernum;
-    max_playernum = (max_playernum + 1) % 4;
 
     do_send_updates = false;
 }
@@ -29,44 +26,34 @@ void player::respawn(float x, float y) {
     spawned = true;
     alive = true;
 
-    speed = 3.f;
+    can_kick = false;
+    can_punch = false;
+
+    speed = 5.f;
     explosion_size = 1;
     num_bombs = 1;
 
     moving = false;
     direction = 1;
 
+    punch_ticks = 0;
+
+    item_pickups.clear();
+
     do_send_updates = true;
 }
 
 void player::kill() {
+    if (!alive) return;
+
     alive = false;
+    death_ticks = TICKRATE / 3;
+
+    world->playerDied(this);
 }
 
 void player::setName(const char *name) {
     strncpy(player_name, name, NAME_SIZE);
-}
-
-bool player::isWalkable(int tx, int ty) {
-    tile *t = world->getMap().getTile(tx, ty);
-    if (!t) return false;
-
-    entity **ents = world->findEntities(tx, ty, TYPE_BOMB);
-    for (uint8_t i = 0; i < SEARCH_SIZE; ++i) {
-        entity *ent = ents[i];
-        if (ent) {
-            return false;
-        }
-    }
-
-    switch(t->type) {
-    case tile::TILE_WALL:
-    case tile::TILE_BREAKABLE:
-    case tile::TILE_ITEM:
-        return false;
-    default:
-        return true;
-    }
 }
 
 void player::handleInput() {
@@ -93,6 +80,56 @@ void player::handleInput() {
     float check_fx = fx;
     float check_fy = fy;
 
+    if (punch_ticks > 0) return;
+
+    if (handler->isPressed(USR_PLANT)) {
+        if (num_bombs > 0) {
+            entity **ents = world->findEntities(getTileX(), getTileY(), TYPE_BOMB);
+            bool found_bomb = false;
+            for (uint8_t i=0; i<SEARCH_SIZE; ++i) {
+                if (ents[i]) {
+                    found_bomb = true;
+                    break;
+                }
+            }
+            if (!found_bomb) {
+                world->addEntity(new bomb(world, this));
+                --num_bombs;
+            }
+        }
+    }
+
+    if (can_punch && handler->isPressed(USR_PUNCH)) {
+        punch_ticks = TICKRATE / 4;
+        moving = false;
+
+        int bx = getTileX();
+        int by = getTileY();
+
+        switch(direction) {
+        case 0:
+            --by;
+            break;
+        case 1:
+            ++by;
+            break;
+        case 2:
+            --bx;
+            break;
+        case 3:
+            ++bx;
+            break;
+        }
+
+        entity **ents = world->findEntities(bx, by, TYPE_BOMB);
+        for (uint8_t i=0; i<SEARCH_SIZE; ++i) {
+            entity *ent = ents[i];
+            if (!ent) break;
+            bomb *b = dynamic_cast<bomb*>(ent);
+            b->punch(direction);
+        }
+    }
+
     while(! movement_priority.empty()) {
         uint8_t prio = movement_priority.front();
         if (movement_keys_down[prio]) {
@@ -115,39 +152,33 @@ void player::handleInput() {
                 break;
             }
 
+            direction = prio;
+            moving = true;
+
             int to_tx = check_fx / TILE_SIZE + 0.5f;
             int to_ty = check_fy / TILE_SIZE + 0.5f;
 
-            bool walk_from = isWalkable(getTileX(), getTileY());
-            bool walk_to = false;
-            if ((!walk_from && to_tx == getTileX() && to_ty == getTileY()) || (walk_to = isWalkable(to_tx, to_ty))) {
+            if ((to_tx == getTileX() && to_ty == getTileY() &&
+                 !world->isWalkable(getTileX(), getTileY())) ||
+                world->isWalkable(to_tx, to_ty)) {
                 fx = to_fx;
                 fy = to_fy;
             }
 
-            direction = prio;
-            moving = true;
+            if (can_kick) {
+                if (to_tx != getTileX() || to_ty != getTileY()) {
+                    entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
+                    if (*ents) {
+                        bomb *b = dynamic_cast<bomb *>(*ents);
+                        b->kick(direction);
+                    }
+                }
+            }
+
             break;
         } else {
             moving = false;
             movement_priority.pop_front();
-        }
-    }
-
-    if (handler->isPressed(USR_FIRE)) {
-        if (num_bombs > 0) {
-            entity **ents = world->findEntities(getTileX(), getTileY(), TYPE_BOMB);
-            bool found_bomb = false;
-            for (uint8_t i=0; i<SEARCH_SIZE; ++i) {
-                if (ents[i]) {
-                    found_bomb = true;
-                    break;
-                }
-            }
-            if (!found_bomb) {
-                world->addEntity(new bomb(world, this));
-                --num_bombs;
-            }
         }
     }
 }
@@ -159,21 +190,43 @@ void player::tick() {
         for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
             if (!ents[i]) break;
             game_item *item = (game_item *)(ents[i]);
-            switch (item->getItemType()) {
-            case ITEM_ADD_BOMB:
-                ++num_bombs;
-                break;
-            case ITEM_ADD_LENGTH:
-                ++explosion_size;
-                break;
-            case ITEM_ADD_SPEED:
-                speed += 2.f;
-                break;
-            default:
-                break;
-            }
-            item->destroy();
+            item_pickups.push_back(item->getItemType());
+            item->pickup(this);
         }
+        if (punch_ticks > 0) {
+            --punch_ticks;
+        }
+    } else {
+        if (death_ticks == 0) {
+            spawnItems();
+            do_send_updates = false;
+        }
+        --death_ticks;
+    }
+}
+
+void player::spawnItems() {
+    std::vector<tile *> tiles;
+    for (int ty = 0; ty < MAP_HEIGHT; ++ty) {
+        for (int tx = 0; tx < MAP_WIDTH; ++tx) {
+            if (world->isWalkable(tx, ty)) {
+                tiles.push_back(world->getMap().getTile(tx, ty));
+            }
+        }
+    }
+
+    std::shuffle(tiles.begin(), tiles.end(), random_engine);
+
+    uint32_t i = 0;
+    while(!item_pickups.empty()) {
+        if (i >= tiles.size()) {
+            break;
+        }
+        uint8_t item_type = item_pickups.front();
+
+        world->addEntity(new game_item(world, tiles[i], item_type));
+        item_pickups.pop_front();
+        ++i;
     }
 }
 
@@ -188,6 +241,7 @@ void player::writeEntity(packet_ext &packet) {
     flags |= (1 << 0) * alive;
     flags |= (1 << 1) * spawned;
     flags |= (1 << 2) * moving;
+    flags |= (1 << 3) * (punch_ticks > 0);
     packet.writeChar(flags);
     packet.writeChar(direction);
 }

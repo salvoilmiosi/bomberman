@@ -18,7 +18,8 @@ static const int TIMEOUT = 1000;
 
 static const int SNAPSHOT_RATE = 1;
 
-static const int MAX_USERS = 1;
+static const int NUM_PLAYERS = 1;
+static const int NUM_SPECTATORS = 16;
 
 static const uint32_t CMD_CONNECT      = str2int("CONN");
 static const uint32_t CMD_CHAT         = str2int("CHAT");
@@ -96,6 +97,7 @@ private:
     void quitCmd(packet_ext&);
     void inputCmd(packet_ext&);
 
+public:
     void messageToAll(const char *message);
 
     template<typename ... T> void messageToAll(const char *format, T ... args) {

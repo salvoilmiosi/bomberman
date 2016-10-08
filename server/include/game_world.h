@@ -24,6 +24,8 @@ private:
 
     bool destroyed;
 
+    int ticks_to_start;
+
 protected:
     bool do_send_updates;
 
@@ -82,6 +84,13 @@ private:
     game_map g_map;
 
     bool game_started;
+    bool round_started;
+    int round_num;
+
+    int num_players;
+    int alive_players;
+
+    int ticks_to_start;
 
 public:
     game_world();
@@ -94,6 +103,8 @@ public:
     void removeEntity(entity *ent);
 
     void tick();
+
+    void playerDied(player *dead);
 
     void writeEntitiesToPacket(packet_ext &packet, bool is_add = false);
 
@@ -112,6 +123,11 @@ public:
     }
 
     entity **findEntities(int tx, int ty, uint8_t type = 0);
+
+    bool isWalkable(int tx, int ty, bool ignore_bombs = false);
+
+private:
+    void countdownEnd();
 };
 
 #endif // __GAME_WORLD_H__

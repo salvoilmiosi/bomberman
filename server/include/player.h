@@ -11,16 +11,18 @@ static const size_t USER_NAME_SIZE = 32;
 class player: public entity {
 private:
     friend class bomb;
+    friend class game_item;
 
     input_handler *handler = nullptr;
 
     char player_name[USER_NAME_SIZE];
 
     uint8_t player_num;
-    static uint8_t max_playernum;
 
     bool alive = false;
     bool spawned = false;
+
+    int death_ticks;
 
     float speed = 0.f;
     int explosion_size = 0;
@@ -31,18 +33,29 @@ private:
 
     std::deque<uint8_t> movement_priority;
 
+    std::deque<uint8_t> item_pickups;
+
     float fx = 0.f;
     float fy = 0.f;
 
     bool moving;
     uint8_t direction;
 
+    bool can_kick;
+    bool can_punch;
+
+    int punch_ticks;
+
 public:
-    player(game_world *world, input_handler *handler);
+    player(game_world *world, input_handler *handler, uint8_t player_num);
 
 public:
     void respawn(float x, float y);
     void kill();
+
+    bool isAlive() {
+        return alive;
+    }
 
     void setName(const char *name);
     const char *getName() {
@@ -61,10 +74,13 @@ public:
 
     void writeEntity(packet_ext &packet);
 
+    uint8_t getPlayerNum() {
+        return player_num;
+    }
+
 private:
     void handleInput();
-
-    bool isWalkable(int tx, int ty);
+    void spawnItems();
 };
 
 #endif // __PLAYER_H__

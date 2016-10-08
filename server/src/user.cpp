@@ -4,17 +4,13 @@
 
 uint16_t user::maxuserid = 0;
 
-user::user(game_world *world, const IPaddress &address, const char *name) : address(address) {
+user::user(const IPaddress &address, const char *name) : address(address) {
     userid = maxuserid++;
     has_pinged = false;
     ping_msecs = -1;
     attempts = 0;
 
-    ent = new player(world, &handler);
-    setName(name);
-}
-
-user::~user() {
+    strncpy(username, name, USER_NAME_SIZE);
 }
 
 bool user::pingCmd(bool force) {
@@ -48,11 +44,9 @@ int user::getPing() {
     return ping_msecs;
 }
 
-void user::setName(const char *name) {
-    strncpy(username, name, USER_NAME_SIZE);
-    if (ent) {
-        ent->setName(name);
-    }
+void user::createPlayer(game_world *world, uint8_t player_num) {
+    ent = new player(world, &handler, player_num);
+    ent->setName(username);
 }
 
 void user::setPlayer(player *p) {

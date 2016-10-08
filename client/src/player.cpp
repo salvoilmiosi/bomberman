@@ -3,6 +3,22 @@
 #include <cstring>
 
 #include "resources.h"
+#include "main.h"
+
+player::position operator + (const player::position &a, const player::position &b) {
+    player::position pos = {a.ix + b.ix, a.iy + b.iy, a.imoving + b.imoving, a.idirection + b.idirection, a.ipunching + b.ipunching};
+    return pos;
+}
+
+player::position operator - (const player::position &a, const player::position &b) {
+    player::position pos = {a.ix - b.ix, a.iy - b.iy, a.imoving - b.imoving, a.idirection - b.idirection, a.ipunching - b.ipunching};
+    return pos;
+}
+
+player::position operator * (const float &f, const player::position &p) {
+    player::position pos = {p.ix * f, p.iy * f, p.imoving * f, p.idirection * f, p.ipunching * f};
+    return pos;
+}
 
 player::player(game_world *world, uint16_t id, packet_ext &packet) : entity(world, TYPE_PLAYER, id) {
     is_self = false;
@@ -12,11 +28,14 @@ player::player(game_world *world, uint16_t id, packet_ext &packet) : entity(worl
 void player::tick() {
     interp.tick();
 
-    x = (interp.interpolate(&position::ix) / 100.f + 0.5f) * TILE_SIZE;
-    y = (interp.interpolate(&position::iy) / 100.f + 0.5f) * TILE_SIZE;
+    position ip = interp.interpolate();
 
-    moving = interp.interpolate(&position::imoving) > 0.5f;
-    direction = interp.interpolate(&position::idirection) + 0.5f;
+    x = (ip.ix / 100.f + 0.5f) * TILE_SIZE;
+    y = (ip.iy / 100.f + 0.5f) * TILE_SIZE;
+
+    moving = ip.imoving > 0.5f;
+    direction = ip.idirection + 0.5f;
+    punching = ip.ipunching > 0.5f;
 
     if (spawned && !alive) {
         if (death_time == 0) {
@@ -58,39 +77,48 @@ void player::render(SDL_Renderer *renderer) {
     int spx = 0;
     int spy = 0;
 
+    SDL_RendererFlip flip = SDL_FLIP_NONE;
+
+    static const int8_t walk_frames[4] = {1, 0, -1, 0};
+
     if (alive) {
-        if (moving) {
-            int frame = ((SDL_GetTicks() % 1000) * 4 / 1000) % 4;
-            switch (frame) {
+        if (punching) {
+            spy = 3;
+            switch(direction) {
             case 0:
                 spx = 1;
                 break;
             case 1:
-                spx = 0;
                 break;
             case 2:
-                spx = -1;
+                spx = 2;
+                flip = SDL_FLIP_HORIZONTAL;
                 break;
             case 3:
-                spx = 0;
+                spx = 2;
                 break;
             }
-        }
-        switch(direction) {
-        case 0: // up
-            spx += 1;
-            break;
-        case 1: // down
-            spx += 4;
-            break;
-        case 2: // left
-            spx += 1;
-            spy += 1;
-            break;
-        case 3: // right
-            spx += 4;
-            spy += 1;
-            break;
+        } else {
+            if (moving) {
+                int frame = ((SDL_GetTicks() % 666) * 4 / 666) % 4;
+                spx = walk_frames[frame];
+            }
+            switch(direction) {
+            case 0:
+                spx += 1;
+                break;
+            case 1:
+                spx += 4;
+                break;
+            case 2:
+                spx += 1;
+                spy += 1;
+                break;
+            case 3:
+                spx += 4;
+                spy += 1;
+                break;
+            }
         }
     } else {
         int time_since_death = SDL_GetTicks() - death_time;
@@ -106,7 +134,7 @@ void player::render(SDL_Renderer *renderer) {
     dst_rect.x = world->mapLeft() + (int)x - TILE_SIZE / 2;
     dst_rect.y = world->mapTop() + (int)y - TILE_SIZE;
 
-    SDL_RenderCopy(renderer, players_texture, &src_rect, &dst_rect);
+    SDL_RenderCopyEx(renderer, players_texture, &src_rect, &dst_rect, 0, nullptr, flip);
 }
 
 void player::setName(const char *name) {
@@ -133,6 +161,8 @@ void player::readFromPacket(packet_ext &packet) {
     bool imoving = (flags & (1 << 2)) != 0;
     uint8_t idirection = packet.readChar();
 
-    position pos = {float(ix), float(iy), float(imoving), float(idirection)};
+    bool ipunching = (flags & (1 << 3)) != 0;
+
+    position pos = {float(ix), float(iy), float(imoving), float(idirection), float(ipunching)};
     interp.addSnapshot(pos);
 }

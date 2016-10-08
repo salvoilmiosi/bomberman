@@ -10,6 +10,7 @@ struct tile {
         TILE_FLOOR = 0, TILE_SPAWN, TILE_WALL, TILE_BREAKABLE, TILE_ITEM,
     };
     tile_type type;
+    uint8_t item_type;
 };
 
 struct point {
@@ -19,8 +20,8 @@ struct point {
 static const int MAP_WIDTH = 15;
 static const int MAP_HEIGHT = 13;
 
-static const int NUM_BREAKABLES = 60;
-static const int NUM_ITEMS = 20;
+static const int NUM_BREAKABLES = 80;
+static const int NUM_ITEMS = 23;
 
 static const int TILE_SIZE = 100;
 

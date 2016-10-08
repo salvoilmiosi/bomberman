@@ -35,33 +35,31 @@ public:
 
     void addSnapshot(const T &obj) {
         snapshot pos = {obj, SDL_GetTicks() + interp_delay};
-        if (shots.empty()) {
-            last_shot = pos;
-        }
+        last_shot = pos;
         shots.push_back(pos);
     }
 
-    float interpolate(float T::* member) {
+    T interpolate() {
         if (shots.empty()) {
-            return last_shot.obj.*member;
+            return last_shot.obj;
         }
 
         if (shots.size() <= 1) {
-            return shots.back().obj.*member;
+            return shots.back().obj;
         }
 
         float time = SDL_GetTicks();
-        float pos_start = last_shot.obj.*member;
+        T pos_start = last_shot.obj;
         float time_start;
         for (const snapshot &it : shots) {
             if (it.time > time) {
-                float pos_end = it.obj.*member;
+                T pos_end = it.obj;
                 float time_end = it.time;
 
                 float time_amt = (time - time_start) / (time_end - time_start);
                 return pos_start + time_amt * (pos_end - pos_start);
             } else {
-                pos_start = it.obj.*member;
+                pos_start = it.obj;
                 time_start = it.time;
             }
         }

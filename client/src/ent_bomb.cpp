@@ -2,6 +2,21 @@
 
 #include "resources.h"
 
+bomb::position operator + (const bomb::position &a, const bomb::position &b) {
+    bomb::position pos = {a.ix + b.ix, a.iy + b.iy, a.iz + b.iz};
+    return pos;
+}
+
+bomb::position operator - (const bomb::position &a, const bomb::position &b) {
+    bomb::position pos = {a.ix - b.ix, a.iy - b.iy, a.iz - b.iz};
+    return pos;
+}
+
+bomb::position operator * (const float &f, const bomb::position &p) {
+    bomb::position pos = {f * p.ix, f * p.iy, f * p.iz};
+    return pos;
+}
+
 explosion::explosion(game_world *world, uint16_t id, packet_ext &packet) : entity(world, TYPE_EXPLOSION, id) {
     readFromPacket(packet);
 
@@ -14,6 +29,16 @@ bomb::bomb(game_world *world, uint16_t id, packet_ext &packet) : entity(world, T
     create_time = SDL_GetTicks();
 }
 
+void bomb::tick() {
+    interp.tick();
+
+    position pos = interp.interpolate();
+
+    fx = (pos.ix / 100.f) * TILE_SIZE;
+    fy = (pos.iy / 100.f) * TILE_SIZE;
+    fz = pos.iz;
+}
+
 void bomb::render(SDL_Renderer *renderer) {
     static const SDL_Rect src_rects[] = {
         TILE(6, 0), TILE(7, 0), TILE(6, 0), TILE(5, 0)
@@ -22,7 +47,11 @@ void bomb::render(SDL_Renderer *renderer) {
     int time_since_create = SDL_GetTicks() - create_time;
     int frame = ((time_since_create % 1000) * 4 / 1000) % 4;
 
-    SDL_Rect dst_rect = world->tileRect(x, y);
+    SDL_Rect dst_rect = {int(fx), int(fy), TILE_SIZE, TILE_SIZE};
+    dst_rect.x += world->mapLeft();
+    dst_rect.y += world->mapTop();
+    dst_rect.y -= fz;
+
     SDL_RenderCopy(renderer, tileset_texture, src_rects + frame, &dst_rect);
 }
 
@@ -63,7 +92,7 @@ void explosion::render(SDL_Renderer *renderer) {
     };
 
     int time_since_explode = SDL_GetTicks() - explode_time;
-    int frame = (time_since_explode * 9 / 1000) % 9;
+    int frame = (time_since_explode * 9 / 666) % 9;
 
     for (int i=len_l; i>0; --i) {
         SDL_Rect dst_rect = world->tileRect(x - i, y);
@@ -90,14 +119,19 @@ void explosion::render(SDL_Renderer *renderer) {
 }
 
 void bomb::readFromPacket(packet_ext &packet) {
-    x = packet.readChar();
-    y = packet.readChar();
+    int ix = packet.readInt();
+    int iy = packet.readInt();
+    int iz = packet.readInt();
     player_id = packet.readShort();
+
+    position pos = {float(ix), float(iy), float(iz)};
+    interp.addSnapshot(pos);
 }
 
 void explosion::readFromPacket(packet_ext &packet) {
     x = packet.readChar();
     y = packet.readChar();
+
     len_l = packet.readChar();
     len_t = packet.readChar();
     len_r = packet.readChar();

@@ -68,18 +68,21 @@ void handleEvent(const SDL_Event &event) {
 
 void setupBindings() {
     memset(key_bindings, 0, NUM_KEYS);
-    key_bindings[SDL_SCANCODE_UP] = 1;
-    key_bindings[SDL_SCANCODE_W] = 1;
-    key_bindings[SDL_SCANCODE_DOWN] = 2;
-    key_bindings[SDL_SCANCODE_S] = 2;
-    key_bindings[SDL_SCANCODE_LEFT] = 3;
-    key_bindings[SDL_SCANCODE_A] = 3;
-    key_bindings[SDL_SCANCODE_RIGHT] = 4;
-    key_bindings[SDL_SCANCODE_D] = 4;
-    key_bindings[SDL_SCANCODE_SPACE] = 5;
+    key_bindings[SDL_SCANCODE_UP]       = USR_UP;
+    key_bindings[SDL_SCANCODE_W]        = USR_UP;
+    key_bindings[SDL_SCANCODE_DOWN]     = USR_DOWN;
+    key_bindings[SDL_SCANCODE_S]        = USR_DOWN;
+    key_bindings[SDL_SCANCODE_LEFT]     = USR_LEFT;
+    key_bindings[SDL_SCANCODE_A]        = USR_LEFT;
+    key_bindings[SDL_SCANCODE_RIGHT]    = USR_RIGHT;
+    key_bindings[SDL_SCANCODE_D]        = USR_RIGHT;
+    key_bindings[SDL_SCANCODE_SPACE]    = USR_PLANT;
+    key_bindings[SDL_SCANCODE_Z]        = USR_PLANT;
+    key_bindings[SDL_SCANCODE_X]        = USR_PUNCH;
 
     memset(mouse_bindings, 0, NUM_MOUSE_BUTTONS);
-    mouse_bindings[SDL_BUTTON_LEFT] = 5;
+    mouse_bindings[SDL_BUTTON_LEFT] = USR_PLANT;
+    mouse_bindings[SDL_BUTTON_RIGHT] = USR_PUNCH;
 }
 
 int main(int argc, char **argv) {

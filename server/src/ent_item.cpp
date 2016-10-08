@@ -1,15 +1,14 @@
 #include "ent_item.h"
 
 #include "main.h"
+#include "player.h"
 
-game_item::game_item(game_world *world, tile *t) : entity(world, TYPE_ITEM) {
+game_item::game_item(game_world *world, tile *t, uint8_t it_type) : entity(world, TYPE_ITEM), item_type(it_type) {
     tx = world->getMap().getTileX(t);
     ty = world->getMap().getTileY(t);
 
     destroyed = false;
     life_ticks = TICKRATE * 2 / 3;
-
-    item_type = (random_engine() % 3) + ITEM_ADD_BOMB;
 }
 
 void game_item::tick() {
@@ -19,6 +18,29 @@ void game_item::tick() {
         }
         --life_ticks;
     }
+}
+
+void game_item::pickup(player *p) {
+    switch (item_type) {
+    case ITEM_BOMB:
+        ++p->num_bombs;
+        break;
+    case ITEM_FIRE:
+        ++p->explosion_size;
+        break;
+    case ITEM_ROLLERBLADE:
+        p->speed += 0.5f;
+        break;
+    case ITEM_KICK:
+        p->can_kick = true;
+        break;
+    case ITEM_PUNCH:
+        p->can_punch = true;
+        break;
+    default:
+        break;
+    }
+    destroy();
 }
 
 void game_item::writeEntity(packet_ext &packet) {

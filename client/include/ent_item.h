@@ -3,10 +3,6 @@
 
 #include "game_world.h"
 
-static const uint8_t ITEM_ADD_BOMB = 1;
-static const uint8_t ITEM_ADD_LENGTH = 2;
-static const uint8_t ITEM_ADD_SPEED = 3;
-
 class game_item : public entity {
 private:
     uint8_t tx, ty;

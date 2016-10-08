@@ -3,5 +3,6 @@
 IDI_ICON1 ICON "icon.ico"
 IDB_ICON2 PNG "icon.png"
 IDB_TILESET PNG "tileset_full.png"
+IDB_ITEMS PNG "items.png"
 IDB_PLAYERS PNG "players.png"
 IDB_FONT PNG "MDA_8x14.png"

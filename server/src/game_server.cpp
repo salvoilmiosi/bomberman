@@ -190,7 +190,7 @@ void game_server::connectCmd(packet_ext &from) {
         return;
     }
 
-    if (users.size() >= MAX_USERS) {
+    if (users.size() > NUM_PLAYERS + NUM_SPECTATORS) {
         packet_ext packet(socket_serv);
         packet.writeInt(SERV_REJECT);
         packet.writeString("Server is full");
@@ -199,7 +199,7 @@ void game_server::connectCmd(packet_ext &from) {
     }
     char *username = findNewName(from.readString());
 
-    user *u = new user(world, from.getAddress(), username);
+    user *u = new user(from.getAddress(), username);
     users[addrLong(from.getAddress())] = u;
 
     packet_ext packet(socket_serv);
@@ -209,18 +209,23 @@ void game_server::connectCmd(packet_ext &from) {
 
     snapshotPacket(true).sendTo(from.getAddress());
 
-    world->addEntity(u->getPlayer());
+    if (!world->gameHasStarted()) {
+        u->createPlayer(world, users.size() - 1);
+        world->addEntity(u->getPlayer());
 
-    packet_ext packet_self(socket_serv);
-    packet_self.writeInt(SERV_SELF);
-    packet_self.writeShort(u->getPlayer()->getID());
-    packet_self.sendTo(from.getAddress());
+        packet_ext packet_self(socket_serv);
+        packet_self.writeInt(SERV_SELF);
+        packet_self.writeShort(u->getPlayer()->getID());
+        packet_self.sendTo(from.getAddress());
 
-    if (users.size() >= MAX_USERS) {
-        world->startRound(MAX_USERS);
+        if (users.size() >= NUM_PLAYERS) {
+            world->startRound(NUM_PLAYERS);
+        }
+
+        messageToAll("(%s) %s connected", ipString(from.getAddress()), u->getName());
+    } else {
+        messageToAll("(%s) %s joined the spectators", ipString(from.getAddress()), u->getName());
     }
-
-    messageToAll("(%s) %s connected", ipString(from.getAddress()), u->getName());
 }
 
 void game_server::chatCmd(packet_ext &packet) {
@@ -257,8 +262,8 @@ void game_server::disconnectCmd(packet_ext &packet) {
     messageToAll("(%s) %s disconnected\n", ipString(u->getAddress()), u->getName());
 
     u->destroyPlayer();
-    delete u;
     users.erase(addrLong(packet.getAddress()));
+    delete u;
 }
 
 void game_server::pongCmd(packet_ext &from) {
