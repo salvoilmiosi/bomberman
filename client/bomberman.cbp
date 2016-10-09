@@ -53,6 +53,7 @@
 		<Unit filename="include/packet_io.h" />
 		<Unit filename="include/player.h" />
 		<Unit filename="include/resources.h" />
+		<Unit filename="include/score.h" />
 		<Unit filename="resource/resources.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
@@ -70,6 +71,7 @@
 		<Unit filename="src/packet_io.cpp" />
 		<Unit filename="src/player.cpp" />
 		<Unit filename="src/resources.cpp" />
+		<Unit filename="src/score.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

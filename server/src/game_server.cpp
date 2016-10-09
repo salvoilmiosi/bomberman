@@ -2,22 +2,21 @@
 
 #include "player.h"
 
-game_server::game_server(game_world *world) : world(world) {
+game_server::game_server(game_world *world, uint8_t num_players) : world(world) {
+    NUM_PLAYERS = num_players;
     open = false;
-
-    openServer();
 }
 
 game_server::~game_server() {
     closeServer();
 }
 
-bool game_server::openServer() {
+bool game_server::openServer(uint16_t port) {
     if (open)
         return false;
 
     sock_set = SDLNet_AllocSocketSet(1);
-    socket_serv = SDLNet_UDP_Open(PORT);
+    socket_serv = SDLNet_UDP_Open(port);
     if (socket_serv) {
         SDLNet_UDP_AddSocket(sock_set, socket_serv);
         open = true;
@@ -190,7 +189,7 @@ void game_server::connectCmd(packet_ext &from) {
         return;
     }
 
-    if (users.size() > NUM_PLAYERS + NUM_SPECTATORS) {
+    if (users.size() > MAX_USERS) {
         packet_ext packet(socket_serv);
         packet.writeInt(SERV_REJECT);
         packet.writeString("Server is full");
@@ -284,21 +283,27 @@ void game_server::pongCmd(packet_ext &from) {
     sendPing(u);
 }
 
-packet_ext game_server::statusPacket() {
+packet_ext game_server::scorePacket() {
     packet_ext packet(socket_serv);
-    packet.writeInt(SERV_STATUS);
+    packet.writeInt(SERV_SCORE);
     packet.writeShort(users.size());
     for (auto it : users) {
         user *u = it.second;
-        packet.writeShort(u->getID());
-        packet.writeLong(addrLong(u->getAddress()));
         packet.writeString(u->getName());
+        packet.writeShort(u->getPing());
+        if (u->getPlayer()) {
+            packet.writeChar(1);
+            packet.writeChar(u->getPlayer()->getPlayerNum());
+            packet.writeShort(u->getPlayer()->getVictories());
+        } else {
+            packet.writeChar(0);
+        }
     }
     return packet;
 }
 
-void game_server::statusCmd(packet_ext &from) {
-    statusPacket().sendTo(from.getAddress());
+void game_server::scoreCmd(packet_ext &from) {
+    scorePacket().sendTo(from.getAddress());
 }
 
 void game_server::inputCmd(packet_ext &packet) {
@@ -335,8 +340,8 @@ void game_server::handlePacket(packet_ext &packet) {
     case CMD_PONG:
         pongCmd(packet);
         break;
-    case CMD_STATUS:
-        statusCmd(packet);
+    case CMD_SCORE:
+        scoreCmd(packet);
         break;
     case CMD_INPUT:
         inputCmd(packet);

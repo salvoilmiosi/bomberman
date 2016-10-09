@@ -60,14 +60,13 @@ int main(int argc, char **argv) {
 
     setupBindings();
 
-    const char *address = "localhost";
     const char *username = "Salvo";
-    int port = PORT;
-    if (argc >= 4) {
-        address = argv[1];
-        username = argv[2];
-        port = atoi(argv[3]);
-    }
+    const char *address = "localhost";
+    uint16_t port = DEFAULT_PORT;
+
+    if (argc > 1) username = argv[1];
+    if (argc > 2) address = argv[2];
+    if (argc > 3) port = atoi(argv[3]);
 
     if (!client.connect(address, username, port)) {
         fprintf(stderr, "Could not connect to server\n");

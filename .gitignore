@@ -1,2 +1,6 @@
 *.exe
 *.o
+*.res
+*.bat
+*.depend
+*.layout

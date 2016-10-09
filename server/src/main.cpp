@@ -8,6 +8,8 @@
 
 std::default_random_engine random_engine;
 
+static const uint16_t DEFAULT_PORT = 27015;
+
 int main(int argc, char **argv) {
     srand(time(0));
     random_engine.seed(rand());
@@ -21,9 +23,15 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    game_world world;
+    uint8_t num_players = 2;
+    uint16_t port = DEFAULT_PORT;
 
-    int err = world.startServer();
+    if (argc > 1) num_players = atoi(argv[1]);
+    if (argc > 2) port = atoi(argv[2]);
+
+    game_world world(num_players);
+
+    int err = world.startServer(port);
 
     printf("Server quit, returned %d\n", err);
 

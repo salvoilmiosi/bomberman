@@ -17,6 +17,8 @@ player::player(game_world *world, input_handler *handler, uint8_t player_num) : 
     memset(player_name, 0, NAME_SIZE);
 
     do_send_updates = false;
+
+    victories = 0;
 }
 
 void player::respawn(float x, float y) {

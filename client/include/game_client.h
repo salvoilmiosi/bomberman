@@ -6,6 +6,7 @@
 #include "packet_io.h"
 #include "game_world.h"
 #include "chat.h"
+#include "score.h"
 
 static const int TIMEOUT = 2000;
 
@@ -14,7 +15,7 @@ static const uint32_t CMD_CHAT         = str2int("CHAT");
 static const uint32_t CMD_DISCONNECT   = str2int("DCON");
 static const uint32_t CMD_NAME         = str2int("NAME");
 static const uint32_t CMD_PONG         = str2int("PONG");
-static const uint32_t CMD_STATUS       = str2int("STAT");
+static const uint32_t CMD_SCORE        = str2int("SCOR");
 static const uint32_t CMD_INPUT        = str2int("INPU");
 
 static const uint32_t SERV_ACCEPT      = str2int("ACPT");
@@ -23,7 +24,7 @@ static const uint32_t SERV_KICK        = str2int("KICK");
 static const uint32_t SERV_MESSAGE     = str2int("MESG");
 static const uint32_t SERV_PING        = str2int("PING");
 static const uint32_t SERV_PING_MSECS  = str2int("MSEC");
-static const uint32_t SERV_STATUS      = str2int("STAT");
+static const uint32_t SERV_SCORE       = str2int("SCOR");
 static const uint32_t SERV_SNAPSHOT    = str2int("SHOT");
 static const uint32_t SERV_ADD_MANY    = str2int("ADDM");
 static const uint32_t SERV_ADD_ENT     = str2int("ADDO");
@@ -43,10 +44,10 @@ private:
     game_world world;
 
     chat g_chat;
+    score g_score;
 
 public:
     game_client();
-    virtual ~game_client();
 
 public:
     bool connect(const char *address, const char *username, int port);
@@ -70,12 +71,13 @@ public:
     }
 
     void sendChatMessage(const char *message);
+    void sendScorePacket();
 
 private:
     void messageCmd(packet_ext &);
     void pingCmd(packet_ext &);
     void msecCmd(packet_ext &);
-    void statCmd(packet_ext &);
+    void scoreCmd(packet_ext &);
     void snapshotCmd(packet_ext &);
     void addCmd(packet_ext &);
     void remCmd(packet_ext &);

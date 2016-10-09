@@ -40,6 +40,7 @@
 		</Linker>
 		<Unit filename="include/ent_bomb.h" />
 		<Unit filename="include/ent_broken_wall.h" />
+		<Unit filename="include/ent_explosion.h" />
 		<Unit filename="include/ent_item.h" />
 		<Unit filename="include/game_map.h" />
 		<Unit filename="include/game_server.h" />
@@ -52,6 +53,7 @@
 		<Unit filename="include/user.h" />
 		<Unit filename="src/ent_bomb.cpp" />
 		<Unit filename="src/ent_broken_wall.cpp" />
+		<Unit filename="src/ent_explosion.cpp" />
 		<Unit filename="src/ent_item.cpp" />
 		<Unit filename="src/game_map.cpp" />
 		<Unit filename="src/game_server.cpp" />

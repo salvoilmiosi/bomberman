@@ -10,23 +10,20 @@
 #include "packet_io.h"
 #include "user.h"
 
-static const uint16_t PORT = 27015;
-
 static const int TICKRATE = 60;
 static const int MAX_ATTEMPTS = 3;
 static const int TIMEOUT = 1000;
 
 static const int SNAPSHOT_RATE = 1;
 
-static const int NUM_PLAYERS = 2;
-static const int NUM_SPECTATORS = 16;
+static const uint16_t MAX_USERS = 128;
 
 static const uint32_t CMD_CONNECT      = str2int("CONN");
 static const uint32_t CMD_CHAT         = str2int("CHAT");
 static const uint32_t CMD_DISCONNECT   = str2int("DCON");
 static const uint32_t CMD_NAME         = str2int("NAME");
 static const uint32_t CMD_PONG         = str2int("PONG");
-static const uint32_t CMD_STATUS       = str2int("STAT");
+static const uint32_t CMD_SCORE        = str2int("SCOR");
 static const uint32_t CMD_INPUT        = str2int("INPU");
 
 static const uint32_t SERV_ACCEPT      = str2int("ACPT");
@@ -35,7 +32,7 @@ static const uint32_t SERV_KICK        = str2int("KICK");
 static const uint32_t SERV_MESSAGE     = str2int("MESG");
 static const uint32_t SERV_PING        = str2int("PING");
 static const uint32_t SERV_PING_MSECS  = str2int("MSEC");
-static const uint32_t SERV_STATUS      = str2int("STAT");
+static const uint32_t SERV_SCORE       = str2int("SCOR");
 static const uint32_t SERV_SNAPSHOT    = str2int("SHOT");
 static const uint32_t SERV_ADD_ENT     = str2int("ADDO");
 static const uint32_t SERV_REM_ENT     = str2int("REMO");
@@ -63,12 +60,14 @@ private:
 
     class game_world *world;
 
+    uint8_t NUM_PLAYERS;
+
 public:
-    game_server(class game_world *world);
+    game_server(class game_world *world, uint8_t num_players);
     virtual ~game_server();
 
 public:
-    bool openServer();
+    bool openServer(uint16_t port);
     void closeServer();
 
     int run();
@@ -94,7 +93,7 @@ private:
     void sendToAll(const packet_ext &packet);
 
     packet_ext snapshotPacket(bool is_add = false);
-    packet_ext statusPacket();
+    packet_ext scorePacket();
     packet_ext mapPacket();
 
     void connectCmd(packet_ext&);
@@ -102,7 +101,7 @@ private:
     void nameCmd(packet_ext&);
     void disconnectCmd(packet_ext&);
     void pongCmd(packet_ext&);
-    void statusCmd(packet_ext&);
+    void scoreCmd(packet_ext&);
     void quitCmd(packet_ext&);
     void inputCmd(packet_ext&);
 

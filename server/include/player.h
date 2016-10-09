@@ -51,6 +51,8 @@ private:
     int punch_ticks;
     int skull_ticks;
 
+    int victories;
+
 public:
     player(game_world *world, input_handler *handler, uint8_t player_num);
 
@@ -81,6 +83,14 @@ public:
 
     uint8_t getPlayerNum() {
         return player_num;
+    }
+
+    void addVictory() {
+        ++victories;
+    }
+
+    uint16_t getVictories() {
+        return victories;
     }
 
 private:

@@ -17,6 +17,9 @@ static const uint8_t TYPE_ITEM = 5;
 static const size_t SEARCH_SIZE = 8;
 static const int COUNTDOWN_SECONDS = 4;
 
+static const uint8_t WALK_IGNORE_BOMBS = (1 << 0);
+static const uint8_t WALK_BLOCK_PLAYERS = (1 << 1);
+
 class entity {
 private:
     const uint8_t type;
@@ -89,12 +92,14 @@ private:
 
     int ticks_to_start;
 
+    uint8_t NUM_PLAYERS;
+
 public:
-    game_world();
+    game_world(uint8_t num_players);
     virtual ~game_world();
 
 public:
-    int startServer();
+    int startServer(uint16_t port);
 
     void addEntity(entity *ent);
     void removeEntity(entity *ent);
@@ -117,7 +122,7 @@ public:
 
     entity **findEntities(int tx, int ty, uint8_t type = 0);
 
-    bool isWalkable(int tx, int ty, bool ignore_bombs = false);
+    bool isWalkable(int tx, int ty, uint8_t flags = 0);
 
     uint8_t getNextPlayerNum();
 

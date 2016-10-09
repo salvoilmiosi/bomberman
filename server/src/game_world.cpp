@@ -4,7 +4,10 @@
 
 #include <cstring>
 
-game_world::game_world() : server(this) {
+#include "ent_bomb.h"
+
+game_world::game_world(uint8_t num_players) : server(this, num_players) {
+    NUM_PLAYERS = num_players;
     restartGame();
 }
 
@@ -14,9 +17,11 @@ game_world::~game_world() {
 	}
 }
 
-int game_world::startServer() {
+int game_world::startServer(uint16_t port) {
+    server.openServer(port);
+
     if (server.isOpen()) {
-        printf("Server listening on port %d\n", PORT);
+        printf("Server listening on port %d\n", port);
     } else {
         fprintf(stderr, "Could not open server socket: %s\n", SDLNet_GetError());
         return 1;
@@ -87,6 +92,7 @@ void game_world::tick() {
                 player *p = dynamic_cast<player*>(ent);
                 if (p->isAlive()) {
                     server.messageToAll(COLOR_RED, "%s won round %d!", p->getName(), round_num);
+                    p->addVictory();
                     break;
                 }
             }
@@ -163,7 +169,7 @@ entity **game_world::findEntities(int tx, int ty, uint8_t type) {
     return ents;
 }
 
-bool game_world::isWalkable(int tx, int ty, bool ignore_bombs) {
+bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
     tile *t = getMap().getTile(tx, ty);
     if (!t) return false;
 
@@ -173,9 +179,23 @@ bool game_world::isWalkable(int tx, int ty, bool ignore_bombs) {
         if (!ent) break;
         switch (ent->getType()) {
         case TYPE_BOMB:
-            if (ignore_bombs) {
+            if (flags & WALK_IGNORE_BOMBS) {
                 break;
+            } else {
+                bomb *b = dynamic_cast<bomb*>(ent);
+                if (b && b->isFlying()) {
+                    break;
+                }
             }
+            return false;
+        case TYPE_PLAYER:
+            if (flags & WALK_BLOCK_PLAYERS) {
+                player *p = dynamic_cast<player *>(ent);
+                if (p && p->isAlive()) {
+                    return false;
+                }
+            }
+            break;
         case TYPE_BROKEN_WALL:
             return false;
         }

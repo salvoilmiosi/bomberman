@@ -6,12 +6,7 @@
 
 #include <windows.h>
 
-game_client::game_client() : g_chat(this) {
-}
-
-game_client::~game_client() {
-
-}
+game_client::game_client() : g_chat(this), g_score(this) {}
 
 bool game_client::connect(const char *address, const char *username, int port) {
     sock_set = SDLNet_AllocSocketSet(1);
@@ -93,6 +88,7 @@ bool game_client::tick() {
 
     world.tick();
     g_chat.tick();
+    g_score.tick();
 
     while (true) {
         packet_ext packet(socket, true);
@@ -114,8 +110,8 @@ bool game_client::tick() {
         case SERV_PING_MSECS:
             msecCmd(packet);
             break;
-        case SERV_STATUS:
-            statCmd(packet);
+        case SERV_SCORE:
+            scoreCmd(packet);
             break;
         case SERV_SNAPSHOT:
             snapshotCmd(packet);
@@ -145,6 +141,7 @@ bool game_client::tick() {
 void game_client::render(SDL_Renderer *renderer) {
     world.render(renderer);
     g_chat.render(renderer);
+    g_score.render(renderer);
 }
 
 void game_client::handleEvent(const SDL_Event &event) {
@@ -155,14 +152,30 @@ void game_client::handleEvent(const SDL_Event &event) {
     bool down = false;
     switch(event.type) {
     case SDL_KEYDOWN:
-    case SDL_KEYUP:
-        down = event.type == SDL_KEYDOWN;
-        if (!down && event.key.keysym.scancode == SDL_SCANCODE_T) {
-            g_chat.startTyping();
+        switch (event.key.keysym.scancode) {
+        case SDL_SCANCODE_TAB:
+            g_score.show(true);
+            break;
+        default:
+            if (!event.key.repeat) {
+                sendInput(getKeyBinding(event.key.keysym.scancode), true);
+            }
             break;
         }
-        if (!event.key.repeat) {
-            sendInput(getKeyBinding(event.key.keysym.scancode), down);
+        break;
+    case SDL_KEYUP:
+        switch (event.key.keysym.scancode) {
+        case SDL_SCANCODE_TAB:
+            g_score.show(false);
+            break;
+        case SDL_SCANCODE_T:
+            g_chat.startTyping();
+            break;
+        default:
+            if (!event.key.repeat) {
+                sendInput(getKeyBinding(event.key.keysym.scancode), false);
+            }
+            break;
         }
         break;
     case SDL_MOUSEMOTION:
@@ -180,6 +193,12 @@ void game_client::sendChatMessage(const char *message) {
     packet_ext packet(socket);
     packet.writeInt(CMD_CHAT);
     packet.writeString(message);
+    packet.sendTo(server_ip);
+}
+
+void game_client::sendScorePacket() {
+    packet_ext packet(socket);
+    packet.writeInt(CMD_SCORE);
     packet.sendTo(server_ip);
 }
 
@@ -201,8 +220,8 @@ void game_client::msecCmd(packet_ext &from) {
     ping_msecs = from.readShort();
 }
 
-void game_client::statCmd(packet_ext &packet) {
-    // TODO scoreboard
+void game_client::scoreCmd(packet_ext &packet) {
+    g_score.handlePacket(packet);
 }
 
 void game_client::snapshotCmd(packet_ext &packet) {

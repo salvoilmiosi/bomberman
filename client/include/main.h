@@ -8,6 +8,6 @@ static const int WINDOW_HEIGHT = 700;
 static const int FPS = 300;
 static const int TICKRATE = 300;
 
-static const int PORT = 27015;
+static const int DEFAULT_PORT = 27015;
 
 #endif // __MAIN_H__
