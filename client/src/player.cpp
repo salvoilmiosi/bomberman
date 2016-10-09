@@ -4,6 +4,7 @@
 
 #include "resources.h"
 #include "main.h"
+#include "chat.h"
 
 player::position operator + (const player::position &a, const player::position &b) {
     player::position pos = {a.ix + b.ix, a.iy + b.iy, a.imoving + b.imoving, a.idirection + b.idirection, a.ipunching + b.ipunching};
@@ -26,9 +27,9 @@ player::player(game_world *world, uint16_t id, packet_ext &packet) : entity(worl
 }
 
 void player::tick() {
-    interp.tick();
-
     position ip = interp.interpolate();
+
+    interp.tick();
 
     x = (ip.ix / 100.f + 0.5f) * TILE_SIZE;
     y = (ip.iy / 100.f + 0.5f) * TILE_SIZE;
@@ -134,7 +135,23 @@ void player::render(SDL_Renderer *renderer) {
     dst_rect.x = world->mapLeft() + (int)x - TILE_SIZE / 2;
     dst_rect.y = world->mapTop() + (int)y - TILE_SIZE;
 
+    bool render_black = false;
+    if (diseased) {
+        int frame = (SDL_GetTicks() * 3 / 1000) % 2;
+        render_black = frame == 0;
+    }
+
+    if (render_black) {
+        SDL_SetTextureColorMod(players_texture, 0, 0, 0);
+    } else {
+        SDL_SetTextureColorMod(players_texture, 0xff, 0xff, 0xff);
+    }
+
     SDL_RenderCopyEx(renderer, players_texture, &src_rect, &dst_rect, 0, nullptr, flip);
+
+    int name_x = dst_rect.x + (dst_rect.w - (int)strlen(player_name) * CHAR_W) / 2;
+    int name_y = dst_rect.y - CHAR_H;
+    renderText(name_x, name_y, renderer, player_name, is_self ? 0xffff00ff : 0xffffffff);
 }
 
 void player::setName(const char *name) {
@@ -162,6 +179,8 @@ void player::readFromPacket(packet_ext &packet) {
     uint8_t idirection = packet.readChar();
 
     bool ipunching = (flags & (1 << 3)) != 0;
+
+    diseased = (flags & (1 << 4)) != 0;
 
     position pos = {float(ix), float(iy), float(imoving), float(idirection), float(ipunching)};
     interp.addSnapshot(pos);

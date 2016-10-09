@@ -50,7 +50,7 @@ public:
 
         float time = SDL_GetTicks();
         T pos_start = last_shot.obj;
-        float time_start;
+        float time_start = last_shot.time;
         for (const snapshot &it : shots) {
             if (it.time > time) {
                 T pos_end = it.obj;
@@ -64,7 +64,7 @@ public:
             }
         }
 
-        return pos_start;
+        return last_shot.obj;
     }
 
     void clear() {

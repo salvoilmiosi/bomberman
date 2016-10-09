@@ -7,7 +7,7 @@
 SDL_Texture *tileset_texture = nullptr;
 SDL_Texture *items_texture = nullptr;
 SDL_Texture *players_texture = nullptr;
-SDL_Texture *font_texture = nullptr;
+SDL_Texture *text_texture = nullptr;
 SDL_Surface *icon_surface = nullptr;
 
 SDL_Surface *loadSurface(int res_id) {
@@ -37,13 +37,13 @@ void loadResources(SDL_Renderer *renderer) {
     SDL_Surface *players_surface = loadSurface(IDB_PLAYERS);
     players_texture = SDL_CreateTextureFromSurface(renderer, players_surface);
 
-    SDL_Surface *font_surface = loadSurface(IDB_FONT);
-    font_texture = SDL_CreateTextureFromSurface(renderer, font_surface);
+    SDL_Surface *text_surface = loadSurface(IDB_TEXT);
+    text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
 
     SDL_FreeSurface(tileset_surface);
     SDL_FreeSurface(items_surface);
     SDL_FreeSurface(players_surface);
-    SDL_FreeSurface(font_surface);
+    SDL_FreeSurface(text_surface);
 
     icon_surface = loadSurface(IDB_ICON2);
 }
@@ -52,7 +52,7 @@ void clearResources() {
     SDL_DestroyTexture(tileset_texture);
     SDL_DestroyTexture(items_texture);
     SDL_DestroyTexture(players_texture);
-    SDL_DestroyTexture(font_texture);
+    SDL_DestroyTexture(text_texture);
 
     SDL_FreeSurface(icon_surface);
 }

@@ -3,11 +3,14 @@
 
 #include "game_world.h"
 
+static const float EXPLOSION_LIFE = TICKRATE * 2 / 3;
+static const float BOMB_LIFE = TICKRATE * 3;
+
 static const float KICK_SPEED = 10.f;
-static const float PUNCH_SPEED = 15.f;
+static const float PUNCH_SPEED = 18.f;
 static const float PUNCH_SPEED_Z = 10.f;
 static const float Z_ACCEL = 0.8f;
-static const float XY_BOUNCE = 0.8f;
+static const float XY_BOUNCE = 0.7f;
 static const float Z_BOUNCE = 0.65f;
 
 class explosion : public entity {

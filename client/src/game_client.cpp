@@ -2,8 +2,11 @@
 
 #include "game_world.h"
 #include "player.h"
+#include "bindings.h"
 
-game_client::game_client() {
+#include <windows.h>
+
+game_client::game_client() : g_chat(this) {
 }
 
 game_client::~game_client() {
@@ -67,6 +70,7 @@ void game_client::disconnect() {
 }
 
 bool game_client::sendInput(uint8_t cmd, bool down) {
+    if (cmd == 0) return false;
     packet_ext packet(socket);
     packet.writeInt(CMD_INPUT);
     packet.writeInt(str2int("KBRD"));
@@ -88,6 +92,7 @@ bool game_client::tick() {
     static int last_recv_time;
 
     world.tick();
+    g_chat.tick();
 
     while (true) {
         packet_ext packet(socket, true);
@@ -137,13 +142,58 @@ bool game_client::tick() {
     return true;
 }
 
+void game_client::render(SDL_Renderer *renderer) {
+    world.render(renderer);
+    g_chat.render(renderer);
+}
+
+void game_client::handleEvent(const SDL_Event &event) {
+    if (g_chat.isTyping()) {
+        g_chat.handleEvent(event);
+        return;
+    }
+    bool down = false;
+    switch(event.type) {
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+        down = event.type == SDL_KEYDOWN;
+        if (!down && event.key.keysym.scancode == SDL_SCANCODE_T) {
+            g_chat.startTyping();
+            break;
+        }
+        if (!event.key.repeat) {
+            sendInput(getKeyBinding(event.key.keysym.scancode), down);
+        }
+        break;
+    case SDL_MOUSEMOTION:
+        //sendMouse(event.motion.x, event.motion.y);
+        break;
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
+        down = event.type == SDL_MOUSEBUTTONDOWN;
+        sendInput(getMouseBinding(event.button.button), down);
+        break;
+    }
+}
+
+void game_client::sendChatMessage(const char *message) {
+    packet_ext packet(socket);
+    packet.writeInt(CMD_CHAT);
+    packet.writeString(message);
+    packet.sendTo(server_ip);
+}
+
 void game_client::messageCmd(packet_ext &packet) {
-    printf("%s\n", packet.readString());
+    char *message = packet.readString();
+    uint32_t color = packet.readInt();
+
+    printf("%s\n", message);
+    g_chat.addLine(message, color);
 }
 
 void game_client::pingCmd(packet_ext &from) {
     packet_ext packet(socket);
-    packet.writeInt(str2int("PONG"));
+    packet.writeInt(CMD_PONG);
     packet.sendTo(server_ip);
 }
 

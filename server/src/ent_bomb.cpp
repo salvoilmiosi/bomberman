@@ -12,7 +12,7 @@ explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION)
     tx = b->getTileX();
     ty = b->getTileY();
 
-    life_ticks = TICKRATE * 2 / 3;
+    life_ticks = EXPLOSION_LIFE;
 
     int explode_size = b->explode_size;
 
@@ -138,9 +138,13 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
     fy = p->getTileY() * TILE_SIZE;
     fz = 0.f;
 
-    life_ticks = TICKRATE * 4;
+    life_ticks = BOMB_LIFE;
 
-    explode_size = p->explosion_size;
+    if (p->skull_effect == SKULL_LOW_POWER) {
+        explode_size = 1;
+    } else {
+        explode_size = p->explosion_size;
+    }
 
     piercing = false;
     kicked = false;
@@ -176,7 +180,8 @@ void bomb::kick(uint8_t direction) {
 }
 
 void bomb::punch(uint8_t direction) {
-    if (kicked || punched) return;
+    if (kicked) kicked = false;
+    if (punched) return;
 
     switch (direction) {
     case 0:

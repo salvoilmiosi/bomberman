@@ -5,6 +5,7 @@
 
 #include "packet_io.h"
 #include "game_world.h"
+#include "chat.h"
 
 static const int TIMEOUT = 2000;
 
@@ -41,6 +42,8 @@ private:
 private:
     game_world world;
 
+    chat g_chat;
+
 public:
     game_client();
     virtual ~game_client();
@@ -50,6 +53,10 @@ public:
     void disconnect();
 
     bool tick();
+
+    void render(SDL_Renderer *renderer);
+
+    void handleEvent(const SDL_Event &event);
 
     bool sendInput(uint8_t cmd, bool down);
     bool sendMouse(int x, int y);
@@ -61,6 +68,8 @@ public:
     game_world &getWorld() {
         return world;
     }
+
+    void sendChatMessage(const char *message);
 
 private:
     void messageCmd(packet_ext &);

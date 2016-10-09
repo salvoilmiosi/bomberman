@@ -3,6 +3,8 @@
 
 #include "game_world.h"
 
+static const float BROKEN_WALL_LIFE = TICKRATE * 2 / 3;
+
 class broken_wall : public entity {
 private:
     uint8_t tx;

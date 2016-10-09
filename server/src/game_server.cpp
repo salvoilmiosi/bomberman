@@ -99,7 +99,7 @@ int game_server::game_thread_run() {
                 sendPing(u);
             }
             if (u->pingAttempts() > MAX_ATTEMPTS) {
-                messageToAll("(%s) %s timed out", ipString(u->getAddress()), u->getName());
+                messageToAll(COLOR_YELLOW, "(%s) %s timed out", ipString(u->getAddress()), u->getName());
                 u->destroyPlayer();
                 delete u;
                 it = users.erase(it);
@@ -209,8 +209,8 @@ void game_server::connectCmd(packet_ext &from) {
 
     snapshotPacket(true).sendTo(from.getAddress());
 
-    if (!world->gameHasStarted()) {
-        u->createPlayer(world, users.size() - 1);
+    if (users.size() <= NUM_PLAYERS) {
+        u->createPlayer(world, world->getNextPlayerNum());
         world->addEntity(u->getPlayer());
 
         packet_ext packet_self(socket_serv);
@@ -218,13 +218,13 @@ void game_server::connectCmd(packet_ext &from) {
         packet_self.writeShort(u->getPlayer()->getID());
         packet_self.sendTo(from.getAddress());
 
-        if (users.size() >= NUM_PLAYERS) {
-            world->startRound(NUM_PLAYERS);
-        }
+        messageToAll(COLOR_YELLOW, "%s connected", u->getName());
 
-        messageToAll("(%s) %s connected", ipString(from.getAddress()), u->getName());
+        if (users.size() == NUM_PLAYERS) {
+            world->startRound();
+        }
     } else {
-        messageToAll("(%s) %s joined the spectators", ipString(from.getAddress()), u->getName());
+        messageToAll(COLOR_YELLOW, "%s joined the spectators", u->getName());
     }
 }
 
@@ -237,7 +237,7 @@ void game_server::chatCmd(packet_ext &packet) {
 
     char *message = packet.readString();
 
-    messageToAll("(%s) %s : %s", ipString(packet.getAddress()), u->getName(), message);
+    messageToAll(COLOR_WHITE, "%s : %s", u->getName(), message);
 }
 
 void game_server::nameCmd(packet_ext &packet) {
@@ -249,7 +249,7 @@ void game_server::nameCmd(packet_ext &packet) {
 
     char *newName = findNewName(packet.readString());
 
-    messageToAll("(%s) %s changed name to %s\n", ipString(u->getAddress()), u->getName(), newName);
+    messageToAll(COLOR_YELLOW, "%s changed name to %s\n", u->getName(), newName);
 }
 
 void game_server::disconnectCmd(packet_ext &packet) {
@@ -259,7 +259,7 @@ void game_server::disconnectCmd(packet_ext &packet) {
         return;
     }
 
-    messageToAll("(%s) %s disconnected\n", ipString(u->getAddress()), u->getName());
+    messageToAll(COLOR_YELLOW, "%s disconnected", u->getName());
 
     u->destroyPlayer();
     users.erase(addrLong(packet.getAddress()));
@@ -346,10 +346,11 @@ void game_server::handlePacket(packet_ext &packet) {
     }
 }
 
-void game_server::messageToAll(const char *message) {
+void game_server::messageToAll(uint32_t color, const char *message) {
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_MESSAGE);
     packet.writeString(message);
+    packet.writeInt(color);
 
     sendToAll(packet);
 

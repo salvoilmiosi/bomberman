@@ -6,7 +6,7 @@
 #define IDB_TILESET 3
 #define IDB_ITEMS 4
 #define IDB_PLAYERS 5
-#define IDB_FONT 6
+#define IDB_TEXT 6
 
 #ifdef __cplusplus
 
@@ -17,7 +17,7 @@
 extern SDL_Texture *tileset_texture;
 extern SDL_Texture *items_texture;
 extern SDL_Texture *players_texture;
-extern SDL_Texture *font_texture;
+extern SDL_Texture *text_texture;
 
 extern SDL_Surface *icon_surface;
 

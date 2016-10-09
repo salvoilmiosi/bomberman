@@ -10,7 +10,7 @@ user::user(const IPaddress &address, const char *name) : address(address) {
     ping_msecs = -1;
     attempts = 0;
 
-    strncpy(username, name, USER_NAME_SIZE);
+    strncpy(username, name, NAME_SIZE);
 }
 
 bool user::pingCmd(bool force) {

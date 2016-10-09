@@ -5,7 +5,7 @@ broken_wall::broken_wall(game_world *world, tile *t) : entity(world, TYPE_BROKEN
     tx = world->getMap().getTileX(t);
     ty = world->getMap().getTileY(t);
 
-    life_ticks = TICKRATE * 2 / 3;
+    life_ticks = BROKEN_WALL_LIFE;
 
     drop_item = t->type == tile::TILE_ITEM;
     item_type = t->item_type;

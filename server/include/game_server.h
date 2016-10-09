@@ -18,7 +18,7 @@ static const int TIMEOUT = 1000;
 
 static const int SNAPSHOT_RATE = 1;
 
-static const int NUM_PLAYERS = 1;
+static const int NUM_PLAYERS = 2;
 static const int NUM_SPECTATORS = 16;
 
 static const uint32_t CMD_CONNECT      = str2int("CONN");
@@ -41,6 +41,15 @@ static const uint32_t SERV_ADD_ENT     = str2int("ADDO");
 static const uint32_t SERV_REM_ENT     = str2int("REMO");
 static const uint32_t SERV_SELF        = str2int("SELF");
 static const uint32_t SERV_MAP         = str2int("MAPP");
+
+static const uint32_t COLOR_RED        = 0xff0000ff;
+static const uint32_t COLOR_GREEN      = 0x00ff00ff;
+static const uint32_t COLOR_BLUE       = 0x0000ffff;
+static const uint32_t COLOR_MAGENTA    = 0xff00ffff;
+static const uint32_t COLOR_YELLOW     = 0xffff00ff;
+static const uint32_t COLOR_CYAN       = 0x00ffffff;
+static const uint32_t COLOR_BLACK      = 0x000000ff;
+static const uint32_t COLOR_WHITE      = 0xffffffff;
 
 class game_server {
 private:
@@ -98,13 +107,13 @@ private:
     void inputCmd(packet_ext&);
 
 public:
-    void messageToAll(const char *message);
+    void messageToAll(uint32_t color, const char *message);
 
-    template<typename ... T> void messageToAll(const char *format, T ... args) {
+    template<typename ... T> void messageToAll(uint32_t color, const char *format, T ... args) {
         char message[128];
         snprintf(message, 128, format, args ...);
 
-        messageToAll(message);
+        messageToAll(color, message);
     }
 };
 

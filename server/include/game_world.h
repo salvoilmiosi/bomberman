@@ -15,6 +15,7 @@ static const uint8_t TYPE_BROKEN_WALL = 4;
 static const uint8_t TYPE_ITEM = 5;
 
 static const size_t SEARCH_SIZE = 8;
+static const int COUNTDOWN_SECONDS = 4;
 
 class entity {
 private:
@@ -83,12 +84,8 @@ private:
     std::set <entity *> entities;
     game_map g_map;
 
-    bool game_started;
     bool round_started;
     int round_num;
-
-    int num_players;
-    int alive_players;
 
     int ticks_to_start;
 
@@ -104,27 +101,25 @@ public:
 
     void tick();
 
-    void playerDied(player *dead);
-
     void writeEntitiesToPacket(packet_ext &packet, bool is_add = false);
 
     void writeMapToPacket(packet_ext &packet) {
         g_map.writeToPacket(packet);
     }
 
-    void startRound(int num_players);
+    void restartGame();
+
+    void startRound();
 
     const game_map &getMap() {
         return g_map;
     }
 
-    bool gameHasStarted() {
-        return game_started;
-    }
-
     entity **findEntities(int tx, int ty, uint8_t type = 0);
 
     bool isWalkable(int tx, int ty, bool ignore_bombs = false);
+
+    uint8_t getNextPlayerNum();
 
 private:
     void countdownEnd();

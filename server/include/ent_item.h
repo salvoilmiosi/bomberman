@@ -10,6 +10,16 @@ static const uint8_t ITEM_KICK = 4;
 static const uint8_t ITEM_PUNCH = 5;
 static const uint8_t ITEM_SKULL = 6;
 
+static const uint8_t SKULL_RAPID_PACE = 1;
+static const uint8_t SKULL_SLOW_PACE = 2;
+static const uint8_t SKULL_DIARRHEA = 3;
+static const uint8_t SKULL_LOW_POWER = 4;
+static const uint8_t SKULL_CONSTIPATION = 5;
+
+static const int SKULL_LIFE = TICKRATE * 20;
+
+static const int ITEM_EXPLOSION_LIFE = TICKRATE * 2 / 3;
+
 class game_item : public entity {
 private:
     uint8_t tx, ty;

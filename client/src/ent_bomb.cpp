@@ -30,9 +30,9 @@ bomb::bomb(game_world *world, uint16_t id, packet_ext &packet) : entity(world, T
 }
 
 void bomb::tick() {
-    interp.tick();
-
     position pos = interp.interpolate();
+
+    interp.tick();
 
     fx = (pos.ix / 100.f) * TILE_SIZE;
     fy = (pos.iy / 100.f) * TILE_SIZE;

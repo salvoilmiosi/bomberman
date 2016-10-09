@@ -29,7 +29,7 @@ void game_item::pickup(player *p) {
         ++p->explosion_size;
         break;
     case ITEM_ROLLERBLADE:
-        p->speed += 0.5f;
+        p->speed += 1.f;
         break;
     case ITEM_KICK:
         p->can_kick = true;
@@ -37,7 +37,9 @@ void game_item::pickup(player *p) {
     case ITEM_PUNCH:
         p->can_punch = true;
         break;
-    default:
+    case ITEM_SKULL:
+        p->skull_ticks = SKULL_LIFE;
+        p->skull_effect = random_engine() % 5 + 1;
         break;
     }
     destroy();

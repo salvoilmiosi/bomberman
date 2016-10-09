@@ -5,11 +5,7 @@
 #include <cstring>
 
 game_world::game_world() : server(this) {
-    game_started = false;
-    round_started = false;
-    round_num = 0;
-    alive_players = 0;
-    ticks_to_start = 0;
+    restartGame();
 }
 
 game_world::~game_world() {
@@ -46,27 +42,62 @@ void game_world::removeEntity(entity *ent) {
 }
 
 void game_world::tick() {
-    if (game_started) {
-        if (ticks_to_start == 0) {
-            server.messageToAll("Good luck, have fun!");
-            countdownEnd();
-        }
-        if (ticks_to_start > 0 && ticks_to_start % TICKRATE == 0) {
-            int seconds = ticks_to_start / TICKRATE;
-            server.messageToAll("Round %d begins in %d seconds", round_num, seconds);
-        }
-        --ticks_to_start;
+    if (!round_started) return;
+
+    --ticks_to_start;
+
+    if (ticks_to_start == 0) {
+        server.messageToAll(COLOR_RED, "Round %d, fight!", round_num);
+        countdownEnd();
+    } else if (ticks_to_start > 0 && ticks_to_start % TICKRATE == 0) {
+        int seconds = ticks_to_start / TICKRATE;
+        server.messageToAll(COLOR_GREEN, "Round %d begins in %d seconds", round_num, seconds);
     }
+
+    int alive_players = 0;
+    int num_players = 0;
+
     auto it = entities.begin();
     while (it != entities.end()) {
         entity *ent = *it;
         if (ent && ent->isNotDestroyed()) {
+            if (ent->getType() == TYPE_PLAYER) {
+                player *p = dynamic_cast<player*>(ent);
+                if (p->isAlive()) {
+                    ++alive_players;
+                }
+                ++num_players;
+            }
             ent->tick();
             ++it;
         } else {
             it = entities.erase(it);
             removeEntity(ent);
             delete ent;
+        }
+    }
+
+    bool round_end = alive_players <= (NUM_PLAYERS == 1 ? 0 : 1);
+    if (ticks_to_start < 0 && round_started && round_end) {
+        if (alive_players == 0) {
+            server.messageToAll(COLOR_RED, "DRAW!");
+        }
+        for (entity *ent : entities) {
+            if (ent && ent->isNotDestroyed() && ent->getType() == TYPE_PLAYER) {
+                player *p = dynamic_cast<player*>(ent);
+                if (p->isAlive()) {
+                    server.messageToAll(COLOR_RED, "%s won round %d!", p->getName(), round_num);
+                    break;
+                }
+            }
+        }
+        round_started = false;
+        if (num_players == alive_players) {
+            server.messageToAll(COLOR_RED, "Match is forfeited.");
+            server.closeServer();
+            //restartGame();
+        } else {
+            startRound();
         }
     }
 }
@@ -80,45 +111,24 @@ void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
     }
 }
 
-void game_world::playerDied(player *dead) {
-    if (dead->isAlive()) return;
-    if (!round_started) return;
-
-    --alive_players;
-
-    if (alive_players <= 1) {
-        if (alive_players == 0) {
-            server.messageToAll("DRAW!");
-        }
-        for (entity *ent : entities) {
-            if (ent && ent->isNotDestroyed() && ent->getType() == TYPE_PLAYER) {
-                player *p = dynamic_cast<player*>(ent);
-                if (p->isAlive()) {
-                    server.messageToAll("%s won round %d!", p->getName(), round_num);
-                    break;
-                }
-            }
-        }
-        round_started = false;
-        startRound(num_players);
-    }
+void game_world::restartGame() {
+    round_started = false;
+    round_num = 0;
+    ticks_to_start = 0;
 }
 
-void game_world::startRound(int numplayers) {
+void game_world::startRound() {
     if (round_started) return;
     if (ticks_to_start > 0) return;
-    game_started = true;
 
     ++round_num;
-    alive_players = 0;
 
-    num_players = numplayers;
-    ticks_to_start = TICKRATE * 4;
+    ticks_to_start = TICKRATE * COUNTDOWN_SECONDS;
+    round_started = true;
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_players);
-    round_started = true;
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, NUM_PLAYERS);
 
     for (entity *ent : entities) {
         if (ent && ent->isNotDestroyed()) {
@@ -128,7 +138,6 @@ void game_world::countdownEnd() {
                     player *p = (player *)ent;
                     point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
                     p->respawn(spawn_pt.x * TILE_SIZE, spawn_pt.y * TILE_SIZE);
-                    ++alive_players;
                 }
                 break;
             default:
@@ -179,5 +188,30 @@ bool game_world::isWalkable(int tx, int ty, bool ignore_bombs) {
         return false;
     default:
         return true;
+    }
+}
+
+uint8_t game_world::getNextPlayerNum() {
+    uint8_t nums[4];
+    size_t i = 0;
+    for (entity *ent : entities) {
+        if (ent && ent->getType() == TYPE_PLAYER) {
+            player *p = dynamic_cast<player*>(ent);
+            nums[i] = p->getPlayerNum();
+            ++i;
+        }
+    }
+    uint8_t num = 0;
+    while(true) {
+        uint8_t j;
+        for (j=0; j<i; ++j) {
+            if (num == nums[j]) {
+                ++num;
+                break;
+            }
+        }
+        if (j==i) {
+            return num;
+        }
     }
 }

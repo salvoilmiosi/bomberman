@@ -6,7 +6,10 @@
 
 #include <deque>
 
-static const size_t USER_NAME_SIZE = 32;
+static const size_t PLAYERNAME_SIZE = 32;
+static const float MOVE_TILE = 0.3f;
+static const int PLAYER_DEATH_TICKS = TICKRATE / 3;
+static const int PLAYER_PUNCH_TICKS = TICKRATE / 4;
 
 class player: public entity {
 private:
@@ -15,7 +18,7 @@ private:
 
     input_handler *handler = nullptr;
 
-    char player_name[USER_NAME_SIZE];
+    char player_name[PLAYERNAME_SIZE];
 
     uint8_t player_num;
 
@@ -43,8 +46,10 @@ private:
 
     bool can_kick;
     bool can_punch;
+    int skull_effect;
 
     int punch_ticks;
+    int skull_ticks;
 
 public:
     player(game_world *world, input_handler *handler, uint8_t player_num);
