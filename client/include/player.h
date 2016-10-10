@@ -41,7 +41,7 @@ private:
     interpolator<position> interp;
 
 public:
-    player(game_world *world, uint16_t id, packet_ext &packet);
+    player(game_world *world, uint16_t id, byte_array &ba);
 
 public:
     void tick();
@@ -51,11 +51,11 @@ public:
     void setName(const char *name);
     const char *getName();
 
-    void readFromPacket(packet_ext &packet);
-
     void setSelf(bool s) {
         is_self = s;
     }
+
+    void readFromByteArray(byte_array &ba);
 };
 
 #endif // __PLAYER_H__

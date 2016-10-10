@@ -21,9 +21,9 @@ player::position operator * (const float &f, const player::position &p) {
     return pos;
 }
 
-player::player(game_world *world, uint16_t id, packet_ext &packet) : entity(world, TYPE_PLAYER, id) {
+player::player(game_world *world, uint16_t id, byte_array &ba) : entity(world, TYPE_PLAYER, id) {
+    readFromByteArray(ba);
     is_self = false;
-    readFromPacket(packet);
 }
 
 void player::tick() {
@@ -55,17 +55,17 @@ static inline SDL_Rect getSprite(int x, int y, int player_num) {
         x += 6;
         break;
     case 2:
+        x += 6;
         y += 4;
         break;
     case 3:
-        x += 6;
         y += 4;
         break;
     }
 
     if (y > 6) {
         y -= 4;
-        x += 4;
+        x += 3;
     }
 
     SDL_Rect rect = {x * 16, y * 24, 16, 24};
@@ -162,21 +162,21 @@ const char *player::getName() {
     return player_name;
 }
 
-void player::readFromPacket(packet_ext &packet) {
-    int ix = packet.readInt();
-    int iy = packet.readInt();
+void player::readFromByteArray(byte_array &ba) {
+    int ix = ba.readInt();
+    int iy = ba.readInt();
 
-    setName(packet.readString());
+    setName(ba.readString());
 
-    player_num = packet.readChar();
+    player_num = ba.readChar();
 
-    uint8_t flags = packet.readChar();
+    uint8_t flags = ba.readChar();
 
     alive = (flags & (1 << 0)) != 0;
     spawned = (flags & (1 << 1)) != 0;
 
     bool imoving = (flags & (1 << 2)) != 0;
-    uint8_t idirection = packet.readChar();
+    uint8_t idirection = ba.readChar();
 
     bool ipunching = (flags & (1 << 3)) != 0;
 

@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "ent_bomb.h"
+#include "main.h"
 
 game_world::game_world(uint8_t num_players) : server(this, num_players) {
     NUM_PLAYERS = num_players;
@@ -109,7 +110,6 @@ void game_world::tick() {
 }
 
 void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
-    packet.writeShort(entities.size());
     for(entity *ent : entities) {
         if (ent && ent->isNotDestroyed() && (is_add || ent->doSendUpdates())) {
             ent->writeToPacket(packet);
@@ -134,7 +134,7 @@ void game_world::startRound() {
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, NUM_PLAYERS);
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, NUM_PLAYERS, random_engine() % 2);
 
     for (entity *ent : entities) {
         if (ent && ent->isNotDestroyed()) {
@@ -202,9 +202,9 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
     }
 
     switch(t->type) {
-    case tile::TILE_WALL:
-    case tile::TILE_BREAKABLE:
-    case tile::TILE_ITEM:
+    case TILE_WALL:
+    case TILE_BREAKABLE:
+    case TILE_ITEM:
         return false;
     default:
         return true;

@@ -5,23 +5,23 @@
 
 #include <packet_io.h>
 
+static const uint8_t TILE_FLOOR = 0;
+static const uint8_t TILE_SPAWN = 1;
+static const uint8_t TILE_WALL = 2;
+static const uint8_t TILE_BREAKABLE = 3;
+static const uint8_t TILE_ITEM = 4;
+
 struct tile {
-    enum tile_type {
-        TILE_FLOOR = 0, TILE_SPAWN, TILE_WALL, TILE_BREAKABLE, TILE_ITEM,
-    };
-    tile_type type;
-    uint8_t item_type;
+    uint8_t type;
+    uint8_t data;
 };
 
 struct point {
     int x, y;
 };
 
-static const int MAP_WIDTH = 15;
+static const int MAP_WIDTH = 17;
 static const int MAP_HEIGHT = 13;
-
-static const int NUM_BREAKABLES = 80;
-static const int NUM_ITEMS = 23;
 
 static const int TILE_SIZE = 100;
 
@@ -32,6 +32,8 @@ private:
     int width;
     int height;
 
+    int zone;
+
     std::vector<point> spawn_pts;
 
 public:
@@ -39,7 +41,11 @@ public:
     virtual ~game_map();
 
 public:
-    void createMap(int w, int h, int num_players);
+    void createMap(int w, int h, int num_players, int zone = 0);
+
+    uint8_t getZone() const {
+        return zone;
+    }
 
     tile *getTile(int x, int y) const;
 

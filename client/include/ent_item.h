@@ -15,14 +15,14 @@ private:
     bool destroyed;
 
 public:
-    game_item(game_world *world, uint16_t id, packet_ext &packet);
+    game_item(game_world *world, uint16_t id, byte_array &ba);
 
 public:
     void tick();
 
     void render(SDL_Renderer *renderer);
 
-    void readFromPacket(packet_ext &packet);
+    void readFromByteArray(byte_array &ba);
 };
 
 #endif // __ENT_ITEM_H__

@@ -9,6 +9,9 @@ static const uint8_t ITEM_ROLLERBLADE = 3;
 static const uint8_t ITEM_KICK = 4;
 static const uint8_t ITEM_PUNCH = 5;
 static const uint8_t ITEM_SKULL = 6;
+static const uint8_t ITEM_FULL_FIRE = 7;
+static const uint8_t ITEM_REDBOMB = 8;
+static const uint8_t ITEM_REMOCON = 9;
 
 static const uint8_t SKULL_RAPID_PACE = 1;
 static const uint8_t SKULL_SLOW_PACE = 2;
@@ -35,7 +38,7 @@ public:
 public:
     void tick();
 
-    void writeEntity(packet_ext &packet);
+    byte_array toByteArray();
 
     uint8_t getTileX() const {
         return tx;

@@ -36,12 +36,12 @@ explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION)
     tile *t = world->getMap().getTile(tx, ty);
     if (t) {
         switch (t->type) {
-        case tile::TILE_WALL:
+        case TILE_WALL:
             return;
-        case tile::TILE_BREAKABLE:
-        case tile::TILE_ITEM:
+        case TILE_BREAKABLE:
+        case TILE_ITEM:
             world->addEntity(new broken_wall(world, t));
-            t->type = tile::TILE_FLOOR;
+            t->type = TILE_FLOOR;
             return;
         default:
             break;
@@ -113,16 +113,16 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
             break;
         }
         switch (t->type) {
-        case tile::TILE_ITEM:
-        case tile::TILE_BREAKABLE:
+        case TILE_ITEM:
+        case TILE_BREAKABLE:
             world->addEntity(new broken_wall(world, t));
-            t->type = tile::TILE_FLOOR;
+            t->type = TILE_FLOOR;
             if (piercing) {
                 break;
             } else {
                 *trunc = true;
             }
-        case tile::TILE_WALL:
+        case TILE_WALL:
             return i;
         default:
             break;
@@ -184,14 +184,15 @@ void explosion::tick() {
     --life_ticks;
 }
 
-void explosion::writeEntity(packet_ext &packet) {
-    packet.writeShort(9);
-    packet.writeChar(tx);
-    packet.writeChar(ty);
-    packet.writeChar(len_l);
-    packet.writeChar(len_t);
-    packet.writeChar(len_r);
-    packet.writeChar(len_b);
+byte_array explosion::toByteArray() {
+    byte_array ba;
+
+    ba.writeChar(tx);
+    ba.writeChar(ty);
+    ba.writeChar(len_l);
+    ba.writeChar(len_t);
+    ba.writeChar(len_r);
+    ba.writeChar(len_b);
 
     uint8_t trunc = 0;
     trunc |= (1 << 0) * trunc_l;
@@ -199,6 +200,8 @@ void explosion::writeEntity(packet_ext &packet) {
     trunc |= (1 << 2) * trunc_r;
     trunc |= (1 << 3) * trunc_b;
 
-    packet.writeChar(trunc);
-    packet.writeShort(bomb_id);
+    ba.writeChar(trunc);
+    ba.writeShort(bomb_id);
+
+    return ba;
 }

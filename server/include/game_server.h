@@ -90,7 +90,7 @@ private:
     char *findNewName(const char *username);
 
     user *findUser(const IPaddress &address);
-    void sendToAll(const packet_ext &packet);
+    void sendToAll(packet_ext &packet);
 
     packet_ext snapshotPacket(bool is_add = false);
     packet_ext scorePacket();

@@ -28,10 +28,9 @@ void player::respawn(float x, float y) {
     spawned = true;
     alive = true;
 
-    can_kick = false;
-    can_punch = false;
+    pickups = 0;
 
-    speed = 5.f;
+    speed = 300.f;
     explosion_size = 2;
     num_bombs = 1;
 
@@ -101,7 +100,7 @@ void player::handleInput() {
         }
     }
 
-    if (can_punch && handler->isPressed(USR_PUNCH)) {
+    if (pickups & PICKUP_HAS_PUNCH && handler->isPressed(USR_PUNCH)) {
         punch_ticks = PLAYER_PUNCH_TICKS;
         moving = false;
 
@@ -132,12 +131,13 @@ void player::handleInput() {
         }
     }
 
-    int move_speed = speed;
+    float move_speed = speed;
     if (skull_effect == SKULL_RAPID_PACE) {
-        move_speed = 30.f;
+        move_speed = 1800.f;
     } else if (skull_effect == SKULL_SLOW_PACE) {
-        move_speed = 2.f;
+        move_speed = 120.f;
     }
+    move_speed /= TICKRATE;
 
     while(! movement_priority.empty()) {
         uint8_t prio = movement_priority.front();
@@ -185,7 +185,7 @@ void player::handleInput() {
                 break;
             }
 
-            if (can_kick) {
+            if (pickups & PICKUP_HAS_KICK) {
                 if (to_tx != getTileX() || to_ty != getTileY()) {
                     entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
                     if (*ents) {
@@ -267,12 +267,13 @@ void player::spawnItems() {
     }
 }
 
-void player::writeEntity(packet_ext &packet) {
-    packet.writeShort(PLAYERNAME_SIZE + 13);
-    packet.writeInt(fx);
-    packet.writeInt(fy);
-    packet.writeString(player_name, PLAYERNAME_SIZE);
-    packet.writeChar(player_num);
+byte_array player::toByteArray() {
+    byte_array ba;
+
+    ba.writeInt(fx);
+    ba.writeInt(fy);
+    ba.writeString(player_name, PLAYERNAME_SIZE);
+    ba.writeChar(player_num);
 
     uint8_t flags = 0;
     flags |= (1 << 0) * alive;
@@ -280,6 +281,8 @@ void player::writeEntity(packet_ext &packet) {
     flags |= (1 << 2) * moving;
     flags |= (1 << 3) * (punch_ticks > 0);
     flags |= (1 << 4) * (skull_ticks > 0);
-    packet.writeChar(flags);
-    packet.writeChar(direction);
+    ba.writeChar(flags);
+    ba.writeChar(direction);
+
+    return ba;
 }

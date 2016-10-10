@@ -58,7 +58,7 @@ user *game_server::findUser(const IPaddress &address) {
     return it->second;
 }
 
-void game_server::sendToAll(const packet_ext &packet) {
+void game_server::sendToAll(packet_ext &packet) {
     for (auto it : users) {
         user *u = it.second;
         packet.sendTo(u->getAddress());
@@ -112,7 +112,8 @@ int game_server::game_thread_run() {
         if (tick_count % SNAPSHOT_RATE == 0) {
             packet_ext snapshot = snapshotPacket();
             sendToAll(snapshot);
-            sendToAll(mapPacket());
+            packet_ext m_packet = mapPacket();
+            sendToAll(m_packet);
         }
 
         world->tick();
@@ -159,7 +160,6 @@ int game_server::run() {
 void game_server::sendAddPacket(entity *ent) {
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_ADD_ENT);
-    packet.writeShort(1);
     ent->writeToPacket(packet);
     sendToAll(packet);
 }
@@ -286,7 +286,6 @@ void game_server::pongCmd(packet_ext &from) {
 packet_ext game_server::scorePacket() {
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_SCORE);
-    packet.writeShort(users.size());
     for (auto it : users) {
         user *u = it.second;
         packet.writeString(u->getName());

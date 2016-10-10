@@ -21,36 +21,56 @@ void game_item::tick() {
 }
 
 void game_item::pickup(player *p) {
+    if (destroyed) return;
+
     switch (item_type) {
     case ITEM_BOMB:
         ++p->num_bombs;
+        if (p->num_bombs > 10) {
+            p->num_bombs = 10;
+        }
         break;
     case ITEM_FIRE:
         ++p->explosion_size;
+        if (p->explosion_size > 10) {
+            p->explosion_size = 10;
+        }
         break;
     case ITEM_ROLLERBLADE:
-        p->speed += 1.f;
+        p->speed += 80.f;
         break;
     case ITEM_KICK:
-        p->can_kick = true;
+        p->pickups |= PICKUP_HAS_KICK;
         break;
     case ITEM_PUNCH:
-        p->can_punch = true;
+        p->pickups |= PICKUP_HAS_PUNCH;
         break;
     case ITEM_SKULL:
         p->skull_ticks = SKULL_LIFE;
         p->skull_effect = random_engine() % 5 + 1;
         break;
+    case ITEM_FULL_FIRE:
+        p->explosion_size = 10;
+        break;
+    case ITEM_REDBOMB:
+        p->pickups |= PICKUP_HAS_REDBOMB;
+        break;
+    case ITEM_REMOCON:
+        p->pickups |= PICKUP_HAS_REMOCON;
+        break;
     }
     destroy();
 }
 
-void game_item::writeEntity(packet_ext &packet) {
-    packet.writeShort(4);
-    packet.writeChar(tx);
-    packet.writeChar(ty);
-    packet.writeChar(item_type);
-    packet.writeChar(destroyed ? 1 : 0);
+byte_array game_item::toByteArray() {
+    byte_array ba;
+
+    ba.writeChar(tx);
+    ba.writeChar(ty);
+    ba.writeChar(item_type);
+    ba.writeChar(destroyed ? 1 : 0);
+
+    return ba;
 }
 
 void game_item::explode() {

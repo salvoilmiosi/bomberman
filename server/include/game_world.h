@@ -69,15 +69,14 @@ public:
     void writeToPacket(packet_ext &packet) {
         packet.writeShort(getID());
         packet.writeChar(getType());
-        writeEntity(packet);
+        packet.writeByteArray(toByteArray());
     }
 
     bool doSendUpdates() {
         return do_send_updates;
     }
 
-private:
-    virtual void writeEntity(packet_ext &packet) = 0;
+    virtual byte_array toByteArray() = 0;
 };
 
 class game_world {

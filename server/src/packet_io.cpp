@@ -2,21 +2,111 @@
 #include <cstdio>
 #include <cstring>
 
+void byte_array::clear() {
+    memset(p_data, 0, PACKET_SIZE);
+    data_ptr = p_data;
+    data_len = 0;
+}
+
+void byte_array::setData(const uint8_t *data, size_t len) {
+    clear();
+    memcpy(p_data, data, len);
+    data_len = len;
+}
+
+void byte_array::writeChar(const uint8_t num) {
+    *data_ptr++ = num;
+    ++data_len;
+}
+
+uint8_t byte_array::readChar() {
+    return *data_ptr++;
+}
+
+void byte_array::writeShort(const uint16_t num) {
+    SDLNet_Write16(num, data_ptr);
+    data_ptr += 2;
+    data_len += 2;
+}
+
+uint16_t byte_array::readShort() {
+    uint16_t ret = SDLNet_Read16(data_ptr);
+    data_ptr += 2;
+    return ret;
+}
+
+void byte_array::writeInt(const uint32_t num) {
+    SDLNet_Write32(num, data_ptr);
+    data_ptr += 4;
+    data_len += 4;
+}
+
+uint32_t byte_array::readInt() {
+    uint32_t ret = SDLNet_Read32(data_ptr);
+    data_ptr += 4;
+    return ret;
+}
+
+void byte_array::writeLong(const Uint64 num) {
+    uint32_t upper = (num & 0xffffffff00000000) >> 32;
+    uint32_t lower = (num & 0x00000000ffffffff);
+    writeInt(upper);
+    writeInt(lower);
+}
+
+uint16_t byte_array::readLong() {
+    uint32_t upper = readInt();
+    uint32_t lower = readInt();
+    return ((Uint64)upper << 32) | lower;
+}
+
+void byte_array::writeString(const char *str, short max_len) {
+    int str_len = max_len == 0 ? strlen(str) : max_len;
+    writeShort(str_len);
+    memcpy(data_ptr, str, str_len);
+    data_ptr += str_len;
+    data_len += str_len;
+}
+
+char *byte_array::readString() {
+    static char buffer[1024];
+    memset(buffer, 0, 1024);
+    int str_len = readShort();
+    strncpy(buffer, reinterpret_cast<const char *>(data_ptr), str_len);
+    data_ptr += str_len;
+    return buffer;
+}
+
+void byte_array::writeByteArray(const byte_array &ba) {
+    writeShort(ba.data_len);
+    memcpy(data_ptr, ba.p_data, ba.data_len);
+    data_ptr += ba.data_len;
+    data_len += ba.data_len;
+}
+
+byte_array byte_array::readByteArray() {
+    byte_array ba;
+
+    ba.data_len = readShort();
+    memcpy(ba.p_data, data_ptr, ba.data_len);
+
+    data_ptr += ba.data_len;
+
+    return ba;
+}
+
+bool byte_array::atEnd() {
+    return p_data + data_len - data_ptr <= 0;
+}
+
 packet_ext::packet_ext(UDPsocket socket, bool input) : socket(socket) {
-    packet = SDLNet_AllocPacket(PACKET_SIZE);
-    packet->channel = -1;
-
-    memset(packet->data, 0, PACKET_SIZE);
-    packet->len = 0;
-
-    data_ptr = packet->data;
+    memset(&packet, 0, sizeof(packet));
+    packet.data = p_data;
+    packet.channel = -1;
+    packet.maxlen = PACKET_SIZE;
 
     if (!input)
         writeInt(MAGIC);
-}
-
-packet_ext::~packet_ext() {
-    SDLNet_FreePacket(packet);
 }
 
 constexpr uint16_t ntohs(uint16_t num) {
@@ -46,93 +136,20 @@ IPaddress longAddr(Uint64 num) {
     return addr;
 }
 
-void packet_ext::writeInt(const uint32_t num) {
-    SDLNet_Write32(num, data_ptr);
-    data_ptr += 4;
-    packet->len += 4;
-}
-
-uint32_t packet_ext::readInt() {
-    if (remaining() < 4) return 0;
-    uint32_t ret = SDLNet_Read32(data_ptr);
-    data_ptr += 4;
-    return ret;
-}
-
-void packet_ext::writeChar(const uint8_t num) {
-    *data_ptr++ = num;
-    ++packet->len;
-}
-
-uint8_t packet_ext::readChar() {
-    if (remaining() < 0) return 0;
-    return *data_ptr++;
-}
-
-void packet_ext::writeShort(const uint16_t num) {
-    SDLNet_Write16(num, data_ptr);
-    data_ptr += 2;
-    packet->len += 2;
-}
-
-uint16_t packet_ext::readShort() {
-    if (remaining() < 2) return 0;
-    uint16_t ret = SDLNet_Read16(data_ptr);
-    data_ptr += 2;
-    return ret;
-}
-
-void packet_ext::writeLong(const Uint64 num) {
-    uint32_t upper = (num & 0xffffffff00000000) >> 32;
-    uint32_t lower = (num & 0x00000000ffffffff);
-    writeInt(upper);
-    writeInt(lower);
-}
-
-uint16_t packet_ext::readLong() {
-    if (remaining() < 8) return 0;
-    uint32_t upper = readInt();
-    uint32_t lower = readInt();
-    return ((Uint64)upper << 32) | lower;
-}
-
-void packet_ext::writeString(const char *str, short max_len) {
-    int str_len = max_len == 0 ? strlen(str) : max_len;
-    writeShort(str_len);
-    memcpy(data_ptr, str, str_len);
-    data_ptr += str_len;
-    packet->len += str_len;
-}
-
-char *packet_ext::readString() {
-    static char buffer[1024];
-    memset(buffer, 0, 1024);
-    int str_len = readShort();
-    if (str_len > remaining()) {
-        str_len = remaining() - 1;
-    }
-    strncpy(buffer, reinterpret_cast<const char *>(data_ptr), str_len);
-    data_ptr += str_len;
-    return buffer;
-}
-
-void packet_ext::skip(int bytes) {
-    data_ptr += bytes;
-}
-
 int packet_ext::receive() {
-    return SDLNet_UDP_Recv(socket, packet);
+    clear();
+
+    int err = SDLNet_UDP_Recv(socket, &packet);
+    data_len = packet.len;
+    return err;
 }
 
-bool packet_ext::sendTo(const IPaddress &addr) const {
-    packet->address = addr;
-    return SDLNet_UDP_Send(socket, packet->channel, packet) != 0;
+int packet_ext::sendTo(const IPaddress &addr) {
+    packet.len = data_len;
+    packet.address = addr;
+    return SDLNet_UDP_Send(socket, packet.channel, &packet);
 }
 
 const IPaddress &packet_ext::getAddress() {
-    return packet->address;
-}
-
-int packet_ext::remaining() {
-    return packet->data + packet->len - data_ptr;
+    return packet.address;
 }

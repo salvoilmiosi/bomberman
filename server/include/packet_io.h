@@ -15,16 +15,32 @@ static const int PACKET_SIZE = 1024;
 
 static const uint32_t MAGIC = str2int("GAME");
 
-class packet_ext {
-private:
-    UDPpacket *packet;
+class byte_array {
+protected:
+    uint8_t p_data[PACKET_SIZE];
     uint8_t *data_ptr;
-
-    UDPsocket socket;
+    size_t data_len;
 
 public:
-    packet_ext(UDPsocket socket, bool input = false);
-    virtual ~packet_ext();
+    byte_array() {
+        clear();
+    }
+
+    byte_array(const uint8_t *data, size_t len) {
+        setData(data, len);
+    }
+
+public:
+    void clear();
+
+    void setData(const uint8_t *data, size_t len);
+    uint8_t *getData() {
+        return p_data;
+    }
+
+    size_t size() {
+        return data_len;
+    }
 
 public:
     void writeInt(const uint32_t num);
@@ -36,22 +52,32 @@ public:
     void writeShort(const uint16_t num);
     uint16_t readShort();
 
-    void writeLong(const Uint64 num);
+    void writeLong(const uint64_t num);
     uint16_t readLong();
 
     void writeString(const char *str, short max_len = 0);
     char *readString();
 
-    void skip(int bytes);
+    void writeByteArray(const byte_array &ba);
+    byte_array readByteArray();
+
+    bool atEnd();
+};
+
+class packet_ext: public byte_array {
+private:
+    UDPpacket packet;
+
+    UDPsocket socket;
+
+public:
+    packet_ext(UDPsocket socket, bool input = false);
 
 public:
     int receive();
-    bool sendTo(const IPaddress &addr) const;
+    int sendTo(const IPaddress &addr);
 
     const IPaddress &getAddress();
-
-private:
-    int remaining();
 };
 
 const char *ipString(const IPaddress &ip);

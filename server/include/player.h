@@ -11,6 +11,11 @@ static const float MOVE_TILE = 0.3f;
 static const int PLAYER_DEATH_TICKS = TICKRATE / 3;
 static const int PLAYER_PUNCH_TICKS = TICKRATE / 4;
 
+static const uint8_t PICKUP_HAS_PUNCH = 1 << 0;
+static const uint8_t PICKUP_HAS_KICK = 1 << 1;
+static const uint8_t PICKUP_HAS_REDBOMB = 1 << 2;
+static const uint8_t PICKUP_HAS_REMOCON = 1 << 3;
+
 class player: public entity {
 private:
     friend class bomb;
@@ -44,8 +49,8 @@ private:
     bool moving;
     uint8_t direction;
 
-    bool can_kick;
-    bool can_punch;
+    uint8_t pickups;
+
     int skull_effect;
 
     int punch_ticks;
@@ -79,7 +84,7 @@ public:
         return fy / TILE_SIZE + 0.5f;
     }
 
-    void writeEntity(packet_ext &packet);
+    byte_array toByteArray();
 
     uint8_t getPlayerNum() {
         return player_num;

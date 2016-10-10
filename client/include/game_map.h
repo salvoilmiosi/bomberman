@@ -7,11 +7,14 @@
 
 static const int TILE_SIZE = 48;
 
+static const uint8_t TILE_FLOOR = 0;
+static const uint8_t TILE_SPAWN = 1;
+static const uint8_t TILE_WALL = 2;
+static const uint8_t TILE_BREAKABLE = 3;
+
 struct tile {
-    enum tile_type {
-        TILE_FLOOR = 0, TILE_SPAWN, TILE_WALL, TILE_BREAKABLE, TILE_ITEM,
-    };
-    tile_type type;
+    uint8_t type;
+    uint8_t data;
 };
 
 class game_map {
@@ -20,6 +23,7 @@ private:
 
     int width = 0;
     int height = 0;
+    int zone = 0;
 
 public:
     game_map();

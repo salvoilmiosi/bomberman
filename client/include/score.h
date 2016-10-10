@@ -6,6 +6,8 @@
 
 static const int SCOREBOARD_WIDTH = 400;
 
+static const int MAX_INFO_SIZE = 16;
+
 class score {
 private:
     class game_client *client;
@@ -22,7 +24,7 @@ private:
         bool is_player;
     };
 
-    score_info info[4];
+    score_info info[MAX_INFO_SIZE];
     uint8_t num_players;
 
 public:

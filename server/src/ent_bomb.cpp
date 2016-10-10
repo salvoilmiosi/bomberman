@@ -18,7 +18,8 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
         explode_size = p->explosion_size;
     }
 
-    piercing = false;
+    piercing = p->pickups & PICKUP_HAS_REDBOMB;
+    remocon = p->pickups & PICKUP_HAS_REMOCON;
     kicked = false;
 
     do_send_updates = false;
@@ -32,16 +33,16 @@ void bomb::kick(uint8_t direction) {
 
     switch (direction) {
     case 0:
-        speedy = -KICK_SPEED;
+        speedy = -KICK_SPEED / TICKRATE;
         break;
     case 1:
-        speedy = KICK_SPEED;
+        speedy = KICK_SPEED / TICKRATE;
         break;
     case 2:
-        speedx = -KICK_SPEED;
+        speedx = -KICK_SPEED / TICKRATE;
         break;
     case 3:
-        speedx = KICK_SPEED;
+        speedx = KICK_SPEED / TICKRATE;
         break;
     default:
         return;
@@ -57,22 +58,24 @@ void bomb::punch(uint8_t direction) {
 
     switch (direction) {
     case 0:
-        speedy = -PUNCH_SPEED;
+        speedy = -PUNCH_SPEED / TICKRATE;
         break;
     case 1:
-        speedy = PUNCH_SPEED;
+        speedy = PUNCH_SPEED / TICKRATE;
         break;
     case 2:
-        speedx = -PUNCH_SPEED;
+        speedx = -PUNCH_SPEED / TICKRATE;
         break;
     case 3:
-        speedx = PUNCH_SPEED;
+        speedx = PUNCH_SPEED / TICKRATE;
         break;
     default:
         return;
     }
 
-    speedz = PUNCH_SPEED_Z;
+    speedz = PUNCH_SPEED_Z / TICKRATE;
+
+    punched_ticks = 0;
 
     punched = true;
     do_send_updates = true;
@@ -109,11 +112,11 @@ void bomb::tick() {
             fy = getTileY() * TILE_SIZE;
         }
     } else if (punched) {
+        ++punched_ticks;
+
         fx += speedx;
         fy += speedy;
-        fz += speedz;
-
-        speedz -= Z_ACCEL;
+        fz = speedz * punched_ticks - Z_ACCEL * punched_ticks * punched_ticks / TICKRATE / TICKRATE;
 
         if (speedx > 0 && fx > TILE_SIZE * MAP_WIDTH) {
             fx -= TILE_SIZE * MAP_WIDTH;
@@ -129,17 +132,19 @@ void bomb::tick() {
         }
 
         if (fz <= 0) {
+            fz = 0.f;
             if (world->isWalkable(getTileX(), getTileY(), WALK_BLOCK_PLAYERS)) {
                 fx = getTileX() * TILE_SIZE;
                 fy = getTileY() * TILE_SIZE;
-                fz = 0.f;
                 punched = false;
             } else {
-                if (speedx > 0) speedx = PUNCH_SPEED_BOUNCE;
-                else if (speedx < 0) speedx = -PUNCH_SPEED_BOUNCE;
-                if (speedy > 0) speedy = PUNCH_SPEED_BOUNCE;
-                else if (speedy < 0) speedy = -PUNCH_SPEED_BOUNCE;
-                speedz = PUNCH_SPEED_Z_BOUNCE;
+                if (speedx > 0) speedx = PUNCH_SPEED_BOUNCE / TICKRATE;
+                else if (speedx < 0) speedx = -PUNCH_SPEED_BOUNCE / TICKRATE;
+                if (speedy > 0) speedy = PUNCH_SPEED_BOUNCE / TICKRATE;
+                else if (speedy < 0) speedy = -PUNCH_SPEED_BOUNCE / TICKRATE;
+                speedz = PUNCH_SPEED_Z_BOUNCE / TICKRATE;
+
+                punched_ticks = 0;
             }
         }
     }
@@ -160,10 +165,17 @@ void bomb::explode() {
     world->addEntity(new explosion(world, this));
 }
 
-void bomb::writeEntity(packet_ext &packet) {
-    packet.writeShort(14);
-    packet.writeInt(fx);
-    packet.writeInt(fy);
-    packet.writeInt(fz);
-    packet.writeShort(p->getID());
+byte_array bomb::toByteArray() {
+    byte_array ba;
+
+    ba.writeInt(fx);
+    ba.writeInt(fy);
+    ba.writeInt(fz);
+    ba.writeShort(p->getID());
+    uint8_t flags = 0;
+    flags |= (1 << 0) * piercing;
+    flags |= (1 << 1) * remocon;
+    ba.writeChar(flags);
+
+    return ba;
 }

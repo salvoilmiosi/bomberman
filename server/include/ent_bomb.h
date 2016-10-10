@@ -5,12 +5,12 @@
 
 static const float BOMB_LIFE = TICKRATE * 3;
 
-static const float KICK_SPEED = 10.f;
-static const float PUNCH_SPEED = 12.f;
-static const float PUNCH_SPEED_BOUNCE = 6.f;
-static const float PUNCH_SPEED_Z = 10.f;
-static const float PUNCH_SPEED_Z_BOUNCE = 6.f;
-static const float Z_ACCEL = 0.8f;
+static const float KICK_SPEED = 600.f;
+static const float PUNCH_SPEED = 720.f;
+static const float PUNCH_SPEED_BOUNCE = 400.f;
+static const float PUNCH_SPEED_Z = 600.f;
+static const float PUNCH_SPEED_Z_BOUNCE = 360.f;
+static const float Z_ACCEL = 1550.f;
 
 class bomb : public entity {
 private:
@@ -32,7 +32,10 @@ private:
     bool kicked = false;
     bool punched = false;
 
+    int punched_ticks;
+
     bool piercing;
+    bool remocon;
 
     friend class explosion;
 
@@ -58,7 +61,7 @@ public:
     }
 
 private:
-    void writeEntity(packet_ext &packet);
+    byte_array toByteArray();
 
     void explode();
 };

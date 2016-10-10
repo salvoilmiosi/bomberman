@@ -28,8 +28,6 @@ public:
 
     virtual void render(SDL_Renderer *renderer) = 0;
 
-    virtual void readFromPacket(packet_ext &packet) = 0;
-
     static entity *newObjFromPacket(class game_world *world, uint16_t id, packet_ext &packet);
 
     uint16_t getID() {
@@ -39,6 +37,8 @@ public:
     char getType() {
         return ent_type;
     }
+
+    virtual void readFromByteArray(byte_array &ba) = 0;
 };
 
 class game_world {

@@ -33,20 +33,47 @@ void game_map::render(SDL_Renderer *renderer) {
             tile *t_up = getTile(x, y-1);
             if (!t) continue;
             switch (t->type) {
-            case tile::TILE_FLOOR:
-            case tile::TILE_SPAWN:
-                if (t_up && t_up->type != tile::TILE_FLOOR && t_up->type != tile::TILE_SPAWN) {
-                    src_rect = {64, 0, 16, 16};
-                } else {
-                    src_rect = {48, 0, 16, 16};
+            case TILE_FLOOR:
+            case TILE_SPAWN:
+                if (zone == 0) {
+                    if (t_up && t_up->type != TILE_FLOOR && t_up->type != TILE_SPAWN) {
+                        src_rect = TILE(4, 0);
+                    } else {
+                        src_rect = TILE(3, 0);
+                    }
+                } else if (zone == 1) {
+                    if (t_up && t_up->type == TILE_WALL && t_up->data == 11) {
+                        src_rect = TILE(1, 3);
+                    } else if (t_up && t_up->type == TILE_BREAKABLE) {
+                        src_rect = TILE(2, 3);
+                    } else {
+                        src_rect = TILE(3, 2);
+                    }
                 }
                 break;
-            case tile::TILE_WALL:
-                src_rect = {16, 0, 16, 16};
+            case TILE_WALL:
+                if (zone == 0) {
+                    if (t->data == 1) {
+                        src_rect = TILE(0, 0);
+                    } else {
+                        src_rect = TILE(1, 0);
+                    }
+                } else if (zone == 1) {
+                    uint8_t tx = (t->data & 0x0f) % 5;
+                    uint8_t ty = (t->data & 0x0f) / 5;
+                    src_rect = TILE(tx, ty);
+                }
                 break;
-            case tile::TILE_BREAKABLE:
-            case tile::TILE_ITEM:
-                src_rect = {32, 0, 16, 16};
+            case TILE_BREAKABLE:
+                if (zone == 0) {
+                    src_rect = TILE(2, 0);
+                } else if (zone == 1) {
+                    if (t_up && (t_up->type == TILE_BREAKABLE || (t_up->type == TILE_WALL && t_up->data == 11))) {
+                        src_rect = TILE(4, 2);
+                    } else {
+                        src_rect = TILE(2, 2);
+                    }
+                }
                 break;
             default:
                 break;
@@ -54,7 +81,28 @@ void game_map::render(SDL_Renderer *renderer) {
             }
             dst_rect.x = TILE_SIZE * x + left();
             dst_rect.y = TILE_SIZE * y + top();
-            SDL_RenderCopy(renderer, tileset_texture, &src_rect, &dst_rect);
+
+            SDL_Texture *tileset = tileset_1_texture;
+            switch (zone) {
+            case 0:
+                tileset = tileset_1_texture;
+                break;
+            case 1:
+                tileset = tileset_2_texture;
+                break;
+            default:
+                return;
+            }
+
+            SDL_RendererFlip flip = SDL_FLIP_NONE;
+            if (t->data & 0x80) {
+                flip = (SDL_RendererFlip) (flip | SDL_FLIP_HORIZONTAL);
+            }
+            if (t->data & 0x40) {
+                flip = (SDL_RendererFlip) (flip | SDL_FLIP_VERTICAL);
+            }
+
+            SDL_RenderCopyEx(renderer, tileset, &src_rect, &dst_rect, 0, 0, flip);
         }
     }
 }
@@ -62,6 +110,7 @@ void game_map::render(SDL_Renderer *renderer) {
 void game_map::readFromPacket(packet_ext &packet) {
     short w = packet.readShort();
     short h = packet.readShort();
+    zone = packet.readChar();
 
     if (w != width || h != height) {
         if (tiles)
@@ -75,11 +124,13 @@ void game_map::readFromPacket(packet_ext &packet) {
 
     for (int y=0; y<h; ++y) {
         for (int x=0; x<w; ++x) {
-            char type = packet.readChar();
+            uint8_t type = packet.readChar();
+            uint8_t data = packet.readChar();
 
             tile *t = getTile(x, y);
             if (t) {
-                t->type = (tile::tile_type) type;
+                t->type = type;
+                t->data = data;
             }
         }
     }

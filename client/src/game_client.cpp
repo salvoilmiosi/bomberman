@@ -225,24 +225,21 @@ void game_client::scoreCmd(packet_ext &packet) {
 }
 
 void game_client::snapshotCmd(packet_ext &packet) {
-    short num_ents = packet.readShort();
-    for(;num_ents > 0; --num_ents) {
+    while(!packet.atEnd()) {
         uint16_t id = packet.readShort();
         uint8_t type = packet.readChar();
-        short len = packet.readShort();
+
+        byte_array ba = packet.readByteArray();
 
         entity *ent = world.findID(id);
         if (ent && ent->getType() == type) {
-            ent->readFromPacket(packet);
-        } else {
-            packet.skip(len);
+            ent->readFromByteArray(ba);
         }
     }
 }
 
 void game_client::addCmd(packet_ext &packet) {
-    short num_ents = packet.readShort();
-    for(;num_ents > 0; --num_ents) {
+    while(!packet.atEnd()) {
         uint16_t id = packet.readShort();
         if (! world.findID(id)) {
             entity *ent = entity::newObjFromPacket(&world, id, packet);

@@ -8,17 +8,19 @@ private:
     uint8_t tx;
     uint8_t ty;
 
+    uint8_t zone;
+
     int create_time;
 
 public:
-    broken_wall(game_world *world, uint16_t id, packet_ext &packet);
+    broken_wall(game_world *world, uint16_t id, byte_array &ba);
 
 public:
     void tick() {}
 
     void render(SDL_Renderer *renderer);
 
-    void readFromPacket(packet_ext &packet);
+    void readFromByteArray(byte_array &ba);
 };
 
 #endif // __ENT_BROKEN_WALL_H__

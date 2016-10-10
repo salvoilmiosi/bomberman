@@ -15,14 +15,14 @@ private:
     bool trunc_l, trunc_t, trunc_r, trunc_b;
 
 public:
-    explosion(game_world *world, uint16_t id, packet_ext &packet);
+    explosion(game_world *world, uint16_t id, byte_array &ba);
 
 public:
     void tick() {}
 
     void render(SDL_Renderer *renderer);
 
-    void readFromPacket(packet_ext &packet);
+    void readFromByteArray(byte_array &ba);
 };
 
 class bomb: public entity {
@@ -40,17 +40,20 @@ private:
 
     int create_time;
 
+    bool red_bomb;
+    bool remocon;
+
     interpolator<position> interp;
 
 public:
-    bomb(game_world *world, uint16_t id, packet_ext &packet);
+    bomb(game_world *world, uint16_t id, byte_array &ba);
 
 public:
     void tick();
 
     void render(SDL_Renderer *renderer);
 
-    void readFromPacket(packet_ext &packet);
+    void readFromByteArray(byte_array &ba);
 };
 
 #endif // __ENT_BOMB_H__

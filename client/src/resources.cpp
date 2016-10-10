@@ -4,10 +4,14 @@
 #include <windows.h>
 #include <cstdio>
 
-SDL_Texture *tileset_texture = nullptr;
+SDL_Texture *text_texture = nullptr;
+
+SDL_Texture *tileset_1_texture = nullptr;
+SDL_Texture *tileset_2_texture = nullptr;
+SDL_Texture *explosions_texture = nullptr;
 SDL_Texture *items_texture = nullptr;
 SDL_Texture *players_texture = nullptr;
-SDL_Texture *text_texture = nullptr;
+
 SDL_Surface *icon_surface = nullptr;
 
 SDL_Surface *loadSurface(int res_id) {
@@ -27,32 +31,32 @@ SDL_Surface *loadSurface(int res_id) {
     return IMG_Load_RW(SDL_RWFromConstMem(res_data, res_size), 1);
 }
 
+SDL_Texture *loadTexture(SDL_Renderer *renderer, int res_id) {
+    SDL_Surface *surf = loadSurface(res_id);
+    if (!surf) return nullptr;
+    SDL_Texture *text = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+    return text;
+}
+
 void loadResources(SDL_Renderer *renderer) {
-    SDL_Surface *tileset_surface = loadSurface(IDB_TILESET);
-    tileset_texture = SDL_CreateTextureFromSurface(renderer, tileset_surface);
-
-    SDL_Surface *items_surface = loadSurface(IDB_ITEMS);
-    items_texture = SDL_CreateTextureFromSurface(renderer, items_surface);
-
-    SDL_Surface *players_surface = loadSurface(IDB_PLAYERS);
-    players_texture = SDL_CreateTextureFromSurface(renderer, players_surface);
-
-    SDL_Surface *text_surface = loadSurface(IDB_TEXT);
-    text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-
-    SDL_FreeSurface(tileset_surface);
-    SDL_FreeSurface(items_surface);
-    SDL_FreeSurface(players_surface);
-    SDL_FreeSurface(text_surface);
-
     icon_surface = loadSurface(IDB_ICON2);
+
+    text_texture = loadTexture(renderer, IDB_TEXT);
+    tileset_1_texture = loadTexture(renderer, IDB_TILESET_1);
+    tileset_2_texture = loadTexture(renderer, IDB_TILESET_2);
+    explosions_texture = loadTexture(renderer, IDB_EXPLOSIONS);
+    items_texture = loadTexture(renderer, IDB_ITEMS);
+    players_texture = loadTexture(renderer, IDB_PLAYERS);
 }
 
 void clearResources() {
-    SDL_DestroyTexture(tileset_texture);
+    SDL_DestroyTexture(text_texture);
+    SDL_DestroyTexture(tileset_1_texture);
+    SDL_DestroyTexture(tileset_2_texture);
+    SDL_DestroyTexture(explosions_texture);
     SDL_DestroyTexture(items_texture);
     SDL_DestroyTexture(players_texture);
-    SDL_DestroyTexture(text_texture);
 
     SDL_FreeSurface(icon_surface);
 }

@@ -34,7 +34,7 @@ public:
     }
 
 private:
-    void writeEntity(packet_ext &packet);
+    byte_array toByteArray();
 
     uint8_t destroyTiles(int dx, int dy, bool *trunc);
     void checkPlayers(int dx, int dy);

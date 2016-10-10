@@ -36,8 +36,10 @@ void score::render(SDL_Renderer *renderer) {
     int y = (WINDOW_HEIGHT - h) / 2;
 
     SDL_Rect bg_rect = {x, y, w, h};
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0x80, 0xff);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0x80, 0xcc);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderFillRect(renderer, &bg_rect);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
     x += 20;
     y += 20;
@@ -65,15 +67,21 @@ void score::show(bool shown) {
 }
 
 void score::handlePacket(packet_ext &packet) {
-    num_players = packet.readShort();
-    for (int i=0; i<num_players; ++i) {
+    int i=0;
+    while (!packet.atEnd() && i < MAX_INFO_SIZE) {
+        score_info &in = info[i];
+
         const char *player_name = packet.readString();
-        strncpy(info[i].player_name, player_name, NAME_SIZE);
-        info[i].ping = packet.readShort();
-        info[i].is_player = packet.readChar() != 0;
-        if (info[i].is_player) {
-            info[i].player_num = packet.readChar();
-            info[i].victories = packet.readShort();
+        strncpy(in.player_name, player_name, NAME_SIZE);
+
+        in.ping = packet.readShort();
+        in.is_player = packet.readChar() != 0;
+        if (in.is_player) {
+            in.player_num = packet.readChar();
+            in.victories = packet.readShort();
         }
+        ++i;
     }
+
+    num_players = i;
 }

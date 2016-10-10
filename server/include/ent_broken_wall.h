@@ -10,6 +10,8 @@ private:
     uint8_t tx;
     uint8_t ty;
 
+    uint8_t zone;
+
     int life_ticks;
 
     bool drop_item;
@@ -30,7 +32,7 @@ public:
     }
 
 private:
-    void writeEntity(packet_ext &packet);
+    byte_array toByteArray();
 };
 
 #endif // __ENT_BROKEN_WALL_H__
