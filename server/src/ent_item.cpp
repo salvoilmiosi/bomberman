@@ -2,6 +2,7 @@
 
 #include "main.h"
 #include "player.h"
+#include "game_sound.h"
 
 game_item::game_item(game_world *world, tile *t, uint8_t it_type) : entity(world, TYPE_ITEM), item_type(it_type) {
     tx = world->getMap().getTileX(t);
@@ -22,6 +23,12 @@ void game_item::tick() {
 
 void game_item::pickup(player *p) {
     if (exploded) return;
+
+    if (item_type == ITEM_SKULL) {
+        world->playWave(WAV_SKULL);
+    } else {
+        world->playWave(WAV_PICKUP);
+    }
 
     switch (item_type) {
     case ITEM_BOMB:

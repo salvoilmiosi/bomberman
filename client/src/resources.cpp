@@ -16,9 +16,9 @@ SDL_Texture *players_texture = nullptr;
 
 SDL_Surface *icon_surface = nullptr;
 
-SDL_Surface *loadSurface(int res_id) {
+SDL_RWops *getResourceRW(int res_id, const char *type) {
     HMODULE hModule = GetModuleHandle(nullptr);
-    HRSRC hRes = FindResource(hModule, MAKEINTRESOURCE(res_id), "PNG");
+    HRSRC hRes = FindResource(hModule, MAKEINTRESOURCE(res_id), type);
 
     if (!hRes) {
         fprintf(stderr, "Can't load resource %d\n", res_id);
@@ -30,7 +30,11 @@ SDL_Surface *loadSurface(int res_id) {
     HGLOBAL hgRes = LoadResource(hModule, hRes);
     unsigned char* res_data = reinterpret_cast<unsigned char *>(LockResource(hgRes));
 
-    return IMG_Load_RW(SDL_RWFromConstMem(res_data, res_size), 1);
+    return SDL_RWFromConstMem(res_data, res_size);
+}
+
+SDL_Surface *loadSurface(int res_id) {
+    return IMG_Load_RW(getResourceRW(res_id, "PNG"), 1);
 }
 
 SDL_Texture *loadTexture(SDL_Renderer *renderer, int res_id) {

@@ -32,6 +32,7 @@ static const uint32_t SERV_ADD_ENT     = str2int("ADDO");
 static const uint32_t SERV_REM_ENT     = str2int("REMO");
 static const uint32_t SERV_SELF        = str2int("SELF");
 static const uint32_t SERV_MAP         = str2int("MAPP");
+static const uint32_t SERV_SOUND       = str2int("WAVE");
 
 class game_client {
 private:
@@ -91,6 +92,7 @@ private:
     void remCmd(packet_ext &);
     void selfCmd(packet_ext &);
     void mapCmd(packet_ext &);
+    void soundCmd(packet_ext &);
 };
 
 #endif // __GAME_CLIENT_H__

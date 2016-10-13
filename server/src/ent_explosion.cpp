@@ -5,6 +5,7 @@
 #include "ent_broken_wall.h"
 
 #include "player.h"
+#include "game_sound.h"
 
 explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION) {
     bomb_id = b->getID();
@@ -52,6 +53,8 @@ explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION)
     len_t = destroyTiles(0, -explode_size, &trunc_t);
     len_r = destroyTiles(explode_size, 0, &trunc_r);
     len_b = destroyTiles(0, explode_size, &trunc_b);
+
+    world->playWave(WAV_EXPLODE);
 }
 
 uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {

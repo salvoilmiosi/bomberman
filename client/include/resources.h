@@ -11,6 +11,17 @@
 #define IDB_EXPLOSIONS 10
 #define IDB_ITEMS 11
 #define IDB_PLAYERS 12
+#define IDM_BATTLE 20
+#define IDM_LEVEL1 200
+#define IDW_PLANT 21
+#define IDW_EXPLODE 22
+#define IDW_PICKUP 23
+#define IDW_SKULL 24
+#define IDW_DEATH 25
+#define IDW_PUNCH 26
+#define IDW_SLIDE 27
+#define IDW_HARDHIT 28
+#define IDW_BOUNCE 29
 
 #ifdef __cplusplus
 
@@ -28,6 +39,8 @@ extern SDL_Texture *tileset_4_texture;
 extern SDL_Texture *explosions_texture;
 extern SDL_Texture *items_texture;
 extern SDL_Texture *players_texture;
+
+SDL_RWops *getResourceRW(int res_id, const char *type);
 
 void loadResources(SDL_Renderer *renderer);
 

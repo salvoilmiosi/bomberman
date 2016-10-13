@@ -4,3 +4,7 @@
 *.bat
 *.depend
 *.layout
+*.ogg
+*.wav
+*.spc
+

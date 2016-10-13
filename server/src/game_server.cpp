@@ -168,6 +168,13 @@ void game_server::sendRemovePacket(entity *ent) {
     sendToAll(packet);
 }
 
+void game_server::sendSoundPacket(uint8_t sound_id) {
+    packet_ext packet(socket_serv);
+    packet.writeInt(SERV_SOUND);
+    packet.writeChar(sound_id);
+    sendToAll(packet);
+}
+
 char *game_server::findNewName(const char *username) {
     static char newName[NAME_SIZE];
     strncpy(newName, username, NAME_SIZE);

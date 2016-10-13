@@ -116,6 +116,10 @@ public:
 
     void startRound();
 
+    void playWave(uint8_t sound_id) {
+        server.sendSoundPacket(sound_id);
+    }
+
     const game_map &getMap() {
         return g_map;
     }

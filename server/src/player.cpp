@@ -5,6 +5,7 @@
 #include "main.h"
 
 #include "tile_trampoline.h"
+#include "game_sound.h"
 
 #include <cstdio>
 #include <cstring>
@@ -57,6 +58,8 @@ void player::kill() {
 
     alive = false;
     death_ticks = PLAYER_DEATH_TICKS;
+
+    world->playWave(WAV_DEATH);
 }
 
 void player::setName(const char *name) {
@@ -297,6 +300,7 @@ void player::tick() {
                 if (p->skull_ticks > 0) continue;
                 p->skull_ticks = SKULL_LIFE;
                 p->skull_effect = skull_effect;
+                world->playWave(WAV_SKULL);
             }
             --skull_ticks;
         } else {

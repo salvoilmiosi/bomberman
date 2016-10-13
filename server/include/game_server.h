@@ -37,6 +37,7 @@ static const uint32_t SERV_ADD_ENT     = str2int("ADDO");
 static const uint32_t SERV_REM_ENT     = str2int("REMO");
 static const uint32_t SERV_SELF        = str2int("SELF");
 static const uint32_t SERV_MAP         = str2int("MAPP");
+static const uint32_t SERV_SOUND       = str2int("WAVE");
 
 static const uint32_t COLOR_RED        = 0xff0000ff;
 static const uint32_t COLOR_GREEN      = 0x00ff00ff;
@@ -77,6 +78,7 @@ public:
 
     void sendAddPacket(class entity *ent);
     void sendRemovePacket(class entity *ent);
+    void sendSoundPacket(uint8_t sound_id);
 
 private:
     friend int game_thread_func(void *data);

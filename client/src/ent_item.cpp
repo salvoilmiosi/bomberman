@@ -9,7 +9,7 @@ game_item::game_item(game_world *world, uint16_t id, byte_array &ba) : entity(wo
 }
 
 void game_item::tick() {
-    if (destroyed) {
+    if (exploded) {
         if (destroy_time == 0) {
             destroy_time = SDL_GetTicks();
         }
@@ -28,7 +28,7 @@ void game_item::render(SDL_Renderer *renderer) {
 
     SDL_Rect dst_rect = world->tileRect(tx, ty);
 
-    if (destroyed) {
+    if (exploded) {
         int time_since_destroy = SDL_GetTicks() - destroy_time;
 
         int frame = time_since_destroy * 7 / 666;
@@ -51,5 +51,5 @@ void game_item::readFromByteArray(byte_array &ba) {
     tx = ba.readChar();
     ty = ba.readChar();
     item_type = ba.readChar();
-    destroyed = ba.readChar() != 0;
+    exploded = ba.readChar() != 0;
 }

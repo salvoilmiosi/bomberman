@@ -32,6 +32,8 @@ private:
     bool kicked = false;
     bool punched = false;
 
+    int kick_ticks;
+
     bool piercing = false;
     bool remocon = false;
 

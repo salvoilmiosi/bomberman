@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_net.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 
 #include <cstdio>
 #include <cstring>
@@ -10,6 +11,7 @@
 
 #include "main.h"
 #include "game_client.h"
+#include "game_sound.h"
 #include "resources.h"
 #include "bindings.h"
 
@@ -27,7 +29,7 @@ void render() {
 }
 
 int main(int argc, char **argv) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         fprintf(stderr, "Could not init SDL\n");
         return 1;
     }
@@ -37,6 +39,14 @@ int main(int argc, char **argv) {
     }
     if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
         fprintf(stderr, "Could not init SDL_image\n");
+        return 1;
+    }
+    if (Mix_Init(MIX_INIT_OGG) != MIX_INIT_OGG) {
+        fprintf(stderr, "Could not init SDL_mixer\n");
+        return 1;
+    }
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) != 0) {
+        fprintf(stderr, "Could not open audio channel\n");
         return 1;
     }
 
@@ -57,8 +67,11 @@ int main(int argc, char **argv) {
     }
 
     loadResources(renderer);
+    loadSounds();
 
     setupBindings();
+
+    playMusic(music_level1);
 
     const char *username = nullptr;
     const char *address = nullptr;
@@ -134,8 +147,11 @@ int main(int argc, char **argv) {
 
     SDL_DestroyWindow(window);
 
+    clearSounds();
     clearResources();
 
+    Mix_CloseAudio();
+    Mix_Quit();
     IMG_Quit();
     SDLNet_Quit();
     SDL_Quit();

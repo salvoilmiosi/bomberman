@@ -38,6 +38,7 @@
 			<Add library="SDL2" />
 			<Add library="SDL2_net" />
 			<Add library="SDL2_image" />
+			<Add library="SDL2_mixer" />
 		</Linker>
 		<Unit filename="include/bindings.h" />
 		<Unit filename="include/chat.h" />
@@ -46,6 +47,7 @@
 		<Unit filename="include/ent_item.h" />
 		<Unit filename="include/game_client.h" />
 		<Unit filename="include/game_map.h" />
+		<Unit filename="include/game_sound.h" />
 		<Unit filename="include/game_world.h" />
 		<Unit filename="include/healthbar.h" />
 		<Unit filename="include/interpolator.h" />
@@ -66,6 +68,7 @@
 		<Unit filename="src/ent_item.cpp" />
 		<Unit filename="src/game_client.cpp" />
 		<Unit filename="src/game_map.cpp" />
+		<Unit filename="src/game_sound.cpp" />
 		<Unit filename="src/game_world.cpp" />
 		<Unit filename="src/healthbar.cpp" />
 		<Unit filename="src/main.cpp" />

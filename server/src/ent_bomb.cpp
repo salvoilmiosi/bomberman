@@ -4,6 +4,7 @@
 
 #include "player.h"
 #include "main.h"
+#include "game_sound.h"
 
 bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
     fx = p->getTileX() * TILE_SIZE;
@@ -26,6 +27,8 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
 
     speedx = 0.f;
     speedy = 0.f;
+
+    world->playWave(WAV_PLANT);
 }
 
 void bomb::kick(uint8_t direction) {
@@ -33,6 +36,7 @@ void bomb::kick(uint8_t direction) {
 
     speedx = 0;
     speedy = 0;
+    kick_ticks = 0;
 
     switch (direction) {
     case 0:
@@ -58,6 +62,8 @@ void bomb::kick(uint8_t direction) {
 void bomb::punch(uint8_t direction) {
     if (kicked) kicked = false;
     if (punched) return;
+
+    world->playWave(WAV_PUNCH);
 
     speedx = 0;
     speedy = 0;
@@ -110,10 +116,18 @@ void bomb::tick() {
             world->isWalkable(to_tx, to_ty, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
             fx = to_fx;
             fy = to_fy;
+
+            ++kick_ticks;
+            if (kick_ticks % 5 == 0) {
+                world->playWave(WAV_SLIDE);
+            }
         } else {
             kicked = false;
             fx = getTileX() * TILE_SIZE;
             fy = getTileY() * TILE_SIZE;
+            if (kick_ticks > 1) {
+                world->playWave(WAV_HARDHIT);
+            }
         }
     } else if (punched) {
         fx += speedx;
@@ -137,6 +151,7 @@ void bomb::tick() {
 
         if (fz <= 0) {
             fz = 0.f;
+            world->playWave(WAV_BOUNCE);
             if (world->isWalkable(getTileX(), getTileY(), WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
                 fx = getTileX() * TILE_SIZE;
                 fy = getTileY() * TILE_SIZE;

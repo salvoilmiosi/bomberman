@@ -44,6 +44,7 @@
 		<Unit filename="include/ent_item.h" />
 		<Unit filename="include/game_map.h" />
 		<Unit filename="include/game_server.h" />
+		<Unit filename="include/game_sound.h" />
 		<Unit filename="include/game_world.h" />
 		<Unit filename="include/input_handler.h" />
 		<Unit filename="include/input_net.h" />

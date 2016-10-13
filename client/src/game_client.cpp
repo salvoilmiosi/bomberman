@@ -3,6 +3,7 @@
 #include "game_world.h"
 #include "player.h"
 #include "bindings.h"
+#include "game_sound.h"
 
 #include <windows.h>
 
@@ -109,6 +110,8 @@ void game_client::clear() {
 
     world.clear();
     g_score.clear();
+
+    //stopMusic();
 }
 
 bool game_client::sendInput(uint8_t cmd, bool down) {
@@ -180,6 +183,9 @@ void game_client::tick() {
             break;
         case SERV_MAP:
             mapCmd(packet);
+            break;
+        case SERV_SOUND:
+            soundCmd(packet);
             break;
         }
     }
@@ -339,4 +345,9 @@ void game_client::selfCmd(packet_ext &packet) {
 
 void game_client::mapCmd(packet_ext &packet) {
     world.handleMapPacket(packet);
+}
+
+void game_client::soundCmd(packet_ext &packet) {
+    uint8_t sound_id = packet.readChar();
+    playWaveById(sound_id);
 }
