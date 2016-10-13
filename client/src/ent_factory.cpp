@@ -6,6 +6,8 @@
 #include "ent_broken_wall.h"
 #include "ent_item.h"
 
+#include "tile_trampoline.h"
+
 entity *entity::newObjFromPacket(game_world *world, uint16_t id, packet_ext &packet) {
     uint8_t type = packet.readChar();
     byte_array ba = packet.readByteArray();
@@ -20,6 +22,17 @@ entity *entity::newObjFromPacket(game_world *world, uint16_t id, packet_ext &pac
         return new broken_wall(world, id, ba);
     case TYPE_ITEM:
         return new game_item(world, id, ba);
+    default:
+        return nullptr;
+    }
+}
+
+tile_entity *tile_entity::newTileEntity(tile *t_tile) {
+    uint8_t type = (t_tile->data & 0xe0) >> 5;
+
+    switch (type) {
+    case SPECIAL_TRAMPOLINE:
+        return new tile_trampoline(t_tile);
     default:
         return nullptr;
     }

@@ -19,6 +19,7 @@ void setupBindings() {
     key_bindings[SDL_SCANCODE_SPACE]    = USR_PLANT;
     key_bindings[SDL_SCANCODE_Z]        = USR_PLANT;
     key_bindings[SDL_SCANCODE_X]        = USR_PUNCH;
+    key_bindings[SDL_SCANCODE_C]        = USR_DETONATE;
 
     memset(mouse_bindings, 0, NUM_MOUSE_BUTTONS);
     //mouse_bindings[SDL_BUTTON_LEFT] = USR_PLANT;

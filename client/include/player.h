@@ -13,15 +13,14 @@ static const size_t NAME_SIZE = 32;
 class player: public entity {
 public:
     struct position {
-        float ix, iy;
+        float ix, iy, iz;
         float imoving;
         float idirection;
         float ipunching;
     };
 
 private:
-
-    float x, y;
+    float x, y, z;
 
     int player_num;
 

@@ -7,6 +7,7 @@
 #include "game_world.h"
 #include "chat.h"
 #include "score.h"
+#include "main.h"
 
 static const int TIMEOUT = 2000;
 
@@ -34,11 +35,13 @@ static const uint32_t SERV_MAP         = str2int("MAPP");
 
 class game_client {
 private:
-    UDPsocket socket;
-    SDLNet_SocketSet sock_set;
+    UDPsocket socket = nullptr;
+    SDLNet_SocketSet sock_set = nullptr;
     IPaddress server_ip;
 
     short ping_msecs;
+
+    char user_name[NAME_SIZE];
 
 private:
     game_world world;
@@ -49,11 +52,15 @@ private:
 public:
     game_client();
 
+    virtual ~game_client();
+
 public:
-    bool connect(const char *address, const char *username, int port);
+    bool connect(const char *address, uint16_t port = DEFAULT_PORT);
     void disconnect();
 
-    bool tick();
+    void clear();
+
+    void tick();
 
     void render(SDL_Renderer *renderer);
 
@@ -72,6 +79,7 @@ public:
 
     void sendChatMessage(const char *message);
     void sendScorePacket();
+    void setName(const char *name);
 
 private:
     void messageCmd(packet_ext &);

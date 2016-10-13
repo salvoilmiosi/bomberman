@@ -28,7 +28,7 @@ private:
     uint8_t tx, ty;
 
     int life_ticks;
-    bool destroyed;
+    bool exploded;
 
     uint8_t item_type;
 
@@ -54,6 +54,8 @@ public:
 
     void pickup(class player *p);
     void explode();
+
+    bool isAlive();
 };
 
 #endif // __ENT_ITEM_H__

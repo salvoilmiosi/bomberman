@@ -8,12 +8,11 @@ broken_wall::broken_wall(game_world *world, uint16_t id, byte_array &ba) : entit
 }
 
 void broken_wall::render(SDL_Renderer *renderer) {
-    static const SDL_Rect src_rects_1[] = {
-        TILE(0, 1), TILE(1, 1), TILE(2, 1), TILE(3, 1), TILE(0, 2), TILE(1, 2)
-    };
-
-    static const SDL_Rect src_rects_2[] = {
+    static const SDL_Rect src_rects[] = {
+        TILE(0, 1), TILE(1, 1), TILE(2, 1), TILE(3, 1), TILE(0, 2), TILE(1, 2),
         TILE(3, 3), TILE(4, 3), TILE(0, 4), TILE(1, 4), TILE(2, 4), TILE(3, 4),
+        TILE(0, 3), TILE(1, 3), TILE(2, 3), TILE(3, 3), TILE(4, 3), TILE(5, 3),
+        TILE(0, 4), TILE(1, 4), TILE(2, 4), TILE(3, 4), TILE(4, 4), TILE(5, 4),
     };
 
     int ticks_since_create = SDL_GetTicks() - create_time;
@@ -22,22 +21,12 @@ void broken_wall::render(SDL_Renderer *renderer) {
 
     SDL_Rect dst_rect = world->tileRect(tx, ty);
 
-    const SDL_Rect *src_rects = src_rects_1;
-    SDL_Texture *tileset_texture = tileset_1_texture;
-    switch(zone) {
-    case 0:
-        src_rects = src_rects_1;
-        tileset_texture = tileset_1_texture;
-        break;
-    case 1:
-        src_rects = src_rects_2;
-        tileset_texture = tileset_2_texture;
-        break;
-    default:
-        return;
-    }
+    SDL_Texture *tilesets[] = {
+        tileset_1_texture, tileset_2_texture, tileset_3_texture, tileset_4_texture
+    };
 
-    SDL_RenderCopy(renderer, tileset_texture, src_rects + frame, &dst_rect);
+    const SDL_Rect *start_rect = src_rects + zone * 6;
+    SDL_RenderCopy(renderer, tilesets[zone], start_rect + frame, &dst_rect);
 }
 
 void broken_wall::readFromByteArray(byte_array &ba) {

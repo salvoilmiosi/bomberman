@@ -11,6 +11,11 @@ score::score(game_client *client) : client(client) {
     is_shown = false;
 
     ticks_to_send_score = 0;
+
+    clear();
+}
+
+void score::clear() {
     num_players = 0;
 
     memset(info, 0, sizeof(info));

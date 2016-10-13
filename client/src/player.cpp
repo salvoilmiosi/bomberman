@@ -7,17 +7,17 @@
 #include "chat.h"
 
 player::position operator + (const player::position &a, const player::position &b) {
-    player::position pos = {a.ix + b.ix, a.iy + b.iy, a.imoving + b.imoving, a.idirection + b.idirection, a.ipunching + b.ipunching};
+    player::position pos = {a.ix + b.ix, a.iy + b.iy, a.iz + b.iz, a.imoving + b.imoving, a.idirection + b.idirection, a.ipunching + b.ipunching};
     return pos;
 }
 
 player::position operator - (const player::position &a, const player::position &b) {
-    player::position pos = {a.ix - b.ix, a.iy - b.iy, a.imoving - b.imoving, a.idirection - b.idirection, a.ipunching - b.ipunching};
+    player::position pos = {a.ix - b.ix, a.iy - b.iy, a.iz - b.iz, a.imoving - b.imoving, a.idirection - b.idirection, a.ipunching - b.ipunching};
     return pos;
 }
 
 player::position operator * (const float &f, const player::position &p) {
-    player::position pos = {p.ix * f, p.iy * f, p.imoving * f, p.idirection * f, p.ipunching * f};
+    player::position pos = {p.ix * f, p.iy * f, p.iz * f, p.imoving * f, p.idirection * f, p.ipunching * f};
     return pos;
 }
 
@@ -33,6 +33,7 @@ void player::tick() {
 
     x = (ip.ix / 100.f + 0.5f) * TILE_SIZE;
     y = (ip.iy / 100.f + 0.5f) * TILE_SIZE;
+    z = ip.iz;
 
     moving = ip.imoving > 0.5f;
     direction = ip.idirection + 0.5f;
@@ -134,6 +135,7 @@ void player::render(SDL_Renderer *renderer) {
 
     dst_rect.x = world->mapLeft() + (int)x - TILE_SIZE / 2;
     dst_rect.y = world->mapTop() + (int)y - TILE_SIZE;
+    dst_rect.y -= (int) z;
 
     bool render_black = false;
     if (diseased) {
@@ -141,7 +143,7 @@ void player::render(SDL_Renderer *renderer) {
         render_black = frame == 0;
     }
 
-    if (render_black) {
+    if (alive && render_black) {
         SDL_SetTextureColorMod(players_texture, 0, 0, 0);
     } else {
         SDL_SetTextureColorMod(players_texture, 0xff, 0xff, 0xff);
@@ -165,23 +167,26 @@ const char *player::getName() {
 void player::readFromByteArray(byte_array &ba) {
     int ix = ba.readInt();
     int iy = ba.readInt();
+    int iz = ba.readInt();
 
     setName(ba.readString());
 
     player_num = ba.readChar();
 
-    uint8_t flags = ba.readChar();
+    uint16_t flags = ba.readShort();
 
     alive = (flags & (1 << 0)) != 0;
     spawned = (flags & (1 << 1)) != 0;
 
     bool imoving = (flags & (1 << 2)) != 0;
-    uint8_t idirection = ba.readChar();
-
     bool ipunching = (flags & (1 << 3)) != 0;
 
     diseased = (flags & (1 << 4)) != 0;
 
-    position pos = {float(ix), float(iy), float(imoving), float(idirection), float(ipunching)};
+    //uint8_t ijumping = (flags & (1 << 5)) != 0;
+
+    uint8_t idirection = (flags & 0xc000) >> 14;
+
+    position pos = {float(ix), float(iy), float(iz), float(imoving), float(idirection), float(ipunching)};
     interp.addSnapshot(pos);
 }

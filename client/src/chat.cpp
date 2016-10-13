@@ -4,8 +4,9 @@
 #include "game_client.h"
 
 #include <cstring>
+#include <string>
 
-void chat::addLine(const char *line, uint32_t color) {
+void chat::addLine(uint32_t color, const char *line) {
     chat_line l = {std::string(line), color, SDL_GetTicks()};
     lines.push_back(l);
     if (lines.size() > MAX_LINES) {
@@ -53,6 +54,55 @@ void chat::startTyping() {
     SDL_StartTextInput();
 }
 
+void chat::stopTyping() {
+    if (*typing == '/') {
+        std::string message = typing;
+
+        size_t space_begin = 1;
+        size_t space_in = message.find(' ', space_begin);
+
+        std::string msg = message.substr(space_begin, space_in - space_begin);
+        if (msg == "connect") {
+            std::string address, port;
+
+            if (space_in == std::string::npos) {
+                addLine(COLOR_ORANGE, "Usage: connect address [port]");
+                return;
+            }
+
+            space_begin = space_in + 1;
+            space_in = message.find(' ', space_begin);
+            address = message.substr(space_begin, space_in - space_begin);
+
+            if (space_in == std::string::npos) {
+                client->connect(address.c_str());
+                return;
+            }
+            space_begin = space_in + 1;
+            space_in = message.find(' ', space_begin);
+            port = message.substr(space_begin, space_in - space_begin);
+
+            client->connect(address.c_str(), atoi(port.c_str()));
+        } else if (msg == "disconnect") {
+            client->disconnect();
+        } else if (msg == "name") {
+            const char *name;
+
+            if (space_in == std::string::npos) {
+                addLine(COLOR_ORANGE, "Usage: name new_name");
+                return;
+            }
+            space_begin = space_in + 1;
+            space_in = message.find(' ', space_begin);
+            name = message.substr(space_begin, space_in - space_begin).c_str();
+
+            client->setName(name);
+        }
+    } else {
+        client->sendChatMessage(typing);
+    }
+}
+
 void chat::handleEvent(const SDL_Event &e) {
     switch (e.type) {
     case SDL_KEYDOWN:
@@ -64,7 +114,7 @@ void chat::handleEvent(const SDL_Event &e) {
         case SDL_SCANCODE_RETURN:
             is_typing = false;
             SDL_StopTextInput();
-            client->sendChatMessage(typing);
+            stopTyping();
             break;
         case SDL_SCANCODE_BACKSPACE:
             if (*typing != '\0') {

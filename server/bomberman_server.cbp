@@ -50,6 +50,7 @@
 		<Unit filename="include/main.h" />
 		<Unit filename="include/packet_io.h" />
 		<Unit filename="include/player.h" />
+		<Unit filename="include/tile_trampoline.h" />
 		<Unit filename="include/user.h" />
 		<Unit filename="src/ent_bomb.cpp" />
 		<Unit filename="src/ent_broken_wall.cpp" />

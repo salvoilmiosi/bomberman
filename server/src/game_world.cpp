@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "ent_bomb.h"
+#include "ent_item.h"
 #include "main.h"
 
 game_world::game_world(uint8_t num_players) : server(this, num_players) {
@@ -62,6 +63,8 @@ void game_world::tick() {
 
     int alive_players = 0;
     int num_players = 0;
+
+    g_map.tick();
 
     auto it = entities.begin();
     while (it != entities.end()) {
@@ -134,7 +137,7 @@ void game_world::startRound() {
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, NUM_PLAYERS, random_engine() % 2);
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, NUM_PLAYERS, random_engine() % 4);
 
     for (entity *ent : entities) {
         if (ent && ent->isNotDestroyed()) {
@@ -188,6 +191,14 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
                 }
             }
             return false;
+        case TYPE_ITEM:
+            if (flags & WALK_BLOCK_ITEMS) {
+                game_item *item = dynamic_cast<game_item *>(ent);
+                if (item && item->isAlive()) {
+                    return false;
+                }
+            }
+            break;
         case TYPE_PLAYER:
             if (flags & WALK_BLOCK_PLAYERS) {
                 player *p = dynamic_cast<player *>(ent);

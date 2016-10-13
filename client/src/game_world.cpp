@@ -2,14 +2,18 @@
 
 #include <cstring>
 
-game_world::game_world() {
-
-}
+game_world::game_world() {}
 
 game_world::~game_world() {
+    clear();
+}
+
+void game_world::clear() {
 	for (auto it : entities) {
 		if (it.second) delete it.second;
 	}
+	entities.clear();
+	g_map.clear();
 }
 
 void game_world::addEntity(entity *ent) {
@@ -32,6 +36,8 @@ void game_world::render(SDL_Renderer *renderer) {
 }
 
 void game_world::tick() {
+    g_map.tick();
+
     for (auto it : entities) {
         if (it.second) {
             it.second->tick();

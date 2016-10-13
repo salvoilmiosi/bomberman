@@ -6,13 +6,32 @@
 
 #include <windows.h>
 
-game_client::game_client() : g_chat(this), g_score(this) {}
-
-bool game_client::connect(const char *address, const char *username, int port) {
+game_client::game_client() : g_chat(this), g_score(this) {
     sock_set = SDLNet_AllocSocketSet(1);
+
+    strcpy(user_name, "Player");
+}
+
+game_client::~game_client() {
+    if (sock_set) {
+        SDLNet_FreeSocketSet(sock_set);
+        sock_set = nullptr;
+    }
+
+    if (socket) {
+        SDLNet_UDP_Close(socket);
+        socket = nullptr;
+    }
+}
+
+bool game_client::connect(const char *address, uint16_t port) {
+    if (socket) return false;
+
     socket = SDLNet_UDP_Open(0);
 
     if (!socket) {
+        g_chat.addLine(COLOR_RED, "Error creating socket: %s", SDLNet_GetError());
+        clear();
         return false;
     }
 
@@ -20,23 +39,29 @@ bool game_client::connect(const char *address, const char *username, int port) {
 
     packet_ext packet(socket);
     packet.writeInt(CMD_CONNECT);
-    packet.writeString(username);
+    packet.writeString(user_name);
     packet.sendTo(server_ip);
 
     SDLNet_UDP_AddSocket(sock_set, socket);
 
     if (SDLNet_CheckSockets(sock_set, TIMEOUT) <= 0) {
+        g_chat.addLine(COLOR_RED, "Server at host %s:%d timed out.", address, port);
+        clear();
         return false;
     }
 
     packet_ext accepter(socket, true);
 
     if (accepter.receive() <= 0) {
+        g_chat.addLine(COLOR_RED, "Server at host %s:%d does not respond: %s", address, port, SDLNet_GetError());
+        clear();
         return false;
     }
 
     uint32_t magic = accepter.readInt();
     if (magic != MAGIC) {
+        g_chat.addLine(COLOR_RED, "Error connecting to the host at %s:%d", address, port);
+        clear();
         return false;
     }
 
@@ -45,12 +70,17 @@ bool game_client::connect(const char *address, const char *username, int port) {
     switch (type) {
     case SERV_ACCEPT:
         message = accepter.readString();
-        printf("%s\n", message);
+        g_chat.addLine(COLOR_CYAN, "Server accepted: %s", message);
+        g_chat.addLine(COLOR_CYAN, "Connected to %s:%d", address, port);
         return true;
     case SERV_REJECT:
         message = accepter.readString();
-        printf("%s\n", message);
+        g_chat.addLine(COLOR_RED, "Server rejected: %s", message);
+        clear();
+        return false;
     default:
+        g_chat.addLine(COLOR_RED, "Error: Server returned the wrong command.");
+        clear();
         return false;
     }
 
@@ -59,13 +89,32 @@ bool game_client::connect(const char *address, const char *username, int port) {
 }
 
 void game_client::disconnect() {
+    if (socket == nullptr) return;
+
     packet_ext packet(socket);
     packet.writeInt(CMD_DISCONNECT);
     packet.sendTo(server_ip);
+
+    clear();
+
+    g_chat.addLine(COLOR_CYAN, "Disconnected.");
+}
+
+void game_client::clear() {
+    if (socket == nullptr) return;
+
+    SDLNet_UDP_DelSocket(sock_set, socket);
+    SDLNet_UDP_Close(socket);
+    socket = nullptr;
+
+    world.clear();
+    g_score.clear();
 }
 
 bool game_client::sendInput(uint8_t cmd, bool down) {
     if (cmd == 0) return false;
+    if (socket == nullptr) return false;
+
     packet_ext packet(socket);
     packet.writeInt(CMD_INPUT);
     packet.writeInt(str2int("KBRD"));
@@ -75,6 +124,8 @@ bool game_client::sendInput(uint8_t cmd, bool down) {
 }
 
 bool game_client::sendMouse(int x, int y) {
+    if (socket == nullptr) return false;
+
     packet_ext packet(socket);
     packet.writeInt(CMD_INPUT);
     packet.writeInt(str2int("MOUS"));
@@ -83,12 +134,14 @@ bool game_client::sendMouse(int x, int y) {
     return packet.sendTo(server_ip);
 }
 
-bool game_client::tick() {
+void game_client::tick() {
     static int last_recv_time;
 
     world.tick();
     g_chat.tick();
     g_score.tick();
+
+    if (!socket) return;
 
     while (true) {
         packet_ext packet(socket, true);
@@ -132,10 +185,12 @@ bool game_client::tick() {
     }
 
     if (SDL_GetTicks() - last_recv_time > TIMEOUT) {
-        return false;
+        g_chat.addLine(COLOR_RED, "Timed out from server.");
+        world.clear();
+        clear();
     }
 
-    return true;
+    return;
 }
 
 void game_client::render(SDL_Renderer *renderer) {
@@ -190,6 +245,8 @@ void game_client::handleEvent(const SDL_Event &event) {
 }
 
 void game_client::sendChatMessage(const char *message) {
+    if (socket == nullptr) return;
+
     packet_ext packet(socket);
     packet.writeInt(CMD_CHAT);
     packet.writeString(message);
@@ -197,8 +254,22 @@ void game_client::sendChatMessage(const char *message) {
 }
 
 void game_client::sendScorePacket() {
+    if (socket == nullptr) return;
+
     packet_ext packet(socket);
     packet.writeInt(CMD_SCORE);
+    packet.sendTo(server_ip);
+}
+
+void game_client::setName(const char *name) {
+    strncpy(user_name, name, NAME_SIZE);
+    g_chat.addLine(COLOR_CYAN, "Set name: %s", name);
+
+    if (socket == nullptr) return;
+
+    packet_ext packet(socket);
+    packet.writeInt(CMD_NAME);
+    packet.writeString(name);
     packet.sendTo(server_ip);
 }
 
@@ -207,10 +278,12 @@ void game_client::messageCmd(packet_ext &packet) {
     uint32_t color = packet.readInt();
 
     printf("%s\n", message);
-    g_chat.addLine(message, color);
+    g_chat.addLine(color, message);
 }
 
 void game_client::pingCmd(packet_ext &from) {
+    if (socket == nullptr) return;
+
     packet_ext packet(socket);
     packet.writeInt(CMD_PONG);
     packet.sendTo(server_ip);

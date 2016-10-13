@@ -4,6 +4,8 @@
 #include "ent_item.h"
 #include "main.h"
 
+#include "tile_trampoline.h"
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -24,6 +26,7 @@ player::player(game_world *world, input_handler *handler, uint8_t player_num) : 
 void player::respawn(float x, float y) {
     fx = x;
     fy = y;
+    fz = 0;
 
     spawned = true;
     alive = true;
@@ -43,12 +46,14 @@ void player::respawn(float x, float y) {
     skull_ticks = 0;
 
     item_pickups.clear();
+    planted_bombs.clear();
 
     do_send_updates = true;
 }
 
 void player::kill() {
     if (!alive) return;
+    if (jumping) return;
 
     alive = false;
     death_ticks = PLAYER_DEATH_TICKS;
@@ -75,6 +80,8 @@ void player::handleInput() {
         }
     }
 
+    if (jumping) return;
+
     float to_fx = fx;
     float to_fy = fy;
 
@@ -94,7 +101,11 @@ void player::handleInput() {
                 }
             }
             if (!found_bomb) {
-                world->addEntity(new bomb(world, this));
+                bomb *b = new bomb(world, this);
+                world->addEntity(b);
+                if (pickups & PICKUP_HAS_REMOCON) {
+                    planted_bombs.push_back(b);
+                }
                 --num_bombs;
             }
         }
@@ -131,9 +142,16 @@ void player::handleInput() {
         }
     }
 
+    if (pickups & PICKUP_HAS_REMOCON && ! planted_bombs.empty() && handler->isPressed(USR_DETONATE)) {
+        bomb *b = planted_bombs.front();
+        if (b) {
+            b->explode();
+        }
+    }
+
     float move_speed = speed;
     if (skull_effect == SKULL_RAPID_PACE) {
-        move_speed = 1800.f;
+        move_speed = 1000.f;
     } else if (skull_effect == SKULL_SLOW_PACE) {
         move_speed = 120.f;
     }
@@ -185,12 +203,18 @@ void player::handleInput() {
                 break;
             }
 
-            if (pickups & PICKUP_HAS_KICK) {
-                if (to_tx != getTileX() || to_ty != getTileY()) {
+            if (to_tx != getTileX() || to_ty != getTileY()) {
+                if (pickups & PICKUP_HAS_KICK) {
                     entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
                     if (*ents) {
-                        bomb *b = dynamic_cast<bomb *>(*ents);
-                        b->kick(direction);
+                        if (kick_ticks <= 0) {
+                            bomb *b = dynamic_cast<bomb *>(*ents);
+                            b->kick(direction);
+                        } else {
+                            --kick_ticks;
+                        }
+                    } else {
+                        kick_ticks = KICK_TICKS;
                     }
                 }
             }
@@ -203,9 +227,57 @@ void player::handleInput() {
     }
 }
 
+void player::explodedBomb(bomb *b) {
+    ++num_bombs;
+    auto it = std::find(planted_bombs.begin(), planted_bombs.end(), b);
+    if (it != planted_bombs.end()) {
+        planted_bombs.erase(it);
+    }
+}
+
+static const float JUMP_SPEED = 600.f;
+static const float JUMP_Z_ACCEL = 800.f;
+
+void player::checkTrampoline() {
+    if (jumping) return;
+
+    tile *walkingon = world->getMap().getTile(getTileX(), getTileY());
+    if (walkingon->type == TILE_SPECIAL) {
+        tile_entity *ent = world->getMap().getSpecial(walkingon);
+        if (ent) {
+            switch (ent->getType()) {
+            case SPECIAL_TRAMPOLINE:
+                {
+                    tile_trampoline *tramp = dynamic_cast<tile_trampoline *>(ent);
+                    if (tramp->jump()) {
+                        jumping = true;
+
+                        speedz = JUMP_SPEED / TICKRATE;
+                        fz = 0.f;
+                    }
+                    break;
+                }
+            default:
+                break;
+            }
+        }
+    }
+}
+
 void player::tick() {
     if (alive) {
         handleInput();
+        checkTrampoline();
+
+        if (jumping) {
+            fz += speedz;
+            speedz -= JUMP_Z_ACCEL / (TICKRATE * TICKRATE);
+            if (fz <= 0.f) {
+                jumping = false;
+                fz = 0.f;
+            }
+        }
+
         entity **ents = world->findEntities(getTileX(), getTileY());
         for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
             entity *ent = ents[i];
@@ -272,17 +344,20 @@ byte_array player::toByteArray() {
 
     ba.writeInt(fx);
     ba.writeInt(fy);
+    ba.writeInt(fz);
+
     ba.writeString(player_name, PLAYERNAME_SIZE);
     ba.writeChar(player_num);
 
-    uint8_t flags = 0;
+    uint16_t flags = 0;
     flags |= (1 << 0) * alive;
     flags |= (1 << 1) * spawned;
     flags |= (1 << 2) * moving;
     flags |= (1 << 3) * (punch_ticks > 0);
     flags |= (1 << 4) * (skull_ticks > 0);
-    ba.writeChar(flags);
-    ba.writeChar(direction);
+    flags |= (1 << 5) * jumping;
+    flags |= (direction & 0x3) << 14;
+    ba.writeShort(flags);
 
     return ba;
 }

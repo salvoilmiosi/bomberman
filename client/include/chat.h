@@ -18,6 +18,16 @@ static const int CHAT_TYPING_SIZE = 128;
 
 static const int LINE_LIFE = 10000;
 
+static const uint32_t COLOR_RED        = 0xff0000ff;
+static const uint32_t COLOR_GREEN      = 0x00ff00ff;
+static const uint32_t COLOR_BLUE       = 0x0000ffff;
+static const uint32_t COLOR_MAGENTA    = 0xff00ffff;
+static const uint32_t COLOR_YELLOW     = 0xffff00ff;
+static const uint32_t COLOR_CYAN       = 0x00ffffff;
+static const uint32_t COLOR_BLACK      = 0x000000ff;
+static const uint32_t COLOR_WHITE      = 0xffffffff;
+static const uint32_t COLOR_ORANGE     = 0xff8000ff;
+
 class chat {
 private:
     struct chat_line {
@@ -38,13 +48,21 @@ public:
     chat(class game_client *client) : client(client) {}
 
 public:
-    void addLine(const char *line, uint32_t color);
+    template<typename ... T> void addLine(uint32_t color, const char *format, T ... args) {
+        char line[CHAT_TYPING_SIZE];
+        snprintf(line, CHAT_TYPING_SIZE, format, args ...);
+        addLine(color, line);
+    }
+
+    void addLine(uint32_t color, const char *line);
 
     void tick();
 
     void render(SDL_Renderer *renderer);
 
     void startTyping();
+
+    void stopTyping();
 
     bool isTyping() {
         return is_typing;

@@ -52,6 +52,8 @@ public:
     virtual ~game_world();
 
 public:
+    void clear();
+
     void addEntity(entity *ent);
     void removeEntity(entity *ent);
 

@@ -10,7 +10,7 @@ static const float PUNCH_SPEED = 720.f;
 static const float PUNCH_SPEED_BOUNCE = 400.f;
 static const float PUNCH_SPEED_Z = 600.f;
 static const float PUNCH_SPEED_Z_BOUNCE = 360.f;
-static const float Z_ACCEL = 1550.f;
+static const float PUNCH_Z_ACCEL = 2880.f;
 
 class bomb : public entity {
 private:
@@ -32,10 +32,8 @@ private:
     bool kicked = false;
     bool punched = false;
 
-    int punched_ticks;
-
-    bool piercing;
-    bool remocon;
+    bool piercing = false;
+    bool remocon = false;
 
     friend class explosion;
 
@@ -47,6 +45,8 @@ public:
 
     void kick(uint8_t direction);
     void punch(uint8_t direction);
+
+    void explode();
 
     bool isFlying() {
         return punched;
@@ -62,8 +62,6 @@ public:
 
 private:
     byte_array toByteArray();
-
-    void explode();
 };
 
 #endif // __ENT_BOMB_H__

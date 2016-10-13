@@ -60,17 +60,17 @@ int main(int argc, char **argv) {
 
     setupBindings();
 
-    const char *username = "Salvo";
-    const char *address = "localhost";
+    const char *username = nullptr;
+    const char *address = nullptr;
     uint16_t port = DEFAULT_PORT;
 
     if (argc > 1) username = argv[1];
     if (argc > 2) address = argv[2];
     if (argc > 3) port = atoi(argv[3]);
 
-    if (!client.connect(address, username, port)) {
-        fprintf(stderr, "Could not connect to server\n");
-        return 1;
+    if (username && address) {
+        client.setName(username);
+        client.connect(address, port);
     }
 
     SDL_Event event;
@@ -93,9 +93,7 @@ int main(int argc, char **argv) {
 		lastTime = now;
 		bool shouldRender = true;
 		while (unprocessed >= 1) {
-			if (!client.tick()) {
-                quit = true;
-			}
+			client.tick();
 
 			++ticks;
 			--unprocessed;

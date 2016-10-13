@@ -31,6 +31,8 @@ public:
     score(class game_client *client);
 
 public:
+    void clear();
+
     void tick();
 
     void render(SDL_Renderer *renderer);

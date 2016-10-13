@@ -31,6 +31,9 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
 void bomb::kick(uint8_t direction) {
     if (kicked || punched) return;
 
+    speedx = 0;
+    speedy = 0;
+
     switch (direction) {
     case 0:
         speedy = -KICK_SPEED / TICKRATE;
@@ -56,6 +59,9 @@ void bomb::punch(uint8_t direction) {
     if (kicked) kicked = false;
     if (punched) return;
 
+    speedx = 0;
+    speedy = 0;
+
     switch (direction) {
     case 0:
         speedy = -PUNCH_SPEED / TICKRATE;
@@ -74,8 +80,6 @@ void bomb::punch(uint8_t direction) {
     }
 
     speedz = PUNCH_SPEED_Z / TICKRATE;
-
-    punched_ticks = 0;
 
     punched = true;
     do_send_updates = true;
@@ -103,7 +107,7 @@ void bomb::tick() {
         int to_ty = (check_fy / TILE_SIZE) + 0.5f;
 
         if ((to_tx == getTileX() && to_ty == getTileY()) ||
-            world->isWalkable(to_tx, to_ty, WALK_BLOCK_PLAYERS)) {
+            world->isWalkable(to_tx, to_ty, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
             fx = to_fx;
             fy = to_fy;
         } else {
@@ -112,11 +116,11 @@ void bomb::tick() {
             fy = getTileY() * TILE_SIZE;
         }
     } else if (punched) {
-        ++punched_ticks;
-
         fx += speedx;
         fy += speedy;
-        fz = speedz * punched_ticks - Z_ACCEL * punched_ticks * punched_ticks / TICKRATE / TICKRATE;
+        fz += speedz;
+
+        speedz -= PUNCH_Z_ACCEL / (TICKRATE * TICKRATE);
 
         if (speedx > 0 && fx > TILE_SIZE * MAP_WIDTH) {
             fx -= TILE_SIZE * MAP_WIDTH;
@@ -133,7 +137,7 @@ void bomb::tick() {
 
         if (fz <= 0) {
             fz = 0.f;
-            if (world->isWalkable(getTileX(), getTileY(), WALK_BLOCK_PLAYERS)) {
+            if (world->isWalkable(getTileX(), getTileY(), WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
                 fx = getTileX() * TILE_SIZE;
                 fy = getTileY() * TILE_SIZE;
                 punched = false;
@@ -143,22 +147,22 @@ void bomb::tick() {
                 if (speedy > 0) speedy = PUNCH_SPEED_BOUNCE / TICKRATE;
                 else if (speedy < 0) speedy = -PUNCH_SPEED_BOUNCE / TICKRATE;
                 speedz = PUNCH_SPEED_Z_BOUNCE / TICKRATE;
-
-                punched_ticks = 0;
             }
         }
     }
 
-    if (life_ticks == 0) {
-        explode();
+    if (!remocon) {
+        if (life_ticks <= 0 && ! isFlying()) {
+            explode();
+        }
+        --life_ticks;
     }
-    --life_ticks;
 }
 
 void bomb::explode() {
     if (exploded) return;
 
-    ++p->num_bombs;
+    p->explodedBomb(this);
 
     exploded = true;
     destroy();

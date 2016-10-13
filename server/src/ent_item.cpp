@@ -7,12 +7,12 @@ game_item::game_item(game_world *world, tile *t, uint8_t it_type) : entity(world
     tx = world->getMap().getTileX(t);
     ty = world->getMap().getTileY(t);
 
-    destroyed = false;
+    exploded = false;
     life_ticks = TICKRATE * 2 / 3;
 }
 
 void game_item::tick() {
-    if (destroyed) {
+    if (exploded) {
         if (life_ticks == 0) {
             destroy();
         }
@@ -21,7 +21,7 @@ void game_item::tick() {
 }
 
 void game_item::pickup(player *p) {
-    if (destroyed) return;
+    if (exploded) return;
 
     switch (item_type) {
     case ITEM_BOMB:
@@ -68,11 +68,15 @@ byte_array game_item::toByteArray() {
     ba.writeChar(tx);
     ba.writeChar(ty);
     ba.writeChar(item_type);
-    ba.writeChar(destroyed ? 1 : 0);
+    ba.writeChar(exploded ? 1 : 0);
 
     return ba;
 }
 
 void game_item::explode() {
-    destroyed = true;
+    exploded = true;
+}
+
+bool game_item::isAlive() {
+    return !exploded;
 }

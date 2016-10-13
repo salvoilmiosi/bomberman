@@ -2,8 +2,7 @@
 
 #include "player.h"
 
-game_server::game_server(game_world *world, uint8_t num_players) : world(world) {
-    NUM_PLAYERS = num_players;
+game_server::game_server(game_world *world, uint8_t max_players) : world(world), max_players(max_players) {
     open = false;
 }
 
@@ -109,12 +108,10 @@ int game_server::game_thread_run() {
             }
         }
 
-        if (tick_count % SNAPSHOT_RATE == 0) {
-            packet_ext snapshot = snapshotPacket();
-            sendToAll(snapshot);
-            packet_ext m_packet = mapPacket();
-            sendToAll(m_packet);
-        }
+        packet_ext snapshot = snapshotPacket();
+        sendToAll(snapshot);
+        packet_ext m_packet = mapPacket();
+        sendToAll(m_packet);
 
         world->tick();
 
@@ -208,7 +205,7 @@ void game_server::connectCmd(packet_ext &from) {
 
     snapshotPacket(true).sendTo(from.getAddress());
 
-    if (users.size() <= NUM_PLAYERS) {
+    if (users.size() <= max_players) {
         u->createPlayer(world, world->getNextPlayerNum());
         world->addEntity(u->getPlayer());
 
@@ -219,7 +216,7 @@ void game_server::connectCmd(packet_ext &from) {
 
         messageToAll(COLOR_YELLOW, "%s connected", u->getName());
 
-        if (users.size() == NUM_PLAYERS) {
+        if (users.size() == max_players) {
             world->startRound();
         }
     } else {
@@ -248,7 +245,9 @@ void game_server::nameCmd(packet_ext &packet) {
 
     char *newName = findNewName(packet.readString());
 
-    messageToAll(COLOR_YELLOW, "%s changed name to %s\n", u->getName(), newName);
+    messageToAll(COLOR_YELLOW, "%s changed name to %s", u->getName(), newName);
+
+    u->setName(newName);
 }
 
 void game_server::disconnectCmd(packet_ext &packet) {

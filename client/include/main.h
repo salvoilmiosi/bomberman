@@ -1,7 +1,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-static const char *const WINDOW_TITLE = "Online game base";
+static const char *const WINDOW_TITLE = "Bomberman";
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 700;
 

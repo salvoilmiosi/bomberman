@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    uint8_t num_players = 2;
+    uint8_t num_players = 1;
     uint16_t port = DEFAULT_PORT;
 
     if (argc > 1) num_players = atoi(argv[1]);

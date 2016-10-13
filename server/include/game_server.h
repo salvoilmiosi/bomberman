@@ -10,11 +10,10 @@
 #include "packet_io.h"
 #include "user.h"
 
-static const int TICKRATE = 60;
 static const int MAX_ATTEMPTS = 3;
 static const int TIMEOUT = 1000;
 
-static const int SNAPSHOT_RATE = 1;
+static const int TICKRATE = 60;
 
 static const uint16_t MAX_USERS = 128;
 
@@ -51,16 +50,16 @@ static const uint32_t COLOR_WHITE      = 0xffffffff;
 class game_server {
 private:
     bool open;
-    UDPsocket socket_serv;
-
-    std::map<Uint64, user *> users;
-    SDLNet_SocketSet sock_set;
-
-    SDL_Thread *game_thread;
 
     class game_world *world;
 
-    uint8_t NUM_PLAYERS;
+    std::map<Uint64, user *> users;
+    uint8_t max_players;
+
+    SDLNet_SocketSet sock_set;
+    UDPsocket socket_serv;
+
+    SDL_Thread *game_thread;
 
 public:
     game_server(class game_world *world, uint8_t num_players);
@@ -76,12 +75,13 @@ public:
         return open;
     }
 
-    int game_thread_run();
-
     void sendAddPacket(class entity *ent);
     void sendRemovePacket(class entity *ent);
 
 private:
+    friend int game_thread_func(void *data);
+    int game_thread_run();
+
     int receive(packet_ext &packet);
     void handlePacket(packet_ext &packet);
 

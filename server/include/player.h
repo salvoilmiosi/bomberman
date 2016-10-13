@@ -16,6 +16,8 @@ static const uint8_t PICKUP_HAS_KICK = 1 << 1;
 static const uint8_t PICKUP_HAS_REDBOMB = 1 << 2;
 static const uint8_t PICKUP_HAS_REMOCON = 1 << 3;
 
+static const int KICK_TICKS = TICKRATE / 20;
+
 class player: public entity {
 private:
     friend class bomb;
@@ -43,10 +45,16 @@ private:
 
     std::deque<uint8_t> item_pickups;
 
+    std::deque<class bomb *> planted_bombs;
+
     float fx = 0.f;
     float fy = 0.f;
+    float fz = 0.f;
+
+    float speedz = 0.f;
 
     bool moving;
+    bool jumping;
     uint8_t direction;
 
     uint8_t pickups;
@@ -55,6 +63,7 @@ private:
 
     int punch_ticks;
     int skull_ticks;
+    int kick_ticks;
 
     int victories;
 
@@ -99,8 +108,11 @@ public:
     }
 
 private:
+    void explodedBomb(class bomb *b);
     void handleInput();
     void spawnItems();
+
+    void checkTrampoline();
 };
 
 #endif // __PLAYER_H__

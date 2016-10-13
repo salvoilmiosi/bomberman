@@ -36,6 +36,8 @@ public:
         return username;
     }
 
+    void setName(const char *name);
+
     void setPlayer(class player *p);
 
     const IPaddress &getAddress() {

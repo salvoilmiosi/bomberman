@@ -19,6 +19,7 @@ static const int COUNTDOWN_SECONDS = 4;
 
 static const uint8_t WALK_IGNORE_BOMBS = (1 << 0);
 static const uint8_t WALK_BLOCK_PLAYERS = (1 << 1);
+static const uint8_t WALK_BLOCK_ITEMS = (1 << 2);
 
 class entity {
 private:
