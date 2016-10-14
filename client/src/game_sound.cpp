@@ -95,3 +95,7 @@ void playWaveById(uint8_t sound_id) {
         break;
     }
 }
+
+void setMusicVolume(int volume) {
+    Mix_VolumeMusic(volume);
+}

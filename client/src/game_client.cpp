@@ -5,8 +5,6 @@
 #include "bindings.h"
 #include "game_sound.h"
 
-#include <windows.h>
-
 game_client::game_client() : g_chat(this), g_score(this) {
     sock_set = SDLNet_AllocSocketSet(1);
 

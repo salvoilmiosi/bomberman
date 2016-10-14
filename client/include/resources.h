@@ -1,6 +1,8 @@
 #ifndef __RESOURCES_H__
 #define __RESOURCES_H__
 
+#ifdef _WINDOWS_
+
 #define IDI_ICON1 1
 #define IDB_ICON2 2
 #define IDB_TEXT 3
@@ -24,6 +26,33 @@
 #define IDW_BOUNCE 29
 #define IDW_JUMP 30
 
+#else
+
+#define IDI_ICON1 "resources/icon.ico"
+#define IDB_ICON2 "resources/icon.png"
+#define IDB_TEXT "resources/text.png"
+#define IDB_TILESET_1 "resources/tileset_1.png"
+#define IDB_TILESET_2 "resources/tileset_2.png"
+#define IDB_TILESET_3 "resources/tileset_3.png"
+#define IDB_TILESET_4 "resources_tileset_4.png"
+#define IDB_EXPLOSIONS "resources/explosions.png"
+#define IDB_ITEMS "resources/items.png"
+#define IDB_PLAYERS "resources/players.png"
+#define IDM_BATTLE ""
+#define IDM_LEVEL1 ""
+#define IDW_PLANT ""
+#define IDW_EXPLODE ""
+#define IDW_PICKUP ""
+#define IDW_SKULL ""
+#define IDW_DEATH ""
+#define IDW_PUNCH ""
+#define IDW_SLIDE ""
+#define IDW_HARDHIT ""
+#define IDW_BOUNCE ""
+#define IDW_JUMP ""
+
+#endif
+
 #ifdef __cplusplus
 
 #include <SDL2/SDL.h>
@@ -41,7 +70,11 @@ extern SDL_Texture *explosions_texture;
 extern SDL_Texture *items_texture;
 extern SDL_Texture *players_texture;
 
+#ifdef _WINDOWS_
 SDL_RWops *getResourceRW(int res_id, const char *type);
+#else
+#define getResourceRW(res_id, type) SDL_RWFromFile(res_id, "rb")
+#endif
 
 void loadResources(SDL_Renderer *renderer);
 

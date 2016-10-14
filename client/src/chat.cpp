@@ -2,8 +2,10 @@
 #include "resources.h"
 #include "main.h"
 #include "game_client.h"
+#include "game_sound.h"
 
 #include <cstring>
+#include <cstdlib>
 #include <string>
 
 void chat::addLine(uint32_t color, const char *line) {
@@ -105,7 +107,9 @@ void chat::stopTyping() {
 
             space_begin = space_in + 1;
             space_in = message.find(' ', space_begin);
-            client->setMusicVolume(message.substr(space_begin, space_in - space_begin).stoi() * MIX_MAX_VOLUME / 100);
+
+            const char *volume = message.substr(space_begin, space_in - space_begin).c_str();
+            setMusicVolume(atoi(volume) * MIX_MAX_VOLUME / 100);
         }
     } else {
         client->sendChatMessage(typing);

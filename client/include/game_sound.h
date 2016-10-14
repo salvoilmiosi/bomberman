@@ -37,4 +37,6 @@ void stopMusic();
 void playWave(Mix_Chunk *wave);
 void playWaveById(uint8_t sound_id);
 
+void setMusicVolume(int volume);
+
 #endif // __GAME_SOUND_H__

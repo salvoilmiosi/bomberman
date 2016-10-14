@@ -1,8 +1,14 @@
 #include "resources.h"
 
 #include <SDL2/SDL_image.h>
-#include <windows.h>
 #include <cstdio>
+
+#ifdef _WINDOWS_
+#define RES_ID_TYPE int
+#include <windows.h>
+#else
+#define RES_ID_TYPE const char *
+#endif
 
 SDL_Texture *text_texture = nullptr;
 
@@ -16,6 +22,7 @@ SDL_Texture *players_texture = nullptr;
 
 SDL_Surface *icon_surface = nullptr;
 
+#ifdef _WINDOWS_
 SDL_RWops *getResourceRW(int res_id, const char *type) {
     HMODULE hModule = GetModuleHandle(nullptr);
     HRSRC hRes = FindResource(hModule, MAKEINTRESOURCE(res_id), type);
@@ -32,12 +39,13 @@ SDL_RWops *getResourceRW(int res_id, const char *type) {
 
     return SDL_RWFromConstMem(res_data, res_size);
 }
+#endif
 
-SDL_Surface *loadSurface(int res_id) {
+SDL_Surface *loadSurface(RES_ID_TYPE res_id) {
     return IMG_Load_RW(getResourceRW(res_id, "PNG"), 1);
 }
 
-SDL_Texture *loadTexture(SDL_Renderer *renderer, int res_id) {
+SDL_Texture *loadTexture(SDL_Renderer *renderer, RES_ID_TYPE res_id) {
     SDL_Surface *surf = loadSurface(res_id);
     if (!surf) return nullptr;
     SDL_Texture *text = SDL_CreateTextureFromSurface(renderer, surf);

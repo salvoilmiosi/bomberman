@@ -6,6 +6,7 @@
 #include "chat.h"
 
 #include <cstring>
+#include <cstdio>
 
 score::score(game_client *client) : client(client) {
     is_shown = false;
@@ -55,13 +56,18 @@ void score::render(SDL_Renderer *renderer) {
         score_info si = info[i];
 
         if (si.is_player) {
-            renderText(x, y, renderer, itoa(si.player_num, buffer, 10), 0xffffffff);
-            renderText(x + 200, y, renderer, itoa(si.victories, buffer, 10), 0xffffffff);
+            sprintf(buffer, "%d", si.player_num);
+            renderText(x, y, renderer, buffer, 0xffffffff);
+
+            sprintf(buffer, "%d", si.victories);
+            renderText(x + 200, y, renderer, buffer, 0xffffffff);
         } else {
             renderText(x + 200, y, renderer, "Spectator", 0xffff00ff);
         }
         renderText(x + 100, y, renderer, si.player_name, 0xffffffff);
-        renderText(x + 300, y, renderer, itoa(si.ping, buffer, 10), 0xffffffff);
+
+        sprintf(buffer, "%d", si.ping);
+        renderText(x + 300, y, renderer, buffer, 0xffffffff);
 
         y += CHAR_H + CHAT_LINE_SPACE;
     }
