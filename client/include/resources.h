@@ -1,6 +1,8 @@
 #ifndef __RESOURCES_H__
 #define __RESOURCES_H__
 
+#if defined(_WIN32) || (! defined(__cplusplus))
+
 #define IDI_ICON1 1
 #define IDB_ICON2 2
 #define IDB_TEXT 3
@@ -25,7 +27,7 @@
 #define IDW_BOUNCE 29
 #define IDW_JUMP 30
 
-#ifndef _WIN32
+#else
 
 #define IDI_ICON1 "resource/icon.ico"
 #define IDB_ICON2 "resource/icon.png"
@@ -39,18 +41,16 @@
 #define IDB_PLAYERS "resource/players.png"
 #define IDM_BATTLE ""
 #define IDM_LEVEL1 ""
-#define IDW_PLANT ""
-#define IDW_EXPLODE ""
-#define IDW_PICKUP ""
-#define IDW_SKULL ""
-#define IDW_DEATH ""
-#define IDW_PUNCH ""
-#define IDW_SLIDE ""
-#define IDW_HARDHIT ""
-#define IDW_BOUNCE ""
-#define IDW_JUMP ""
-
-#else
+#define IDW_PLANT "resource/sound/plant.wav"
+#define IDW_EXPLODE "resource/sound/explode.wav"
+#define IDW_PICKUP "resource/sound/pickup.wav"
+#define IDW_SKULL "resource/sound/skull.wav"
+#define IDW_DEATH "resource/sound/death.wav"
+#define IDW_PUNCH "resource/sound/punch.wav"
+#define IDW_SLIDE "resource/sound/slide.wav"
+#define IDW_HARDHIT "resource/sound/hardhit.wav"
+#define IDW_BOUNCE "resource/sound/bounce.wav"
+#define IDW_JUMP "resource/sound/jump.wav"
 
 #endif
 
