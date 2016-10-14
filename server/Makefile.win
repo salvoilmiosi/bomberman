@@ -5,10 +5,10 @@ OUT_DIR = bin
 
 CC = g++
 CCFLAGS = -g -Wall --std=c++11 -I$(INCLUDE_DIR)
-LIBS = -lSDL2 -lSDL2_net
-MKDIR = mkdir -p
+LIBS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_net
+MKDIR = mkdir
 
-EXEC = $(OUT_DIR)/bomberman
+EXEC = $(OUT_DIR)/bomberman_server.exe
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS = $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SOURCES:.cpp=.o))
 
@@ -29,4 +29,4 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.h
 	$(CC) -c $(CCFLAGS) $< -o $@
 
 clean:
-	rm -f $(EXEC) $(OBJECTS)
+	del /f $(OUT_DIR)\*.exe $(OBJ_DIR)\*.o

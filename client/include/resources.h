@@ -1,8 +1,6 @@
 #ifndef __RESOURCES_H__
 #define __RESOURCES_H__
 
-#ifdef _WINDOWS_
-
 #define IDI_ICON1 1
 #define IDB_ICON2 2
 #define IDB_TEXT 3
@@ -27,7 +25,7 @@
 #define IDW_BOUNCE 29
 #define IDW_JUMP 30
 
-#else
+#ifndef _WIN32
 
 #define IDI_ICON1 "resource/icon.ico"
 #define IDB_ICON2 "resource/icon.png"
@@ -52,6 +50,8 @@
 #define IDW_BOUNCE ""
 #define IDW_JUMP ""
 
+#else
+
 #endif
 
 #ifdef __cplusplus
@@ -71,7 +71,7 @@ extern SDL_Texture *explosions_texture;
 extern SDL_Texture *items_texture;
 extern SDL_Texture *players_texture;
 
-#ifdef _WINDOWS_
+#ifdef _WIN32
 SDL_RWops *getResourceRW(int res_id, const char *type);
 #else
 #define getResourceRW(res_id, type) SDL_RWFromFile(res_id, "rb")

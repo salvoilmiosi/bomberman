@@ -2,6 +2,7 @@
 *.o
 *.res
 *.bat
+*.cbp
 *.depend
 *.layout
 *.ogg

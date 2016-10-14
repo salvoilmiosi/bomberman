@@ -2,6 +2,7 @@
 #define __GAME_CLIENT_H__
 
 #include <SDL2/SDL_net.h>
+#include <cstring>
 
 #include "packet_io.h"
 #include "game_world.h"

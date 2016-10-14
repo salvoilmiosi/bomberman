@@ -3,7 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <cstdio>
 
-#ifdef _WINDOWS_
+#ifdef _WIN32
 #define RES_ID_TYPE int
 #include <windows.h>
 #else
@@ -22,7 +22,7 @@ SDL_Texture *players_texture = nullptr;
 
 SDL_Surface *icon_surface = nullptr;
 
-#ifdef _WINDOWS_
+#ifdef _WIN32
 SDL_RWops *getResourceRW(int res_id, const char *type) {
     HMODULE hModule = GetModuleHandle(nullptr);
     HRSRC hRes = FindResource(hModule, MAKEINTRESOURCE(res_id), type);
