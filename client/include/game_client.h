@@ -50,6 +50,8 @@ private:
     chat g_chat;
     score g_score;
 
+    bool is_open = true;
+
 public:
     game_client();
 
@@ -81,6 +83,11 @@ public:
     void sendChatMessage(const char *message);
     void sendScorePacket();
     void setName(const char *name);
+    void quit();
+
+    bool isOpen() {
+        return is_open;
+    }
 
 private:
     void messageCmd(packet_ext &);

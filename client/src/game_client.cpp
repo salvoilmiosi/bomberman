@@ -99,6 +99,11 @@ void game_client::disconnect() {
     g_chat.addLine(COLOR_CYAN, "Disconnected.");
 }
 
+void game_client::quit() {
+    disconnect();
+    is_open = false;
+}
+
 void game_client::clear() {
     if (socket == nullptr) return;
 

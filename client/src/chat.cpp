@@ -110,6 +110,10 @@ void chat::stopTyping() {
 
             const char *volume = message.substr(space_begin, space_in - space_begin).c_str();
             setMusicVolume(atoi(volume) * MIX_MAX_VOLUME / 100);
+        } else if (msg == "quit") {
+            client->quit();
+        } else {
+            addLine(COLOR_ORANGE, "%s is not a valid command", msg.c_str());
         }
     } else {
         client->sendChatMessage(typing);

@@ -12,6 +12,7 @@
 #include "main.h"
 #include "game_client.h"
 #include "game_sound.h"
+
 #include "resources.h"
 #include "bindings.h"
 
@@ -85,7 +86,6 @@ int main(int argc, char **argv) {
     }
 
     SDL_Event event;
-    bool quit = false;
 
 	int lastTime = SDL_GetTicks();
 	float unprocessed = 0;
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 
     SDL_StopTextInput();
 
-	while (!quit) {
+	while (client.isOpen()) {
 		int now = SDL_GetTicks();
 		unprocessed += (now - lastTime) / msPerTick;
 		lastTime = now;
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
-				quit = true;
+                client.quit();
 				break;
             default:
                 client.handleEvent(event);
@@ -140,8 +140,6 @@ int main(int argc, char **argv) {
 			ticks = 0;
 		}
 	}
-
-    client.disconnect();
 
     SDL_DestroyWindow(window);
 

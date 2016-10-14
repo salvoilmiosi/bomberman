@@ -16,6 +16,7 @@
 #define IDM_BATTLE 20
 #define IDM_LEVEL1 200
 #define IDW_PLANT 21
+
 #define IDW_EXPLODE 22
 #define IDW_PICKUP 23
 #define IDW_SKULL 24
@@ -28,16 +29,16 @@
 
 #else
 
-#define IDI_ICON1 "resources/icon.ico"
-#define IDB_ICON2 "resources/icon.png"
-#define IDB_TEXT "resources/text.png"
-#define IDB_TILESET_1 "resources/tileset_1.png"
-#define IDB_TILESET_2 "resources/tileset_2.png"
-#define IDB_TILESET_3 "resources/tileset_3.png"
-#define IDB_TILESET_4 "resources_tileset_4.png"
-#define IDB_EXPLOSIONS "resources/explosions.png"
-#define IDB_ITEMS "resources/items.png"
-#define IDB_PLAYERS "resources/players.png"
+#define IDI_ICON1 "resource/icon.ico"
+#define IDB_ICON2 "resource/icon.png"
+#define IDB_TEXT "resource/text.png"
+#define IDB_TILESET_1 "resource/tileset_1.png"
+#define IDB_TILESET_2 "resource/tileset_2.png"
+#define IDB_TILESET_3 "resource/tileset_3.png"
+#define IDB_TILESET_4 "resource/tileset_4.png"
+#define IDB_EXPLOSIONS "resource/explosions.png"
+#define IDB_ITEMS "resource/items.png"
+#define IDB_PLAYERS "resource/players.png"
 #define IDM_BATTLE ""
 #define IDM_LEVEL1 ""
 #define IDW_PLANT ""
