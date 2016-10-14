@@ -10,5 +10,6 @@ static const uint8_t WAV_PUNCH = 6;
 static const uint8_t WAV_SLIDE = 7;
 static const uint8_t WAV_HARDHIT = 8;
 static const uint8_t WAV_BOUNCE = 9;
+static const uint8_t WAV_JUMP = 10;
 
 #endif // __GAME_SOUND_H__

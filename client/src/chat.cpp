@@ -97,6 +97,15 @@ void chat::stopTyping() {
             name = message.substr(space_begin, space_in - space_begin).c_str();
 
             client->setName(name);
+        } else if (msg == "music_volume") {
+            if (space_in == std::string::npos) {
+                addLine(COLOR_ORANGE, "Usage: music_volume [0-100]");
+                return;
+            }
+
+            space_begin = space_in + 1;
+            space_in = message.find(' ', space_begin);
+            client->setMusicVolume(message.substr(space_begin, space_in - space_begin).stoi() * MIX_MAX_VOLUME / 100);
         }
     } else {
         client->sendChatMessage(typing);

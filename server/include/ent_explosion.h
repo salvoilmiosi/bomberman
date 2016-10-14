@@ -3,7 +3,8 @@
 
 #include "game_world.h"
 
-static const float EXPLOSION_LIFE = TICKRATE * 2 / 3;
+static const int EXPLOSION_LIFE = TICKRATE * 2 / 3;
+static const int EXPLOSION_CHAIN_DELAY = TICKRATE / 5;
 
 class explosion : public entity {
 private:

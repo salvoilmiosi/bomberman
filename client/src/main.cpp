@@ -71,8 +71,6 @@ int main(int argc, char **argv) {
 
     setupBindings();
 
-    playMusic(music_level1);
-
     const char *username = nullptr;
     const char *address = nullptr;
     uint16_t port = DEFAULT_PORT;

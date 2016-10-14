@@ -22,6 +22,7 @@
 #define IDW_SLIDE 27
 #define IDW_HARDHIT 28
 #define IDW_BOUNCE 29
+#define IDW_JUMP 30
 
 #ifdef __cplusplus
 

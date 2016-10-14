@@ -13,7 +13,7 @@ IDB_PLAYERS PNG "players.png"
 IDB_TEXT PNG "text.png"
 
 IDM_BATTLE OGG "sound/ogg/sbm-12.ogg"
-IDM_LEVEL1 OGG "sound/ogg/sbm-04.ogg"
+//IDM_LEVEL1 OGG "sound/ogg/sbm-04.ogg"
 
 IDW_PLANT WAV "sound/plant.wav"
 IDW_EXPLODE WAV "sound/explode.wav"
@@ -24,3 +24,4 @@ IDW_PUNCH WAV "sound/punch.wav"
 IDW_SLIDE WAV "sound/slide.wav"
 IDW_HARDHIT WAV "sound/hardhit.wav"
 IDW_BOUNCE WAV "sound/bounce.wav"
+IDW_JUMP WAV "sound/jump.wav"

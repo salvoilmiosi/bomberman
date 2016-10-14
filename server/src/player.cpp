@@ -253,6 +253,7 @@ void player::checkTrampoline() {
                 {
                     tile_trampoline *tramp = dynamic_cast<tile_trampoline *>(ent);
                     if (tramp->jump()) {
+                        world->playWave(WAV_JUMP);
                         jumping = true;
 
                         speedz = JUMP_SPEED / TICKRATE;

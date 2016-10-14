@@ -246,6 +246,8 @@ void game_map::createMap(int w, int h, int num_players, int m_zone) {
                 t->data = ITEM_PUNCH;
             } else if (i < 23) {
                 t->data = ITEM_SKULL;
+            } else if (i < 26) {
+                t->data = ITEM_REDBOMB;
             } else {
                 return;
             }

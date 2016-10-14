@@ -89,10 +89,8 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
                     if (bomb_id == b->getID()) {
                         continue;
                     }
-                    b->explode();
                     if (!piercing) {
-                        *trunc = true;
-                        return i;
+                        return i+1;
                     }
                 }
                 break;
@@ -155,11 +153,22 @@ void explosion::checkPlayers(int dx, int dy) {
             break;
         }
 
-        entity **ents = world->findEntities(x, y, TYPE_PLAYER);
+        entity **ents = world->findEntities(x, y);
         for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
-            if (!ents[i]) break;
-            player *p = dynamic_cast<player*>(ents[i]);
-            p->kill();
+            entity *ent = ents[i];
+            if (!ent) break;
+            switch(ent->getType()) {
+            case TYPE_PLAYER:
+                dynamic_cast<player *>(ent)->kill();
+                break;
+            case TYPE_BOMB:
+                if (EXPLOSION_LIFE - life_ticks >= EXPLOSION_CHAIN_DELAY) {
+                    dynamic_cast<bomb *>(ent)->explode();
+                }
+                break;
+            default:
+                break;
+            }
         }
     }
 }

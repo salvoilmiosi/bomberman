@@ -14,6 +14,7 @@ extern Mix_Chunk *wav_death;
 extern Mix_Chunk *wav_slide;
 extern Mix_Chunk *wav_hardhit;
 extern Mix_Chunk *wav_bounce;
+extern Mix_Chunk *wav_jump;
 
 static const uint8_t WAV_PLANT = 1;
 static const uint8_t WAV_EXPLODE = 2;
@@ -24,6 +25,7 @@ static const uint8_t WAV_PUNCH = 6;
 static const uint8_t WAV_SLIDE = 7;
 static const uint8_t WAV_HARDHIT = 8;
 static const uint8_t WAV_BOUNCE = 9;
+static const uint8_t WAV_JUMP = 10;
 
 void loadSounds();
 
