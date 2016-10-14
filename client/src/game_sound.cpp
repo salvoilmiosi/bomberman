@@ -3,7 +3,6 @@
 #include "resources.h"
 
 Mix_Music *music_battle = nullptr;
-Mix_Music *music_level1 = nullptr;
 
 Mix_Chunk *wav_plant = nullptr;
 Mix_Chunk *wav_explode = nullptr;
@@ -18,7 +17,6 @@ Mix_Chunk *wav_jump = nullptr;
 
 void loadSounds() {
     music_battle = Mix_LoadMUS_RW(getResourceRW(IDM_BATTLE, "OGG"), 1);
-    //music_level1 = Mix_LoadMUS_RW(getResourceRW(IDM_LEVEL1, "OGG"), 1);
 
     wav_plant = Mix_LoadWAV_RW(getResourceRW(IDW_PLANT, "WAV"), 1);
     wav_explode = Mix_LoadWAV_RW(getResourceRW(IDW_EXPLODE, "WAV"), 1);
@@ -34,7 +32,6 @@ void loadSounds() {
 
 void clearSounds() {
     Mix_FreeMusic(music_battle);
-    //Mix_FreeMusic(music_level1);
     Mix_FreeChunk(wav_plant);
     Mix_FreeChunk(wav_explode);
     Mix_FreeChunk(wav_pickup);

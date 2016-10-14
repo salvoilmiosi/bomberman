@@ -5,7 +5,6 @@
 *.cbp
 *.depend
 *.layout
-*.ogg
 *.spc
 client/bin/*
 server/bin/*

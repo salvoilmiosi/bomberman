@@ -14,7 +14,6 @@
 #define IDB_ITEMS 11
 #define IDB_PLAYERS 12
 #define IDM_BATTLE 20
-#define IDM_LEVEL1 200
 #define IDW_PLANT 21
 
 #define IDW_EXPLODE 22
@@ -39,8 +38,7 @@
 #define IDB_EXPLOSIONS "resource/explosions.png"
 #define IDB_ITEMS "resource/items.png"
 #define IDB_PLAYERS "resource/players.png"
-#define IDM_BATTLE ""
-#define IDM_LEVEL1 ""
+#define IDM_BATTLE "resource/sound/ogg/sbm-12.ogg"
 #define IDW_PLANT "resource/sound/plant.wav"
 #define IDW_EXPLODE "resource/sound/explode.wav"
 #define IDW_PICKUP "resource/sound/pickup.wav"

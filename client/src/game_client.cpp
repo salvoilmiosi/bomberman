@@ -71,6 +71,8 @@ bool game_client::connect(const char *address, uint16_t port) {
         message = accepter.readString();
         g_chat.addLine(COLOR_CYAN, "Server accepted: %s", message);
         g_chat.addLine(COLOR_CYAN, "Connected to %s:%d", address, port);
+
+        playMusic(music_battle);
         return true;
     case SERV_REJECT:
         message = accepter.readString();
@@ -114,7 +116,7 @@ void game_client::clear() {
     world.clear();
     g_score.clear();
 
-    //stopMusic();
+    stopMusic();
 }
 
 bool game_client::sendInput(uint8_t cmd, bool down) {

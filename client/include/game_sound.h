@@ -4,7 +4,6 @@
 #include <SDL2/SDL_mixer.h>
 
 extern Mix_Music *music_battle;
-extern Mix_Music *music_level1;
 
 extern Mix_Chunk *wav_plant;
 extern Mix_Chunk *wav_explode;

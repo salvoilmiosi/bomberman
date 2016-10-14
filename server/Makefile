@@ -8,7 +8,7 @@ CCFLAGS = -g -Wall --std=c++11 -I$(INCLUDE_DIR)
 LIBS = -lSDL2 -lSDL2_net
 MKDIR = mkdir -p
 
-EXEC = $(OUT_DIR)/bomberman
+EXEC = $(OUT_DIR)/bomberman_server
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS = $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SOURCES:.cpp=.o))
 
