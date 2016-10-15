@@ -5,7 +5,7 @@
 
 extern SDL_Surface *icon_surface;
 
-extern SDL_Texture *text_texture;
+extern SDL_Texture *font_texture;
 extern SDL_Texture *tileset_1_texture;
 extern SDL_Texture *tileset_2_texture;
 extern SDL_Texture *tileset_3_texture;

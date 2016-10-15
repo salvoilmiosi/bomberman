@@ -151,9 +151,9 @@ void player::render(SDL_Renderer *renderer) {
 
     SDL_RenderCopyEx(renderer, players_texture, &src_rect, &dst_rect, 0, nullptr, flip);
 
-    int name_x = dst_rect.x + (dst_rect.w - (int)strlen(player_name) * CHAR_W) / 2;
+    int name_x = dst_rect.x + dst_rect.w / 2;
     int name_y = dst_rect.y - CHAR_H;
-    renderText(name_x, name_y, renderer, player_name, is_self ? 0xffff00ff : 0xffffffff);
+    renderText(name_x, name_y, renderer, player_name, is_self ? 0xffff00ff : 0xffffffff, ALIGN_MIDDLE);
 }
 
 void player::setName(const char *name) {

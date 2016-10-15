@@ -2,6 +2,7 @@
 #include <SDL2/SDL_net.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <cstdio>
 #include <cstring>
@@ -50,6 +51,10 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Could not open audio channel\n");
         return 1;
     }
+    if (TTF_Init() < 0) {
+        fprintf(stderr, "Could not init SDL_ttf\n");
+        return 1;
+    }
 
     srand(time(NULL));
 
@@ -74,6 +79,7 @@ int main(int argc, char **argv) {
 
     loadResources(renderer);
     loadSounds();
+    setMusicVolume(0);
 
     setupBindings();
 
@@ -152,6 +158,8 @@ int main(int argc, char **argv) {
     clearResources();
 
     Mix_CloseAudio();
+
+    TTF_Quit();
     Mix_Quit();
     IMG_Quit();
     SDLNet_Quit();

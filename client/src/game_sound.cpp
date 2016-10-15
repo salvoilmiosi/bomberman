@@ -14,6 +14,7 @@ Mix_Chunk *wav_slide = nullptr;
 Mix_Chunk *wav_hardhit = nullptr;
 Mix_Chunk *wav_bounce = nullptr;
 Mix_Chunk *wav_jump = nullptr;
+Mix_Chunk *wav_select = nullptr;
 
 void loadSounds() {
     music_battle = Mix_LoadMUS_RW(getResourceRW("IDM_BATTLE"), 1);
@@ -28,6 +29,7 @@ void loadSounds() {
     wav_hardhit  = Mix_LoadWAV_RW(getResourceRW("IDW_HARDHIT"),  1);
     wav_bounce   = Mix_LoadWAV_RW(getResourceRW("IDW_BOUNCE"),  1);
     wav_jump     = Mix_LoadWAV_RW(getResourceRW("IDW_JUMP"), 1);
+    wav_select   = Mix_LoadWAV_RW(getResourceRW("IDW_SELECT"), 1);
 }
 
 void clearSounds() {
@@ -42,6 +44,7 @@ void clearSounds() {
     Mix_FreeChunk(wav_hardhit);
     Mix_FreeChunk(wav_bounce);
     Mix_FreeChunk(wav_jump);
+    Mix_FreeChunk(wav_select);
 }
 
 void playMusic(Mix_Music *music) {
@@ -52,8 +55,8 @@ void stopMusic() {
     Mix_HaltMusic();
 }
 
-void playWave(Mix_Chunk *wave) {
-    Mix_PlayChannel(-1, wave, 0);
+void playWave(Mix_Chunk *wave, int channel) {
+    Mix_PlayChannel(channel, wave, 0);
 }
 
 void playWaveById(uint8_t sound_id) {

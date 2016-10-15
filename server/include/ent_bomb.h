@@ -5,6 +5,7 @@
 
 static const float BOMB_LIFE = TICKRATE * 3;
 
+static const float BOMB_HEIGHT = 500.f;
 static const float KICK_SPEED = 600.f;
 static const float PUNCH_SPEED = 720.f;
 static const float PUNCH_SPEED_BOUNCE = 400.f;
@@ -14,7 +15,7 @@ static const float PUNCH_Z_ACCEL = 2880.f;
 
 class bomb : public entity {
 private:
-    class player *p;
+    class player *p = nullptr;
 
     float fx;
     float fy;
@@ -42,11 +43,15 @@ private:
 public:
     bomb(game_world *world, class player *p);
 
+    bomb(game_world *world, int tx, int ty);
+
 public:
     void tick();
 
     void kick(uint8_t direction);
     void punch(uint8_t direction);
+
+    void levitate(float height);
 
     void explode();
 

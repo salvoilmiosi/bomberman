@@ -6,10 +6,11 @@
 #include <vector>
 #include <fstream>
 
+#include "chat.h"
+
 using namespace std;
 
-SDL_Texture *text_texture = nullptr;
-
+SDL_Texture *font_texture = nullptr;
 SDL_Texture *tileset_1_texture = nullptr;
 SDL_Texture *tileset_2_texture = nullptr;
 SDL_Texture *tileset_3_texture = nullptr;
@@ -19,6 +20,8 @@ SDL_Texture *items_texture = nullptr;
 SDL_Texture *players_texture = nullptr;
 
 SDL_Surface *icon_surface = nullptr;
+
+TTF_Font *resource_font;
 
 static const int ID_MAXSIZE = 32;
 
@@ -106,7 +109,7 @@ SDL_Texture *loadTexture(SDL_Renderer *renderer, const char *res_id) {
 void loadResources(SDL_Renderer *renderer) {
     icon_surface = loadImageFromResource("IDB_ICON2");
 
-    text_texture = loadTexture(renderer, "IDB_TEXT");
+    font_texture = loadTexture(renderer, "IDB_TEXT");
     tileset_1_texture = loadTexture(renderer, "IDB_TILESET_1");
     tileset_2_texture = loadTexture(renderer, "IDB_TILESET_2");
     tileset_3_texture = loadTexture(renderer, "IDB_TILESET_3");
@@ -114,12 +117,19 @@ void loadResources(SDL_Renderer *renderer) {
     explosions_texture = loadTexture(renderer, "IDB_EXPLOSIONS");
     items_texture = loadTexture(renderer, "IDB_ITEMS");
     players_texture = loadTexture(renderer, "IDB_PLAYERS");
+
+    #ifdef _WIN32
+    resource_font = TTF_OpenFontRW(getResourceRW("IDF_FONT1_WIN"), 1, CHAR_H);
+    //resource_font = TTF_OpenFontRW(getResourceRW("IDF_FONT2"), 1, CHAR_H);
+    #else
+    TTF_OpenFontRW(getResourceRW("IDF_FONT1"), 1, CHAR_H);
+    #endif // _WIN32
 }
 
 void clearResources() {
     SDL_FreeSurface(icon_surface);
 
-    SDL_DestroyTexture(text_texture);
+    SDL_DestroyTexture(font_texture);
     SDL_DestroyTexture(tileset_1_texture);
     SDL_DestroyTexture(tileset_2_texture);
     SDL_DestroyTexture(tileset_3_texture);
@@ -127,4 +137,6 @@ void clearResources() {
     SDL_DestroyTexture(explosions_texture);
     SDL_DestroyTexture(items_texture);
     SDL_DestroyTexture(players_texture);
+
+    TTF_CloseFont(resource_font);
 }

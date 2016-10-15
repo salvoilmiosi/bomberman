@@ -21,7 +21,9 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
 
     piercing = p->pickups & PICKUP_HAS_REDBOMB;
     remocon = p->pickups & PICKUP_HAS_REMOCON;
+
     kicked = false;
+    punched = false;
 
     do_send_updates = false;
 
@@ -29,6 +31,42 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
     speedy = 0.f;
 
     world->playWave(WAV_PLANT);
+}
+
+bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB) {
+    fx = tx * TILE_SIZE;
+    fy = ty * TILE_SIZE;
+    fz = BOMB_HEIGHT;
+
+    punched = true;
+    speedx = 0.f;
+    speedy = 0.f;
+    speedz = 0.f;
+
+    explode_size = 2;
+
+    life_ticks = BOMB_LIFE;
+
+    piercing = false;
+    remocon = false;
+    kicked = false;
+    do_send_updates = true;
+
+    int dir = random_engine() % 4;
+    switch(dir) {
+    case 0:
+        speedx = 1.f;
+        break;
+    case 1:
+        speedx = -1.f;
+        break;
+    case 2:
+        speedy = 1.f;
+        break;
+    case 3:
+        speedy = -1.f;
+        break;
+    }
 }
 
 void bomb::kick(uint8_t direction) {
@@ -130,8 +168,8 @@ void bomb::tick() {
             }
         }
     } else if (punched) {
-        fx += speedx;
-        fy += speedy;
+        if (speedx > 1 || speedx < -1) fx += speedx;
+        if (speedy > 1 || speedy < -1) fy += speedy;
         fz += speedz;
 
         speedz -= PUNCH_Z_ACCEL / (TICKRATE * TICKRATE);
@@ -177,7 +215,9 @@ void bomb::tick() {
 void bomb::explode() {
     if (exploded) return;
 
-    p->explodedBomb(this);
+    if (p) {
+        p->explodedBomb(this);
+    }
 
     exploded = true;
     destroy();
@@ -190,7 +230,11 @@ byte_array bomb::toByteArray() {
     ba.writeInt(fx);
     ba.writeInt(fy);
     ba.writeInt(fz);
-    ba.writeShort(p->getID());
+    if (p) {
+        ba.writeShort(p->getID());
+    } else {
+        ba.writeShort(0);
+    }
     uint8_t flags = 0;
     flags |= (1 << 0) * piercing;
     flags |= (1 << 1) * remocon;

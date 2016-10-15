@@ -4,6 +4,7 @@
 
 #include "main.h"
 #include "chat.h"
+#include "resources.h"
 
 #include <cstring>
 #include <cstdio>

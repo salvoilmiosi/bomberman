@@ -15,6 +15,8 @@ extern Mix_Chunk *wav_hardhit;
 extern Mix_Chunk *wav_bounce;
 extern Mix_Chunk *wav_jump;
 
+extern Mix_Chunk *wav_select;
+
 static const uint8_t WAV_PLANT = 1;
 static const uint8_t WAV_EXPLODE = 2;
 static const uint8_t WAV_PICKUP = 3;
@@ -33,7 +35,7 @@ void clearSounds();
 void playMusic(Mix_Music *music);
 void stopMusic();
 
-void playWave(Mix_Chunk *wave);
+void playWave(Mix_Chunk *wave, int channel = -1);
 void playWaveById(uint8_t sound_id);
 
 void setMusicVolume(int volume);

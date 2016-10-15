@@ -6,7 +6,12 @@ IDB_TILESET_4 "resource/tileset_4.png"
 IDB_EXPLOSIONS "resource/explosions.png"
 IDB_ITEMS "resource/items.png"
 IDB_PLAYERS "resource/players.png"
+
 IDB_TEXT "resource/text.png"
+
+IDF_FONT1 "resource/font/perfect_dos_vga.ttf"
+IDF_FONT1_WIN "resource/font/perfect_dos_vga_win.ttf"
+#IDF_FONT2 "resource/font/Roboto-Bold.ttf"
 
 IDM_BATTLE "resource/sound/ogg/sbm-12.ogg"
 
@@ -20,3 +25,4 @@ IDW_SLIDE "resource/sound/slide.wav"
 IDW_HARDHIT "resource/sound/hardhit.wav"
 IDW_BOUNCE "resource/sound/bounce.wav"
 IDW_JUMP "resource/sound/jump.wav"
+IDW_SELECT "resource/sound/select.wav"

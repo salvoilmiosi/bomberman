@@ -7,8 +7,6 @@
 
 game_client::game_client() : g_chat(this), g_score(this) {
     sock_set = SDLNet_AllocSocketSet(1);
-
-    strcpy(user_name, "Player");
 }
 
 game_client::~game_client() {
@@ -38,7 +36,7 @@ bool game_client::connect(const char *address, uint16_t port) {
 
     packet_ext packet(socket);
     packet.writeInt(CMD_CONNECT);
-    packet.writeString(user_name);
+    packet.writeString(user_name.c_str());
     packet.sendTo(server_ip);
 
     SDLNet_UDP_AddSocket(sock_set, socket);
@@ -272,15 +270,15 @@ void game_client::sendScorePacket() {
     packet.sendTo(server_ip);
 }
 
-void game_client::setName(const char *name) {
-    strncpy(user_name, name, NAME_SIZE);
-    g_chat.addLine(COLOR_CYAN, "Set name: %s", name);
+void game_client::setName(const std::string &name) {
+    user_name = name;
+    g_chat.addLine(COLOR_CYAN, "Set name: %s", name.c_str());
 
     if (socket == nullptr) return;
 
     packet_ext packet(socket);
     packet.writeInt(CMD_NAME);
-    packet.writeString(name);
+    packet.writeString(name.c_str());
     packet.sendTo(server_ip);
 }
 

@@ -61,6 +61,14 @@ void game_world::tick() {
         server.messageToAll(COLOR_GREEN, "Round %d begins in %d seconds", round_num, seconds);
     }
 
+    if (ticks_to_start < 0 && g_map.getZone() == ZONE_BOMB) {
+        if ((-ticks_to_start) % (TICKRATE * 10) == 0) {
+            int rand_x = random_engine() % (g_map.getWidth() - 4) + 2;
+            int rand_y = random_engine() % (g_map.getHeight() - 2) + 1;
+            addEntity(new bomb(this, rand_x, rand_y));
+        }
+    }
+
     int alive_players = 0;
     int num_players = 0;
 

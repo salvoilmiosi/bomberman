@@ -2,7 +2,7 @@
 #define __GAME_CLIENT_H__
 
 #include <SDL2/SDL_net.h>
-#include <cstring>
+#include <string>
 
 #include "packet_io.h"
 #include "game_world.h"
@@ -43,7 +43,7 @@ private:
 
     short ping_msecs;
 
-    char user_name[NAME_SIZE];
+    std::string user_name = "Player";
 
 private:
     game_world world;
@@ -83,7 +83,7 @@ public:
 
     void sendChatMessage(const char *message);
     void sendScorePacket();
-    void setName(const char *name);
+    void setName(const std::string &name);
     void quit();
 
     bool isOpen() {
