@@ -51,8 +51,9 @@ void chat::render(SDL_Renderer *renderer) {
         if ((time_since_typing / 500) % 2 == 0) {
 #ifdef _SDL_TTF_H
             str.append("\u25a0"); // black square character
-            //str.append("\u0028\u0020\u0361\u00b0\u0020\u035c\u0296\u0020\u0361\u00b0\u0029");
-            // tried the lenny face lol
+            //str.append("\u0028\u0020\u0361\u00b0\u0020\u035c\u0296\u0020\u0361\u00b0\u0029"); // lenny face, because why not
+            //str.append("\U0001f4a9"); // pile of poop, because I can
+            //str.append("\U0001f600"); // smiley face
 #else
             str.append("|");
 #endif
