@@ -1,14 +1,12 @@
 #include "resources.h"
 
 #include <SDL2/SDL_image.h>
-#include <cstdio>
 
-#ifdef _WIN32
-#define RES_ID_TYPE int
-#include <windows.h>
-#else
-#define RES_ID_TYPE const char *
-#endif
+#include <map>
+#include <vector>
+#include <fstream>
+
+using namespace std;
 
 SDL_Texture *text_texture = nullptr;
 
@@ -22,31 +20,83 @@ SDL_Texture *players_texture = nullptr;
 
 SDL_Surface *icon_surface = nullptr;
 
-#ifdef _WIN32
-SDL_RWops *getResourceRW(int res_id, const char *type) {
-    HMODULE hModule = GetModuleHandle(nullptr);
-    HRSRC hRes = FindResource(hModule, MAKEINTRESOURCE(res_id), type);
+static const int ID_MAXSIZE = 32;
 
-    if (!hRes) {
-        fprintf(stderr, "Can't load resource %d\n", res_id);
-        return nullptr;
-    }
+struct resource {
+	size_t size = 0;
+	size_t ptr = 0;
+	const char *filename;
+};
 
-    unsigned int res_size = SizeofResource(hModule, hRes);
+map<string, resource> resFiles;
 
-    HGLOBAL hgRes = LoadResource(hModule, hRes);
-    unsigned char* res_data = reinterpret_cast<unsigned char *>(LockResource(hgRes));
-
-    return SDL_RWFromConstMem(res_data, res_size);
-}
-#endif
-
-SDL_Surface *loadSurface(RES_ID_TYPE res_id) {
-    return IMG_Load_RW(getResourceRW(res_id, "PNG"), 1);
+static unsigned int readInt(ifstream &ifs) {
+	char data[4];
+	ifs.read(data, 4);
+	unsigned int num =
+		(data[0] << 24 & 0xff000000) |
+		(data[1] << 16 & 0x00ff0000) |
+		(data[2] << 8 & 0x0000ff00) |
+		(data[3] & 0x000000ff);
+	return num;
 }
 
-SDL_Texture *loadTexture(SDL_Renderer *renderer, RES_ID_TYPE res_id) {
-    SDL_Surface *surf = loadSurface(res_id);
+bool openResourceFile(const char *filename) {
+	ifstream ifs(filename, ios::binary);
+
+	if (ifs.fail()) {
+		return false;
+	}
+
+	if (readInt(ifs) != 0x255435f4) {
+		return false;
+	}
+
+	int numRes = readInt(ifs);
+
+	resource res;
+	char res_id[ID_MAXSIZE];
+
+	while (numRes > 0) {
+		memset(&res, 0, sizeof(res));
+		memset(res_id, 0, sizeof(res_id));
+
+		ifs.read(res_id, ID_MAXSIZE);
+
+		res.size = readInt(ifs);
+		res.ptr = readInt(ifs);
+		res.filename = filename;
+
+		resFiles[res_id] = res;
+
+		--numRes;
+	}
+
+	return true;
+}
+
+SDL_RWops *getResourceRW(const char *RES_ID) {
+	auto it = resFiles.find(RES_ID);
+
+	if (it != resFiles.end()) {
+		resource &res = it->second;
+		char *data = new char[res.size];
+
+		ifstream ifs(res.filename, ios::binary);
+		ifs.seekg(res.ptr);
+		ifs.read(data, res.size);
+
+		return SDL_RWFromConstMem(data, res.size);
+	}
+	return nullptr;
+}
+
+static SDL_Surface *loadImageFromResource(const char *RES_ID) {
+    return IMG_LoadTyped_RW(getResourceRW(RES_ID), 1, "PNG");
+}
+
+SDL_Texture *loadTexture(SDL_Renderer *renderer, const char *res_id) {
+    SDL_Surface *surf = loadImageFromResource(res_id);
     if (!surf) return nullptr;
     SDL_Texture *text = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
@@ -54,19 +104,21 @@ SDL_Texture *loadTexture(SDL_Renderer *renderer, RES_ID_TYPE res_id) {
 }
 
 void loadResources(SDL_Renderer *renderer) {
-    icon_surface = loadSurface(IDB_ICON2);
+    icon_surface = loadImageFromResource("IDB_ICON2");
 
-    text_texture = loadTexture(renderer, IDB_TEXT);
-    tileset_1_texture = loadTexture(renderer, IDB_TILESET_1);
-    tileset_2_texture = loadTexture(renderer, IDB_TILESET_2);
-    tileset_3_texture = loadTexture(renderer, IDB_TILESET_3);
-    tileset_4_texture = loadTexture(renderer, IDB_TILESET_4);
-    explosions_texture = loadTexture(renderer, IDB_EXPLOSIONS);
-    items_texture = loadTexture(renderer, IDB_ITEMS);
-    players_texture = loadTexture(renderer, IDB_PLAYERS);
+    text_texture = loadTexture(renderer, "IDB_TEXT");
+    tileset_1_texture = loadTexture(renderer, "IDB_TILESET_1");
+    tileset_2_texture = loadTexture(renderer, "IDB_TILESET_2");
+    tileset_3_texture = loadTexture(renderer, "IDB_TILESET_3");
+    tileset_4_texture = loadTexture(renderer, "IDB_TILESET_4");
+    explosions_texture = loadTexture(renderer, "IDB_EXPLOSIONS");
+    items_texture = loadTexture(renderer, "IDB_ITEMS");
+    players_texture = loadTexture(renderer, "IDB_PLAYERS");
 }
 
 void clearResources() {
+    SDL_FreeSurface(icon_surface);
+
     SDL_DestroyTexture(text_texture);
     SDL_DestroyTexture(tileset_1_texture);
     SDL_DestroyTexture(tileset_2_texture);
@@ -75,6 +127,4 @@ void clearResources() {
     SDL_DestroyTexture(explosions_texture);
     SDL_DestroyTexture(items_texture);
     SDL_DestroyTexture(players_texture);
-
-    SDL_FreeSurface(icon_surface);
 }

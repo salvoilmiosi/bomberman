@@ -67,6 +67,11 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    if (!openResourceFile("resource.dat")) {
+        fprintf(stderr, "Could not open resource file\n");
+        return 1;
+    }
+
     loadResources(renderer);
     loadSounds();
 

@@ -8,6 +8,7 @@
 *.layout
 *.ogg
 *.spc
+*.dat
 client/bin/*
 server/bin/*
 
