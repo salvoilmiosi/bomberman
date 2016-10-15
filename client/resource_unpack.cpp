@@ -2,7 +2,13 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+
+#ifdef _WIN32
 #include <windows.h>
+#else
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
 
 using namespace std;
 
@@ -85,6 +91,16 @@ bool saveFiles(const char *output_dir) {
 	return true;
 }
 
+void create_dir(const char *dir_name) {
+#ifdef _WIN32
+	CreateDirectory(dir_name, nullptr);
+#else
+	struct stat st = {0};
+	if (stat(dir_name, &st) == -1) {
+		mkdir(dir_name, 0700);
+	}
+#endif
+}
 int main(int argc, char **argv) {
 	if (argc < 2) {
 		cerr << "Usage: " << argv[0] << " input [output_dir]\n";
@@ -92,7 +108,6 @@ int main(int argc, char **argv) {
 	}
 	
 	const char *input = argv[1];
-	
 	char output[FILENAME_MAX];
 	memset(output, 0, sizeof(output));
 	
@@ -105,13 +120,17 @@ int main(int argc, char **argv) {
 	
 	char lastChar = output[strlen(output)-1];
 	if (lastChar != '\\' && lastChar != '/') {
+#ifdef _WIN32
 		output[strlen(output)] = '\\';
+#else
+		output[strlen(output)] = '/';
+#endif
 	}
 	
 	if (output[0] == '\\' || output[0] == '/') {
 		memset(output, 0, sizeof(output));
 	} else {
-		CreateDirectory(output, nullptr);
+		create_dir(output);
 	}
 	
 	if (!openResourceFile(input)) {
@@ -127,3 +146,4 @@ int main(int argc, char **argv) {
 	cout << "Operation completed succesfully.\n";
 	return 0;
 }
+

@@ -12,7 +12,7 @@ LD = g++
 WINDRES = windres
 
 INC = -Iinclude
-CFLAGS = -Wall
+CFLAGS = -Wall --std=c++11
 RESINC = 
 LIBDIR = 
 LIB = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer
@@ -109,7 +109,7 @@ $(OBJDIR_DEBUG)/src/tile_trampoline.o: src/tile_trampoline.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/tile_trampoline.cpp -o $(OBJDIR_DEBUG)/src/tile_trampoline.o
 
 resource.dat: resource/resource.txt
-	resource_pack resource/resource.txt resource.dat
+	./resource_pack resource/resource.txt resource.dat
 
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)

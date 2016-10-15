@@ -12,7 +12,7 @@ LD = g++.exe
 WINDRES = windres.exe
 
 INC = -Iinclude
-CFLAGS = -Wall
+CFLAGS = -Wall --std=c++11
 RESINC = 
 LIBDIR = 
 LIB = -lmingw32 -lSDL2main -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer
