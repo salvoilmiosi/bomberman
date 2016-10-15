@@ -12,7 +12,7 @@ LD = g++
 WINDRES = windres
 
 INC = -Iinclude
-CFLAGS = -Wall
+CFLAGS = -Wall --std=c++11
 RESINC = 
 LIBDIR = 
 LIB = -lSDL2 -lSDL2_net

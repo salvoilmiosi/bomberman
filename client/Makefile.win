@@ -15,7 +15,7 @@ INC = -Iinclude
 CFLAGS = -Wall --std=c++11
 RESINC = 
 LIBDIR = 
-LIB = -lmingw32 -lSDL2main -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer
+LIB = -lmingw32 -lSDL2main -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 LDFLAGS = 
 
 INC_DEBUG = $(INC)

@@ -9,8 +9,8 @@ IDB_PLAYERS "resource/players.png"
 
 IDB_TEXT "resource/text.png"
 
-IDF_FONT1 "resource/font/perfect_dos_vga.ttf"
-IDF_FONT1_WIN "resource/font/perfect_dos_vga_win.ttf"
+IDF_FONT1 "resource/font/perfect_dos_vga_win.ttf"
+#IDF_FONT1_WIN "resource/font/perfect_dos_vga_win.ttf"
 #IDF_FONT2 "resource/font/Roboto-Bold.ttf"
 
 IDM_BATTLE "resource/sound/ogg/sbm-12.ogg"
