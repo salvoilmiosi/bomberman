@@ -26,7 +26,7 @@ LIBDIR_DEBUG = $(LIBDIR)
 LIB_DEBUG = $(LIB)
 LDFLAGS_DEBUG = $(LDFLAGS)
 OBJDIR_DEBUG = obj
-DEP_DEBUG = 
+DEP_DEBUG = resource.dat
 OUT_DEBUG = bin/bomberman
 
 INC_RELEASE = $(INC)
@@ -37,12 +37,12 @@ LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
 LDFLAGS_RELEASE = $(LDFLAGS) -s
 OBJDIR_RELEASE = obj/Release
-DEP_RELEASE = 
+DEP_RELEASE = resource.dat
 OUT_RELEASE = bin/Release/bomberman
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/src/game_world.o $(OBJDIR_DEBUG)/src/bindings.o $(OBJDIR_DEBUG)/src/chat.o $(OBJDIR_DEBUG)/src/ent_bomb.o $(OBJDIR_DEBUG)/src/ent_broken_wall.o $(OBJDIR_DEBUG)/src/ent_item.o $(OBJDIR_DEBUG)/src/game_client.o $(OBJDIR_DEBUG)/src/game_map.o $(OBJDIR_DEBUG)/src/game_sound.o $(OBJDIR_DEBUG)/resource/resources.o $(OBJDIR_DEBUG)/src/healthbar.o $(OBJDIR_DEBUG)/src/main.o $(OBJDIR_DEBUG)/src/packet_io.o $(OBJDIR_DEBUG)/src/player.o $(OBJDIR_DEBUG)/src/resources.o $(OBJDIR_DEBUG)/src/score.o $(OBJDIR_DEBUG)/src/tile_trampoline.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/src/game_sound.o $(OBJDIR_DEBUG)/src/bindings.o $(OBJDIR_DEBUG)/src/chat.o $(OBJDIR_DEBUG)/src/ent_bomb.o $(OBJDIR_DEBUG)/src/ent_broken_wall.o $(OBJDIR_DEBUG)/src/ent_item.o $(OBJDIR_DEBUG)/src/game_client.o $(OBJDIR_DEBUG)/src/game_map.o $(OBJDIR_DEBUG)/src/game_world.o $(OBJDIR_DEBUG)/src/healthbar.o $(OBJDIR_DEBUG)/src/main.o $(OBJDIR_DEBUG)/src/packet_io.o $(OBJDIR_DEBUG)/src/player.o $(OBJDIR_DEBUG)/src/resources.o $(OBJDIR_DEBUG)/src/score.o $(OBJDIR_DEBUG)/src/tile_trampoline.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/src/game_world.o $(OBJDIR_RELEASE)/src/bindings.o $(OBJDIR_RELEASE)/src/chat.o $(OBJDIR_RELEASE)/src/ent_bomb.o $(OBJDIR_RELEASE)/src/ent_broken_wall.o $(OBJDIR_RELEASE)/src/ent_item.o $(OBJDIR_RELEASE)/src/game_client.o $(OBJDIR_RELEASE)/src/game_map.o $(OBJDIR_RELEASE)/src/game_sound.o $(OBJDIR_RELEASE)/resource/resources.o $(OBJDIR_RELEASE)/src/healthbar.o $(OBJDIR_RELEASE)/src/main.o $(OBJDIR_RELEASE)/src/packet_io.o $(OBJDIR_RELEASE)/src/player.o $(OBJDIR_RELEASE)/src/resources.o $(OBJDIR_RELEASE)/src/score.o $(OBJDIR_RELEASE)/src/tile_trampoline.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/src/game_sound.o $(OBJDIR_RELEASE)/src/bindings.o $(OBJDIR_RELEASE)/src/chat.o $(OBJDIR_RELEASE)/src/ent_bomb.o $(OBJDIR_RELEASE)/src/ent_broken_wall.o $(OBJDIR_RELEASE)/src/ent_item.o $(OBJDIR_RELEASE)/src/game_client.o $(OBJDIR_RELEASE)/src/game_map.o $(OBJDIR_RELEASE)/src/game_world.o $(OBJDIR_RELEASE)/src/healthbar.o $(OBJDIR_RELEASE)/src/main.o $(OBJDIR_RELEASE)/src/packet_io.o $(OBJDIR_RELEASE)/src/player.o $(OBJDIR_RELEASE)/src/resources.o $(OBJDIR_RELEASE)/src/score.o $(OBJDIR_RELEASE)/src/tile_trampoline.o
 
 all: debug release
 
@@ -60,8 +60,8 @@ debug: before_debug out_debug after_debug
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
-$(OBJDIR_DEBUG)/src/game_world.o: src/game_world.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/game_world.cpp -o $(OBJDIR_DEBUG)/src/game_world.o
+$(OBJDIR_DEBUG)/src/game_sound.o: src/game_sound.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/game_sound.cpp -o $(OBJDIR_DEBUG)/src/game_sound.o
 
 $(OBJDIR_DEBUG)/src/bindings.o: src/bindings.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/bindings.cpp -o $(OBJDIR_DEBUG)/src/bindings.o
@@ -84,11 +84,8 @@ $(OBJDIR_DEBUG)/src/game_client.o: src/game_client.cpp
 $(OBJDIR_DEBUG)/src/game_map.o: src/game_map.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/game_map.cpp -o $(OBJDIR_DEBUG)/src/game_map.o
 
-$(OBJDIR_DEBUG)/src/game_sound.o: src/game_sound.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/game_sound.cpp -o $(OBJDIR_DEBUG)/src/game_sound.o
-
-$(OBJDIR_DEBUG)/resource/resources.o: resource/resources.rc
-	$(WINDRES) -i resource/resources.rc -J rc -o $(OBJDIR_DEBUG)/resource/resources.o -O coff $(INC_DEBUG)
+$(OBJDIR_DEBUG)/src/game_world.o: src/game_world.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/game_world.cpp -o $(OBJDIR_DEBUG)/src/game_world.o
 
 $(OBJDIR_DEBUG)/src/healthbar.o: src/healthbar.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/healthbar.cpp -o $(OBJDIR_DEBUG)/src/healthbar.o
@@ -111,8 +108,12 @@ $(OBJDIR_DEBUG)/src/score.o: src/score.cpp
 $(OBJDIR_DEBUG)/src/tile_trampoline.o: src/tile_trampoline.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c src/tile_trampoline.cpp -o $(OBJDIR_DEBUG)/src/tile_trampoline.o
 
+resource.dat: resource/resource.txt
+	resource_pack resource/resource.txt resource.dat
+
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
+	rm -f resource.dat
 	rm -rf bin
 	rm -rf $(OBJDIR_DEBUG)/src
 	rm -rf $(OBJDIR_DEBUG)/resource
@@ -129,8 +130,8 @@ release: before_release out_release after_release
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
-$(OBJDIR_RELEASE)/src/game_world.o: src/game_world.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c src/game_world.cpp -o $(OBJDIR_RELEASE)/src/game_world.o
+$(OBJDIR_RELEASE)/src/game_sound.o: src/game_sound.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c src/game_sound.cpp -o $(OBJDIR_RELEASE)/src/game_sound.o
 
 $(OBJDIR_RELEASE)/src/bindings.o: src/bindings.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c src/bindings.cpp -o $(OBJDIR_RELEASE)/src/bindings.o
@@ -153,11 +154,8 @@ $(OBJDIR_RELEASE)/src/game_client.o: src/game_client.cpp
 $(OBJDIR_RELEASE)/src/game_map.o: src/game_map.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c src/game_map.cpp -o $(OBJDIR_RELEASE)/src/game_map.o
 
-$(OBJDIR_RELEASE)/src/game_sound.o: src/game_sound.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c src/game_sound.cpp -o $(OBJDIR_RELEASE)/src/game_sound.o
-
-$(OBJDIR_RELEASE)/resource/resources.o: resource/resources.rc
-	$(WINDRES) -i resource/resources.rc -J rc -o $(OBJDIR_RELEASE)/resource/resources.o -O coff $(INC_RELEASE)
+$(OBJDIR_RELEASE)/src/game_world.o: src/game_world.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c src/game_world.cpp -o $(OBJDIR_RELEASE)/src/game_world.o
 
 $(OBJDIR_RELEASE)/src/healthbar.o: src/healthbar.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c src/healthbar.cpp -o $(OBJDIR_RELEASE)/src/healthbar.o
@@ -182,6 +180,7 @@ $(OBJDIR_RELEASE)/src/tile_trampoline.o: src/tile_trampoline.cpp
 
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
+	rm -f resource.dat
 	rm -rf bin/Release
 	rm -rf $(OBJDIR_RELEASE)/src
 	rm -rf $(OBJDIR_RELEASE)/resource

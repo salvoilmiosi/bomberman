@@ -16,18 +16,18 @@ Mix_Chunk *wav_bounce = nullptr;
 Mix_Chunk *wav_jump = nullptr;
 
 void loadSounds() {
-    music_battle = Mix_LoadMUS_RW(getResourceRW(IDM_BATTLE, "OGG"), 1);
+    music_battle = Mix_LoadMUS_RW(getResourceRW("IDM_BATTLE"), 1);
 
-    wav_plant = Mix_LoadWAV_RW(getResourceRW(IDW_PLANT, "WAV"), 1);
-    wav_explode = Mix_LoadWAV_RW(getResourceRW(IDW_EXPLODE, "WAV"), 1);
-    wav_pickup = Mix_LoadWAV_RW(getResourceRW(IDW_PICKUP, "WAV"), 1);
-    wav_skull = Mix_LoadWAV_RW(getResourceRW(IDW_SKULL, "WAV"), 1);
-    wav_death = Mix_LoadWAV_RW(getResourceRW(IDW_DEATH, "WAV"), 1);
-    wav_punch = Mix_LoadWAV_RW(getResourceRW(IDW_PUNCH, "WAV"), 1);
-    wav_slide = Mix_LoadWAV_RW(getResourceRW(IDW_SLIDE, "WAV"), 1);
-    wav_hardhit = Mix_LoadWAV_RW(getResourceRW(IDW_HARDHIT, "WAV"), 1);
-    wav_bounce = Mix_LoadWAV_RW(getResourceRW(IDW_BOUNCE, "WAV"), 1);
-    wav_jump = Mix_LoadWAV_RW(getResourceRW(IDW_JUMP, "WAV"), 1);
+    wav_plant 	 = Mix_LoadWAV_RW(getResourceRW("IDW_PLANT"), 1);
+    wav_explode  = Mix_LoadWAV_RW(getResourceRW("IDW_EXPLODE"), 1);
+    wav_pickup   = Mix_LoadWAV_RW(getResourceRW("IDW_PICKUP"),  1);
+    wav_skull    = Mix_LoadWAV_RW(getResourceRW("IDW_SKULL"),  1);
+    wav_death    = Mix_LoadWAV_RW(getResourceRW("IDW_DEATH"),  1);
+    wav_punch    = Mix_LoadWAV_RW(getResourceRW("IDW_PUNCH"),  1);
+    wav_slide    = Mix_LoadWAV_RW(getResourceRW("IDW_SLIDE"),  1);
+    wav_hardhit  = Mix_LoadWAV_RW(getResourceRW("IDW_HARDHIT"),  1);
+    wav_bounce   = Mix_LoadWAV_RW(getResourceRW("IDW_BOUNCE"),  1);
+    wav_jump     = Mix_LoadWAV_RW(getResourceRW("IDW_JUMP"), 1);
 }
 
 void clearSounds() {

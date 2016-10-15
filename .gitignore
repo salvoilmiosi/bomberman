@@ -6,6 +6,7 @@
 *.depend
 *.layout
 *.spc
+*.dat
 client/bin/*
 server/bin/*
 
