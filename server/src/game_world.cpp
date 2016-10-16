@@ -105,6 +105,7 @@ void game_world::tick() {
                 if (p->isAlive()) {
                     server.messageToAll(COLOR_RED, "%s won round %d!", p->getName(), round_num);
                     p->addVictory();
+                    p->makeInvulnerable();
                     break;
                 }
             }

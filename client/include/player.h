@@ -32,6 +32,8 @@ private:
     uint8_t direction;
     bool punching;
     bool diseased;
+    bool jumping;
+    bool invulnerable;
 
     char player_name[NAME_SIZE];
 

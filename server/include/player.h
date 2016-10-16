@@ -10,6 +10,7 @@ static const size_t PLAYERNAME_SIZE = 32;
 static const float MOVE_TILE = 0.3f;
 static const int PLAYER_DEATH_TICKS = TICKRATE / 3;
 static const int PLAYER_PUNCH_TICKS = TICKRATE / 4;
+static const int PLAYER_INVULNERABLE_TICKS = TICKRATE * 10;
 
 static const uint8_t PICKUP_HAS_PUNCH = 1 << 0;
 static const uint8_t PICKUP_HAS_KICK = 1 << 1;
@@ -33,6 +34,7 @@ private:
     bool spawned = false;
 
     int death_ticks;
+    int invulnerable_ticks;
 
     float speed = 0.f;
     int explosion_size = 0;
@@ -73,6 +75,7 @@ public:
 public:
     void respawn(float x, float y);
     void kill();
+    void makeInvulnerable();
 
     bool isAlive() {
         return alive;

@@ -6,6 +6,7 @@ IDB_TILESET_4 "resource/tileset_4.png"
 IDB_EXPLOSIONS "resource/explosions.png"
 IDB_ITEMS "resource/items.png"
 IDB_PLAYERS "resource/players.png"
+IDB_PLAYERS_WHITE "resource/players_white.png"
 
 IDB_TEXT "resource/text.png"
 

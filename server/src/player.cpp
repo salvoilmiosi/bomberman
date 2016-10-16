@@ -42,6 +42,7 @@ void player::respawn(float x, float y) {
     direction = 1;
 
     punch_ticks = 0;
+    invulnerable_ticks = 0;
 
     skull_effect = 0;
     skull_ticks = 0;
@@ -55,11 +56,16 @@ void player::respawn(float x, float y) {
 void player::kill() {
     if (!alive) return;
     if (jumping) return;
+    if (invulnerable_ticks > 0) return;
 
     alive = false;
     death_ticks = PLAYER_DEATH_TICKS;
 
     world->playWave(WAV_DEATH);
+}
+
+void player::makeInvulnerable() {
+    invulnerable_ticks = PLAYER_INVULNERABLE_TICKS;
 }
 
 void player::setName(const char *name) {
@@ -310,6 +316,9 @@ void player::tick() {
         if (punch_ticks > 0) {
             --punch_ticks;
         }
+        if (invulnerable_ticks > 0) {
+            --invulnerable_ticks;
+        }
     } else {
         if (death_ticks == 0) {
             spawnItems();
@@ -361,6 +370,7 @@ byte_array player::toByteArray() {
     flags |= (1 << 3) * (punch_ticks > 0);
     flags |= (1 << 4) * (skull_ticks > 0);
     flags |= (1 << 5) * jumping;
+    flags |= (1 << 6) * (invulnerable_ticks > 0);
     flags |= (direction & 0x3) << 14;
     ba.writeShort(flags);
 

@@ -137,19 +137,24 @@ void player::render(SDL_Renderer *renderer) {
     dst_rect.y = world->mapTop() + (int)y - TILE_SIZE;
     dst_rect.y -= (int) z;
 
-    bool render_black = false;
-    if (diseased) {
-        int frame = (SDL_GetTicks() * 3 / 1000) % 2;
-        render_black = frame == 0;
+    SDL_Texture *texture = players_texture;
+
+    SDL_SetTextureColorMod(players_texture, 0xff, 0xff, 0xff);
+    if (alive) {
+        if (diseased) {
+            int frame = (SDL_GetTicks() * 3 / 1000) % 2;
+            if (frame == 0) {
+                SDL_SetTextureColorMod(players_texture, 0, 0, 0);
+            }
+        } else if (invulnerable) {
+            int frame = (SDL_GetTicks() * 6 / 1000) % 2;
+            if (frame == 0) {
+                texture = players_white_texture;
+            }
+        }
     }
 
-    if (alive && render_black) {
-        SDL_SetTextureColorMod(players_texture, 0, 0, 0);
-    } else {
-        SDL_SetTextureColorMod(players_texture, 0xff, 0xff, 0xff);
-    }
-
-    SDL_RenderCopyEx(renderer, players_texture, &src_rect, &dst_rect, 0, nullptr, flip);
+    SDL_RenderCopyEx(renderer, texture, &src_rect, &dst_rect, 0, nullptr, flip);
 
     int name_x = dst_rect.x + dst_rect.w / 2;
     int name_y = dst_rect.y - CHAR_H;
@@ -183,7 +188,9 @@ void player::readFromByteArray(byte_array &ba) {
 
     diseased = (flags & (1 << 4)) != 0;
 
-    //uint8_t ijumping = (flags & (1 << 5)) != 0;
+    jumping = (flags & (1 << 5)) != 0;
+
+    invulnerable = (flags & (1 << 6)) != 0;
 
     uint8_t idirection = (flags & 0xc000) >> 14;
 

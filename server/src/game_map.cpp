@@ -231,7 +231,6 @@ void game_map::createMap(int w, int h, int num_players, int m_zone) {
     for (int i=0; true; ++i) {
         tile *t = breakables[i];
         if (!t) break;
-        t->type = TILE_ITEM;
         switch (zone) {
         case ZONE_NORMAL:
             if (i < 7) {
@@ -310,6 +309,7 @@ void game_map::createMap(int w, int h, int num_players, int m_zone) {
         default:
             return;
         }
+        t->type = TILE_ITEM;
     }
 }
 

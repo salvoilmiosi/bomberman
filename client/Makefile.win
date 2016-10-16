@@ -119,7 +119,7 @@ $(BINDIR_DEBUG)\\resource.dat: resource_pack.exe resource\\resource.txt
 clean_debug: 
 	cmd /c del /f $(OBJ_DEBUG) $(OUT_DEBUG)
 	cmd /c del $(BINDIR_DEBUG)\\resource.dat
-	cmd /c rd bin
+	cmd /c rd $(BINDIR_DEBUG)
 	cmd /c rd $(OBJDIR_DEBUG)\\src
 	cmd /c rd $(OBJDIR_DEBUG)\\resource
 

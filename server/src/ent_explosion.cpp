@@ -124,6 +124,7 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
                 *trunc = true;
             }
         case TILE_WALL:
+            *trunc = true;
             return i;
         default:
             break;
