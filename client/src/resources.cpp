@@ -118,7 +118,7 @@ void loadResources(SDL_Renderer *renderer) {
     items_texture = loadTexture(renderer, "IDB_ITEMS");
     players_texture = loadTexture(renderer, "IDB_PLAYERS");
 
-    resource_font = TTF_OpenFontRW(getResourceRW("IDF_FONT1"), 1, CHAR_H);
+    resource_font = TTF_OpenFontRW(getResourceRW("IDF_FONT"), 1, CHAR_H);
 }
 
 void clearResources() {
