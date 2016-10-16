@@ -189,6 +189,9 @@ $(OBJDIR_RELEASE)\\src\\tile_trampoline.o: src\\tile_trampoline.cpp
 $(BINDIR_RELEASE)\\resource.dat: resource_pack.exe resource\\resource.txt
 	resource_pack resource/resource.txt $(BINDIR_RELEASE)\\resource.dat
 
+resource_pack.exe: resource_pack.cpp
+	g++ --std=c++11 -g -Wall -o resource_pack.exe resource_pack.cpp
+
 clean_release: 
 	cmd /c del /f $(OBJ_RELEASE) $(OUT_RELEASE)
 	cmd /c del $(BINDIR_RELEASE)\\resource.dat
