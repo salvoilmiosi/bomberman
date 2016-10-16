@@ -25,9 +25,10 @@ RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
 LIB_DEBUG = $(LIB)
 LDFLAGS_DEBUG = $(LDFLAGS)
-OBJDIR_DEBUG = obj
+OBJDIR_DEBUG = obj\\Debug
+BINDIR_DEBUG = bin\\Debug
 DEP_DEBUG = 
-OUT_DEBUG = bin\\bomberman_server.exe
+OUT_DEBUG = $(BINDIR_DEBUG)\\bomberman_server.exe
 
 INC_RELEASE = $(INC)
 CFLAGS_RELEASE = $(CFLAGS) -O2
@@ -37,8 +38,9 @@ LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
 LDFLAGS_RELEASE = $(LDFLAGS) -s
 OBJDIR_RELEASE = obj\\Release
+BINDIR_RELEASE = bin\\Release
 DEP_RELEASE = 
-OUT_RELEASE = bin\\Release\\bomberman_server.exe
+OUT_RELEASE = $(BINDIR_RELEASE)\\bomberman_server.exe
 
 OBJ_DEBUG = $(OBJDIR_DEBUG)\\src\\user.o $(OBJDIR_DEBUG)\\src\\player.o $(OBJDIR_DEBUG)\\src\\packet_io.o $(OBJDIR_DEBUG)\\src\\main.o $(OBJDIR_DEBUG)\\src\\input_net.o $(OBJDIR_DEBUG)\\src\\game_world.o $(OBJDIR_DEBUG)\\src\\game_server.o $(OBJDIR_DEBUG)\\src\\game_map.o $(OBJDIR_DEBUG)\\src\\ent_item.o $(OBJDIR_DEBUG)\\src\\ent_explosion.o $(OBJDIR_DEBUG)\\src\\ent_broken_wall.o $(OBJDIR_DEBUG)\\src\\ent_bomb.o
 
@@ -49,7 +51,7 @@ all: debug release
 clean: clean_debug clean_release
 
 before_debug: 
-	cmd /c if not exist bin md bin
+	cmd /c if not exist $(BINDIR_DEBUG) md $(BINDIR_DEBUG)
 	cmd /c if not exist $(OBJDIR_DEBUG)\\src md $(OBJDIR_DEBUG)\\src
 
 after_debug: 
@@ -97,11 +99,11 @@ $(OBJDIR_DEBUG)\\src\\ent_bomb.o: src\\ent_bomb.cpp
 
 clean_debug: 
 	cmd /c del /f $(OBJ_DEBUG) $(OUT_DEBUG)
-	cmd /c rd bin
+	cmd /c rd $(BINDIR_DEBUG)
 	cmd /c rd $(OBJDIR_DEBUG)\\src
 
 before_release: 
-	cmd /c if not exist bin\\Release md bin\\Release
+	cmd /c if not exist $(BINDIR_RELEASE) md $(BINDIR_RELEASE)
 	cmd /c if not exist $(OBJDIR_RELEASE)\\src md $(OBJDIR_RELEASE)\\src
 
 after_release: 
@@ -149,7 +151,7 @@ $(OBJDIR_RELEASE)\\src\\ent_bomb.o: src\\ent_bomb.cpp
 
 clean_release: 
 	cmd /c del /f $(OBJ_RELEASE) $(OUT_RELEASE)
-	cmd /c rd bin\\Release
+	cmd /c rd $(BINDIR_RELEASE)
 	cmd /c rd $(OBJDIR_RELEASE)\\src
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release

@@ -25,9 +25,10 @@ RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
 LIB_DEBUG = $(LIB)
 LDFLAGS_DEBUG = $(LDFLAGS)
-OBJDIR_DEBUG = obj
+OBJDIR_DEBUG = obj/Debug
+BINDIR_DEBUG = bin/Debug
 DEP_DEBUG = 
-OUT_DEBUG = bin/bomberman_server
+OUT_DEBUG = $(BINDIR_DEBUG)/bomberman_server
 
 INC_RELEASE = $(INC)
 CFLAGS_RELEASE = $(CFLAGS) -O2
@@ -37,8 +38,9 @@ LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
 LDFLAGS_RELEASE = $(LDFLAGS) -s
 OBJDIR_RELEASE = obj/Release
+BINDIR_RELEASE = bin/Release
 DEP_RELEASE = 
-OUT_RELEASE = bin/Release/bomberman_server
+OUT_RELEASE = $(BINDIR_RELEASE)/bomberman_server
 
 OBJ_DEBUG = $(OBJDIR_DEBUG)/src/user.o $(OBJDIR_DEBUG)/src/player.o $(OBJDIR_DEBUG)/src/packet_io.o $(OBJDIR_DEBUG)/src/main.o $(OBJDIR_DEBUG)/src/input_net.o $(OBJDIR_DEBUG)/src/game_world.o $(OBJDIR_DEBUG)/src/game_server.o $(OBJDIR_DEBUG)/src/game_map.o $(OBJDIR_DEBUG)/src/ent_item.o $(OBJDIR_DEBUG)/src/ent_explosion.o $(OBJDIR_DEBUG)/src/ent_broken_wall.o $(OBJDIR_DEBUG)/src/ent_bomb.o
 
@@ -49,7 +51,7 @@ all: debug release
 clean: clean_debug clean_release
 
 before_debug: 
-	test -d bin || mkdir -p bin
+	test -d bin || mkdir -p $(BINDIR_DEBUG)
 	test -d $(OBJDIR_DEBUG)/src || mkdir -p $(OBJDIR_DEBUG)/src
 
 after_debug: 
@@ -97,11 +99,11 @@ $(OBJDIR_DEBUG)/src/ent_bomb.o: src/ent_bomb.cpp
 
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
-	rm -rf bin
+	rm -rf $(BINDIR_DEBUG)
 	rm -rf $(OBJDIR_DEBUG)/src
 
 before_release: 
-	test -d bin/Release || mkdir -p bin/Release
+	test -d $(BINDIR_RELEASE) || mkdir -p $(BINDIR_RELEASE)
 	test -d $(OBJDIR_RELEASE)/src || mkdir -p $(OBJDIR_RELEASE)/src
 
 after_release: 
@@ -149,7 +151,7 @@ $(OBJDIR_RELEASE)/src/ent_bomb.o: src/ent_bomb.cpp
 
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
-	rm -rf bin/Release
+	rm -rf $(BINDIR_RELEASE)
 	rm -rf $(OBJDIR_RELEASE)/src
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release

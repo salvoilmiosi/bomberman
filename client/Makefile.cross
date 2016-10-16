@@ -25,9 +25,10 @@ RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
 LIB_DEBUG = $(LIB)
 LDFLAGS_DEBUG = $(LDFLAGS)
-OBJDIR_DEBUG = win32/obj
-DEP_DEBUG = resource.dat
-OUT_DEBUG = win32/bin/bomberman.exe
+OBJDIR_DEBUG = win32/obj/Debug
+BINDIR_DEBUG = win32/bin/Debug
+DEP_DEBUG = $(BINDIR_DEBUG)/resource.dat
+OUT_DEBUG = $(BINDIR_DEBUG)/bomberman.exe
 
 INC_RELEASE = $(INC)
 CFLAGS_RELEASE = $(CFLAGS) -O2
@@ -36,9 +37,10 @@ RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
 LDFLAGS_RELEASE = $(LDFLAGS) -s
+BINDIR_RELEASE = win32/bin/Release
 OBJDIR_RELEASE = win32/obj/Release
-DEP_RELEASE = resource.dat
-OUT_RELEASE = win32/bin/Release/bomberman.exe
+DEP_RELEASE = $(BINDIR_RELEASE)/resource.dat
+OUT_RELEASE = $(BINDIR_RELEASE)/bomberman.exe
 
 OBJ_DEBUG = $(OBJDIR_DEBUG)/src/game_sound.o $(OBJDIR_DEBUG)/src/bindings.o $(OBJDIR_DEBUG)/src/chat.o $(OBJDIR_DEBUG)/src/ent_bomb.o $(OBJDIR_DEBUG)/src/ent_broken_wall.o $(OBJDIR_DEBUG)/src/ent_item.o $(OBJDIR_DEBUG)/src/game_client.o $(OBJDIR_DEBUG)/src/game_map.o $(OBJDIR_DEBUG)/src/game_world.o $(OBJDIR_DEBUG)/src/healthbar.o $(OBJDIR_DEBUG)/src/main.o $(OBJDIR_DEBUG)/src/packet_io.o $(OBJDIR_DEBUG)/src/player.o $(OBJDIR_DEBUG)/src/resources.o $(OBJDIR_DEBUG)/src/score.o $(OBJDIR_DEBUG)/src/tile_trampoline.o $(OBJDIR_DEBUG)/resource/resource.o
 
@@ -49,7 +51,7 @@ all: debug release
 clean: clean_debug clean_release
 
 before_debug: 
-	test -d win32/bin || mkdir -p win32/bin
+	test -d $(BINDIR_DEBUG) || mkdir -p $(BINDIR_DEBUG)
 	test -d $(OBJDIR_DEBUG)/src || mkdir -p $(OBJDIR_DEBUG)/src
 	test -d $(OBJDIR_DEBUG)/resource || mkdir -p $(OBJDIR_DEBUG)/resource
 
@@ -111,18 +113,18 @@ $(OBJDIR_DEBUG)/src/tile_trampoline.o: src/tile_trampoline.cpp
 $(OBJDIR_DEBUG)/resource/resource.o: resource/resources.rc
 	$(WINDRES) -i resource/resources.rc -o $(OBJDIR_DEBUG)/resource/resource.o
 
-resource.dat: resource/resource.txt
-	./resource_pack resource/resource.txt resource.dat
+$(BINDIR_DEBUG)/resource.dat: resource_pack resource/resource.txt
+	./resource_pack resource/resource.txt $(BINDIR_DEBUG)/resource.dat
 
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
-	rm -f resource.dat
-	rm -rf bin
+	rm -f $(BINDIR_DEBUG)/resource.dat
+	rm -f $(BINDIR_DEBUG)/bomberman
 	rm -rf $(OBJDIR_DEBUG)/src
 	rm -rf $(OBJDIR_DEBUG)/resource
 
 before_release: 
-	test -d win32/bin/Release || mkdir -p win32/bin/Release
+	test -d $(BINDIR_RELEASE) || mkdir -p $(BINDIR_RELEASE)
 	test -d $(OBJDIR_RELEASE)/src || mkdir -p $(OBJDIR_RELEASE)/src
 	test -d $(OBJDIR_RELEASE)/resource || mkdir -p $(OBJDIR_RELEASE)/resource
 
@@ -184,10 +186,13 @@ $(OBJDIR_RELEASE)/src/tile_trampoline.o: src/tile_trampoline.cpp
 $(OBJDIR_RELEASE)/resource/resource.o: resource/resources.rc
 	$(WINDRES) -i resource/resources.rc -o $(OBJDIR_RELEASE)/resource/resource.o
 
+$(BINDIR_RELEASE)/resource.dat: resource_pack resource/resource.txt
+	./resource_pack resource/resource.txt $(BINDIR_RELEASE)/resource.dat
+
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
-	rm -f resource.dat
-	rm -rf bin/Release
+	rm -f $(BINDIR_RELEASE)/resource.dat
+	rm -rf $(BINDIR_RELEAsE)
 	rm -rf $(OBJDIR_RELEASE)/src
 	rm -rf $(OBJDIR_RELEASE)/resource
 
