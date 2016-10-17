@@ -24,9 +24,9 @@ player::player(game_world *world, input_handler *handler, uint8_t player_num) : 
     victories = 0;
 }
 
-void player::respawn(float x, float y) {
-    fx = x;
-    fy = y;
+void player::respawn(int tx, int ty) {
+    fx = tx * TILE_SIZE;
+    fy = ty * TILE_SIZE;
     fz = 0;
 
     spawned = true;
@@ -43,6 +43,7 @@ void player::respawn(float x, float y) {
 
     punch_ticks = 0;
     invulnerable_ticks = 0;
+    stun_ticks = 0;
 
     skull_effect = 0;
     skull_ticks = 0;
@@ -90,6 +91,7 @@ void player::handleInput() {
     }
 
     if (jumping) return;
+    if (stun_ticks > 0) return;
 
     float to_fx = fx;
     float to_fy = fy;
@@ -204,11 +206,11 @@ void player::handleInput() {
             switch (direction) {
             case 0:
             case 1:
-                fx += (getTileX() * TILE_SIZE - fx) * MOVE_TILE;
+                fx += (getTileX() * TILE_SIZE - fx) * PLAYER_SIDE_MOVE_AMT;
                 break;
             case 2:
             case 3:
-                fy += (getTileY() * TILE_SIZE - fy) * MOVE_TILE;
+                fy += (getTileY() * TILE_SIZE - fy) * PLAYER_SIDE_MOVE_AMT;
                 break;
             }
 
@@ -223,7 +225,7 @@ void player::handleInput() {
                             --kick_ticks;
                         }
                     } else {
-                        kick_ticks = KICK_TICKS;
+                        kick_ticks = PLAYER_KICK_TICKS;
                     }
                 }
             }
@@ -244,8 +246,14 @@ void player::explodedBomb(bomb *b) {
     }
 }
 
-static const float JUMP_SPEED = 600.f;
-static const float JUMP_Z_ACCEL = 800.f;
+void player::addVictory() {
+    ++victories;
+    makeInvulnerable();
+}
+
+void player::stun() {
+    stun_ticks = PLAYER_STUN_TICKS;
+}
 
 void player::checkTrampoline() {
     if (jumping) return;
@@ -262,7 +270,7 @@ void player::checkTrampoline() {
                         world->playWave(WAV_JUMP);
                         jumping = true;
 
-                        speedz = JUMP_SPEED / TICKRATE;
+                        speedz = PLAYER_JUMP_SPEED / TICKRATE;
                         fz = 0.f;
                     }
                     break;
@@ -281,7 +289,7 @@ void player::tick() {
 
         if (jumping) {
             fz += speedz;
-            speedz -= JUMP_Z_ACCEL / (TICKRATE * TICKRATE);
+            speedz -= PLAYER_Z_ACCEL / (TICKRATE * TICKRATE);
             if (fz <= 0.f) {
                 jumping = false;
                 fz = 0.f;
@@ -318,6 +326,9 @@ void player::tick() {
         }
         if (invulnerable_ticks > 0) {
             --invulnerable_ticks;
+        }
+        if (stun_ticks > 0) {
+            --stun_ticks;
         }
     } else {
         if (death_ticks == 0) {
@@ -360,7 +371,7 @@ byte_array player::toByteArray() {
     ba.writeInt(fy);
     ba.writeInt(fz);
 
-    ba.writeString(player_name, PLAYERNAME_SIZE);
+    ba.writeString(player_name, PLAYER_NAME_SIZE);
     ba.writeChar(player_num);
 
     uint16_t flags = 0;
@@ -371,6 +382,7 @@ byte_array player::toByteArray() {
     flags |= (1 << 4) * (skull_ticks > 0);
     flags |= (1 << 5) * jumping;
     flags |= (1 << 6) * (invulnerable_ticks > 0);
+    flags |= (1 << 7) * (stun_ticks > 0);
     flags |= (direction & 0x3) << 14;
     ba.writeShort(flags);
 

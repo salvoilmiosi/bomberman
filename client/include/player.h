@@ -34,6 +34,7 @@ private:
     bool diseased;
     bool jumping;
     bool invulnerable;
+    bool stunned;
 
     char player_name[NAME_SIZE];
 

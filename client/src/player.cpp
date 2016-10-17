@@ -84,7 +84,10 @@ void player::render(SDL_Renderer *renderer) {
     static const int8_t walk_frames[4] = {1, 0, -1, 0};
 
     if (alive) {
-        if (punching) {
+        if (stunned) {
+            spx = 0;
+            spy = 2;
+        } else if (punching) {
             spy = 3;
             switch(direction) {
             case 0:
@@ -191,6 +194,8 @@ void player::readFromByteArray(byte_array &ba) {
     jumping = (flags & (1 << 5)) != 0;
 
     invulnerable = (flags & (1 << 6)) != 0;
+
+    stunned = (flags & (1 << 7)) != 0;
 
     uint8_t idirection = (flags & 0xc000) >> 14;
 

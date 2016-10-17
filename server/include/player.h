@@ -6,18 +6,22 @@
 
 #include <deque>
 
-static const size_t PLAYERNAME_SIZE = 32;
-static const float MOVE_TILE = 0.3f;
-static const int PLAYER_DEATH_TICKS = TICKRATE / 3;
-static const int PLAYER_PUNCH_TICKS = TICKRATE / 4;
-static const int PLAYER_INVULNERABLE_TICKS = TICKRATE * 10;
+static const size_t     PLAYER_NAME_SIZE = 32;
+static const float      PLAYER_SIDE_MOVE_AMT = 0.3f;
+static const int        PLAYER_DEATH_TICKS = TICKRATE / 3;
+static const int        PLAYER_PUNCH_TICKS = TICKRATE / 4;
+static const int        PLAYER_INVULNERABLE_TICKS = TICKRATE * 10;
 
-static const uint8_t PICKUP_HAS_PUNCH = 1 << 0;
-static const uint8_t PICKUP_HAS_KICK = 1 << 1;
-static const uint8_t PICKUP_HAS_REDBOMB = 1 << 2;
-static const uint8_t PICKUP_HAS_REMOCON = 1 << 3;
+static const uint8_t    PICKUP_HAS_PUNCH = 1 << 0;
+static const uint8_t    PICKUP_HAS_KICK = 1 << 1;
+static const uint8_t 	PICKUP_HAS_REDBOMB = 1 << 2;
+static const uint8_t 	PICKUP_HAS_REMOCON = 1 << 3;
 
-static const int KICK_TICKS = TICKRATE / 20;
+static const int 		PLAYER_KICK_TICKS = TICKRATE / 20;
+static const int 		PLAYER_STUN_TICKS = TICKRATE;
+
+static const float 		PLAYER_JUMP_SPEED = 600.f;
+static const float 		PLAYER_Z_ACCEL = 800.f;
 
 class player: public entity {
 private:
@@ -26,7 +30,7 @@ private:
 
     input_handler *handler = nullptr;
 
-    char player_name[PLAYERNAME_SIZE];
+    char player_name[PLAYER_NAME_SIZE];
 
     uint8_t player_num;
 
@@ -66,6 +70,7 @@ private:
     int punch_ticks;
     int skull_ticks;
     int kick_ticks;
+    int stun_ticks;
 
     int victories;
 
@@ -73,20 +78,18 @@ public:
     player(game_world *world, input_handler *handler, uint8_t player_num);
 
 public:
-    void respawn(float x, float y);
-    void kill();
-    void makeInvulnerable();
+    void tick();
 
-    bool isAlive() {
-        return alive;
-    }
-
+public:
     void setName(const char *name);
+
     const char *getName() {
         return player_name;
     }
 
-    void tick();
+    bool isAlive() {
+        return alive;
+    }
 
     uint8_t getTileX() const {
         return fx / TILE_SIZE + 0.5f;
@@ -96,19 +99,22 @@ public:
         return fy / TILE_SIZE + 0.5f;
     }
 
-    byte_array toByteArray();
-
     uint8_t getPlayerNum() {
         return player_num;
-    }
-
-    void addVictory() {
-        ++victories;
     }
 
     uint16_t getVictories() {
         return victories;
     }
+
+    byte_array toByteArray();
+
+public:
+    void respawn(int tx, int ty);
+    void kill();
+    void stun();
+    void makeInvulnerable();
+	void addVictory();
 
 private:
     void explodedBomb(class bomb *b);

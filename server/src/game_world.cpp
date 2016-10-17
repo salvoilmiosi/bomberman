@@ -105,7 +105,6 @@ void game_world::tick() {
                 if (p->isAlive()) {
                     server.messageToAll(COLOR_RED, "%s won round %d!", p->getName(), round_num);
                     p->addVictory();
-                    p->makeInvulnerable();
                     break;
                 }
             }
@@ -155,7 +154,7 @@ void game_world::countdownEnd() {
                 {
                     player *p = (player *)ent;
                     point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
-                    p->respawn(spawn_pt.x * TILE_SIZE, spawn_pt.y * TILE_SIZE);
+                    p->respawn(spawn_pt.x, spawn_pt.y);
                 }
                 break;
             default:
