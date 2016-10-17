@@ -4,6 +4,8 @@
 #include "game_client.h"
 #include "game_sound.h"
 
+#include <algorithm>
+
 chat::~chat() {
     for(chat_line &l : lines) {
         if (l.texture) {
@@ -95,6 +97,7 @@ void chat::stopTyping() {
         size_t space_in = message.find(' ', space_begin);
 
         std::string cmd = message.substr(space_begin, space_in - space_begin);
+        std::transform(cmd.begin(), cmd.end(), cmd.begin(), tolower);
         if (cmd == "connect") {
             std::string address, port;
 
