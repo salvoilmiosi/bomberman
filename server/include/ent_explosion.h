@@ -38,7 +38,7 @@ private:
     byte_array toByteArray();
 
     uint8_t destroyTiles(int dx, int dy, bool *trunc);
-    void checkPlayers(int dx, int dy);
+    void checkEntities(int dx, int dy);
 };
 
 #endif // __ENT_EXPLOSION_H__

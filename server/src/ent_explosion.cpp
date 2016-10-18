@@ -134,7 +134,7 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
     return i;
 }
 
-void explosion::checkPlayers(int dx, int dy) {
+void explosion::checkEntities(int dx, int dy) {
     int x = tx;
     int y = ty;
     while(true) {
@@ -164,7 +164,10 @@ void explosion::checkPlayers(int dx, int dy) {
                 break;
             case TYPE_BOMB:
                 if (EXPLOSION_LIFE - life_ticks >= EXPLOSION_CHAIN_DELAY) {
-                    dynamic_cast<bomb *>(ent)->explode();
+                    bomb *b = dynamic_cast<bomb *>(ent);
+                    if (!b->isFlying()) {
+                        b->explode();
+                    }
                 }
                 break;
             default:
@@ -186,10 +189,10 @@ void explosion::tick() {
         }
     }
 
-    checkPlayers(-len_l, 0);
-    checkPlayers(0, -len_t);
-    checkPlayers(len_r, 0);
-    checkPlayers(0, len_b);
+    checkEntities(-len_l, 0);
+    checkEntities(0, -len_t);
+    checkEntities(len_r, 0);
+    checkEntities(0, len_b);
 
     if (life_ticks == 0) {
         destroy();

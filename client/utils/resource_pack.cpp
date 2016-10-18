@@ -27,6 +27,14 @@ void trim(string &s) {
 bool parseResource(const char *filename, vector<fileData> &files) {
 	ifstream ifs(filename);
 
+	string resource_file_dir = filename;
+	size_t slash_pos = resource_file_dir.find_last_of("/\\");
+	resource_file_dir = resource_file_dir.substr(0, slash_pos);
+
+	if (!resource_file_dir.empty()) {
+		resource_file_dir.append("/");
+	}
+
 	if (ifs.fail()) {
 		cerr << "Could not open input file \"" << filename << "\"\n";
 		return false;
@@ -74,6 +82,12 @@ bool parseResource(const char *filename, vector<fileData> &files) {
 					break;
 				} else {
 					i = file.filename;
+
+					if (!resource_file_dir.empty()) {
+						strncpy(i, resource_file_dir.c_str(), FILENAME_MAX);
+						i += resource_file_dir.size();
+					}
+
 					++state;
 					if (c == '\"') {
 						break;

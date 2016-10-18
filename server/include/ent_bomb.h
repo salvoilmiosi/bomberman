@@ -31,7 +31,7 @@ private:
 
     bool exploded = false;
     bool kicked = false;
-    bool punched = false;
+    bool flying = false;
 
     int kick_ticks;
 
@@ -51,12 +51,10 @@ public:
     void kick(uint8_t direction);
     void punch(uint8_t direction);
 
-    void levitate(float height);
-
     void explode();
 
     bool isFlying() {
-        return punched;
+        return flying;
     }
 
     uint8_t getTileX() const {

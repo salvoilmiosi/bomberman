@@ -23,7 +23,7 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
     remocon = p->pickups & PICKUP_HAS_REMOCON;
 
     kicked = false;
-    punched = false;
+    flying = false;
 
     do_send_updates = false;
 
@@ -38,7 +38,7 @@ bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB) {
     fy = ty * TILE_SIZE;
     fz = BOMB_HEIGHT;
 
-    punched = true;
+    flying = true;
     speedx = 0.f;
     speedy = 0.f;
     speedz = 0.f;
@@ -70,7 +70,7 @@ bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB) {
 }
 
 void bomb::kick(uint8_t direction) {
-    if (kicked || punched) return;
+    if (kicked || flying) return;
 
     speedx = 0;
     speedy = 0;
@@ -99,7 +99,7 @@ void bomb::kick(uint8_t direction) {
 
 void bomb::punch(uint8_t direction) {
     if (kicked) kicked = false;
-    if (punched) return;
+    if (flying) return;
 
     world->playWave(WAV_PUNCH);
 
@@ -125,7 +125,7 @@ void bomb::punch(uint8_t direction) {
 
     speedz = PUNCH_SPEED_Z / TICKRATE;
 
-    punched = true;
+    flying = true;
     do_send_updates = true;
 }
 
@@ -167,7 +167,7 @@ void bomb::tick() {
                 world->playWave(WAV_HARDHIT);
             }
         }
-    } else if (punched) {
+    } else if (flying) {
         if (speedx > 1 || speedx < -1) fx += speedx;
         if (speedy > 1 || speedy < -1) fy += speedy;
         fz += speedz;
@@ -193,7 +193,7 @@ void bomb::tick() {
             if (world->isWalkable(getTileX(), getTileY(), WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
                 fx = getTileX() * TILE_SIZE;
                 fy = getTileY() * TILE_SIZE;
-                punched = false;
+                flying = false;
             } else {
                 entity **ents = world->findEntities(getTileX(), getTileY(), TYPE_PLAYER);
                 for (uint8_t i = 0; i < SEARCH_SIZE; ++i) {
