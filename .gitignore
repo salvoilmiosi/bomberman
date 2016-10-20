@@ -11,7 +11,7 @@
 *.spc
 *.dat
 client/bin/*
-client/resource_pack
-client/resource_unpack
+client/utils/resource_pack
+client/utils/resource_unpack
 server/bin/*
 
