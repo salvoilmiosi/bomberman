@@ -6,8 +6,8 @@
 #include "chat.h"
 #include "resources.h"
 
+#include <string>
 #include <cstring>
-#include <cstdio>
 
 score::score(game_client *client) : client(client) {
     is_shown = false;
@@ -51,24 +51,27 @@ void score::render(SDL_Renderer *renderer) {
     x += 20;
     y += 20;
 
-    char buffer[16];
-
     for (int i=0; i<num_players; ++i) {
         score_info si = info[i];
 
-        if (si.is_player) {
-            sprintf(buffer, "%d", si.player_num);
-            renderText(x, y, renderer, buffer, 0xffffffff);
-
-            sprintf(buffer, "%d", si.victories);
-            renderText(x + 200, y, renderer, buffer, 0xffffffff);
-        } else {
+        switch (si.user_type) {
+        case SCORE_SPECTATOR:
             renderText(x + 200, y, renderer, "Spectator", 0xffff00ff);
+            break;
+        case SCORE_PLAYER:
+            renderText(x, y, renderer, std::to_string(si.player_num), 0xffffffff);
+            renderText(x + 200, y, renderer, std::to_string(si.victories), 0xffffffff);
+            renderText(x + 300, y, renderer, std::to_string(si.ping), 0xffffffff);
+            break;
+        case SCORE_BOT:
+            renderText(x, y, renderer, std::to_string(si.player_num), 0xffffffff);
+            renderText(x + 200, y, renderer, std::to_string(si.victories), 0xffffffff);
+            renderText(x + 300, y, renderer, "BOT", 0xffffffff);
+            break;
+        default:
+            break;
         }
         renderText(x + 100, y, renderer, si.player_name, 0xffffffff);
-
-        sprintf(buffer, "%d", si.ping);
-        renderText(x + 300, y, renderer, buffer, 0xffffffff);
 
         y += CHAR_H + CHAT_LINE_SPACE;
     }
@@ -87,10 +90,16 @@ void score::handlePacket(packet_ext &packet) {
         strncpy(in.player_name, player_name, NAME_SIZE);
 
         in.ping = packet.readShort();
-        in.is_player = packet.readChar() != 0;
-        if (in.is_player) {
+        in.user_type = packet.readChar();
+        switch (in.user_type) {
+        case SCORE_PLAYER:
+        case SCORE_BOT:
             in.player_num = packet.readChar();
             in.victories = packet.readShort();
+            break;
+        case SCORE_SPECTATOR:
+        default:
+            break;
         }
         ++i;
     }

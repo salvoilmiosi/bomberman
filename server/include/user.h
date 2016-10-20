@@ -6,12 +6,15 @@
 
 #include "input_net.h"
 
-static const size_t NAME_SIZE = 32;
+static const size_t USER_NAME_SIZE = 32;
+static const int MAX_PING_ATTEMPTS = 5;
 
 class user {
 private:
+    class game_server *server;
+
     const IPaddress address;
-    char username[NAME_SIZE];
+    char username[USER_NAME_SIZE];
 
     uint16_t userid;
 
@@ -27,7 +30,9 @@ private:
     class player *ent = nullptr;
 
 public:
-    user(const IPaddress &address, const char *name);
+    user(class game_server *server, const IPaddress &address, const char *name);
+
+    virtual ~user();
 
 public:
     void createPlayer(class game_world *world, uint8_t player_num);
@@ -38,22 +43,20 @@ public:
 
     void setName(const char *name);
 
-    void setPlayer(class player *p);
-
     const IPaddress &getAddress() {
         return address;
     }
 
 public:
-    player *getPlayer() {
+    class player *getPlayer() {
         return ent;
     }
 
-    bool pingCmd(bool force = false);
+    bool tick();
 
     void pongCmd();
 
-    void handlePacket(packet_ext &packet);
+    void handleInputPacket(packet_ext &packet);
 
     int getPing();
 
@@ -63,11 +66,10 @@ public:
         return userid;
     }
 
-    int pingAttempts() {
-        return attempts;
-    }
-
     void destroyPlayer();
+
+private:
+    void sendPing(bool force = false);
 };
 
 #endif // __USER_H__

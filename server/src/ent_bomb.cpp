@@ -69,8 +69,8 @@ bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB) {
     }
 }
 
-void bomb::kick(uint8_t direction) {
-    if (kicked || flying) return;
+bool bomb::kick(uint8_t direction) {
+    if (kicked || flying) return false;
 
     speedx = 0;
     speedy = 0;
@@ -90,16 +90,18 @@ void bomb::kick(uint8_t direction) {
         speedx = KICK_SPEED / TICKRATE;
         break;
     default:
-        return;
+        return false;
     }
 
     kicked = true;
     do_send_updates = true;
+
+    return true;
 }
 
-void bomb::punch(uint8_t direction) {
+bool bomb::punch(uint8_t direction) {
     if (kicked) kicked = false;
-    if (flying) return;
+    if (flying) return false;
 
     world->playWave(WAV_PUNCH);
 
@@ -120,13 +122,25 @@ void bomb::punch(uint8_t direction) {
         speedx = PUNCH_SPEED / TICKRATE;
         break;
     default:
-        return;
+        return false;
     }
 
     speedz = PUNCH_SPEED_Z / TICKRATE;
 
     flying = true;
     do_send_updates = true;
+
+    return true;
+}
+
+void bomb::stopKick() {
+    kicked = false;
+    fx = getTileX() * TILE_SIZE;
+    fy = getTileY() * TILE_SIZE;
+    if (kick_ticks > 1) {
+        world->playWave(WAV_HARDHIT);
+    }
+    p->stoppedKick(this);
 }
 
 void bomb::tick() {
@@ -160,12 +174,7 @@ void bomb::tick() {
                 world->playWave(WAV_SLIDE);
             }
         } else {
-            kicked = false;
-            fx = getTileX() * TILE_SIZE;
-            fy = getTileY() * TILE_SIZE;
-            if (kick_ticks > 1) {
-                world->playWave(WAV_HARDHIT);
-            }
+            stopKick();
         }
     } else if (flying) {
         if (speedx > 1 || speedx < -1) fx += speedx;

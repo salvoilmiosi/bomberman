@@ -17,7 +17,7 @@ player::player(game_world *world, input_handler *handler, uint8_t player_num) : 
         fprintf(stderr, "Player must have a handler\n");
     }
 
-    memset(player_name, 0, NAME_SIZE);
+    memset(player_name, 0, PLAYER_NAME_SIZE);
 
     do_send_updates = false;
 
@@ -50,6 +50,7 @@ void player::respawn(int tx, int ty) {
 
     item_pickups.clear();
     planted_bombs.clear();
+    kicked_bombs.clear();
 
     do_send_updates = true;
 }
@@ -70,7 +71,7 @@ void player::makeInvulnerable() {
 }
 
 void player::setName(const char *name) {
-    strncpy(player_name, name, NAME_SIZE);
+    strncpy(player_name, name, PLAYER_NAME_SIZE);
 }
 
 void player::handleInput() {
@@ -160,6 +161,13 @@ void player::handleInput() {
         }
     }
 
+    if (pickups & PICKUP_HAS_KICK && ! kicked_bombs.empty() && handler->isPressed(USR_STOP_KICK)) {
+        bomb *b = kicked_bombs.back();
+        if (b) {
+            b->stopKick();
+        }
+    }
+
     float move_speed = speed;
     if (skull_effect == SKULL_RAPID_PACE) {
         move_speed = 1000.f;
@@ -220,7 +228,9 @@ void player::handleInput() {
                     if (*ents) {
                         if (kick_ticks <= 0) {
                             bomb *b = dynamic_cast<bomb *>(*ents);
-                            b->kick(direction);
+                            if (b->kick(direction)) {
+                                kicked_bombs.push_back(b);
+                            }
                         } else {
                             --kick_ticks;
                         }
@@ -243,6 +253,15 @@ void player::explodedBomb(bomb *b) {
     auto it = std::find(planted_bombs.begin(), planted_bombs.end(), b);
     if (it != planted_bombs.end()) {
         planted_bombs.erase(it);
+    }
+
+    stoppedKick(b);
+}
+
+void player::stoppedKick(bomb *b) {
+    auto it = std::find(kicked_bombs.begin(), kicked_bombs.end(), b);
+    if (it != kicked_bombs.end()) {
+        kicked_bombs.erase(it);
     }
 }
 

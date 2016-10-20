@@ -48,8 +48,10 @@ public:
 public:
     void tick();
 
-    void kick(uint8_t direction);
-    void punch(uint8_t direction);
+    bool kick(uint8_t direction);
+    bool punch(uint8_t direction);
+
+    void stopKick();
 
     void explode();
 

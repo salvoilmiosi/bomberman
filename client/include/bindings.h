@@ -10,6 +10,7 @@ static const uint8_t USR_RIGHT = 4;
 static const uint8_t USR_PLANT = 5;
 static const uint8_t USR_PUNCH = 6;
 static const uint8_t USR_DETONATE = 7;
+static const uint8_t USR_STOP_KICK = 8;
 
 void setupBindings();
 
