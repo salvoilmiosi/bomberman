@@ -112,7 +112,7 @@ void player::render(SDL_Renderer *renderer) {
             if (moving && !jumping) {
                 int frame = (((SDL_GetTicks() - walk_time) % 666) * 4 / 666) % 4;
                 if (frame != last_walk_frame && (frame % 2) == 0) {
-                    playWave(wav_walk);
+                    //playWave(wav_walk);
                 }
                 last_walk_frame = frame;
                 spx = walk_frames[frame];

@@ -101,6 +101,10 @@ public:
 public:
     int startServer(uint16_t port);
 
+    void addBots(int num_bots) {
+        server.addBots(num_bots);
+    }
+
     void addEntity(entity *ent);
     void removeEntity(entity *ent);
 

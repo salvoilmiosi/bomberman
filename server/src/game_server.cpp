@@ -103,8 +103,9 @@ int game_server::game_thread_run() {
                 ++it;
             } else {
                 messageToAll(COLOR_YELLOW, "(%s) %s timed out", ipString(u->getAddress()), u->getName());
-                delete u;
+                u->destroyPlayer();
                 it = users.erase(it);
+                delete u;
             }
         }
 

@@ -83,6 +83,10 @@ public:
     void tick();
 
 public:
+    void setHandler(input_handler *handle) {
+        handler = handle;
+    }
+    
     void setName(const char *name);
 
     const char *getName() {

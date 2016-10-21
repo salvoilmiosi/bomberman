@@ -29,8 +29,6 @@ int game_world::startServer(uint16_t port) {
         return 1;
     }
 
-    server.addBots(1);
-
     return server.run();
 }
 

@@ -48,6 +48,8 @@ public:
     }
 
 public:
+    void setPlayer(class player *p);
+    
     class player *getPlayer() {
         return ent;
     }
