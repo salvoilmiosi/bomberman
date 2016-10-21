@@ -28,16 +28,16 @@ bomb::bomb(game_world *world, uint16_t id, byte_array &ba) : entity(world, TYPE_
 }
 
 void bomb::tick() {
-    position pos = interp.interpolate();
-
     interp.tick();
+}
+
+void bomb::render(SDL_Renderer *renderer) {
+    position pos = interp.interpolate();
 
     fx = (pos.ix / 100.f) * TILE_SIZE;
     fy = (pos.iy / 100.f) * TILE_SIZE;
     fz = pos.iz;
-}
-
-void bomb::render(SDL_Renderer *renderer) {
+    
     static const SDL_Rect src_rects_blue[] = {
         TILE(1, 0), TILE(2, 0), TILE(1, 0), TILE(0, 0)
     };

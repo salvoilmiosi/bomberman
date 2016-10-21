@@ -158,45 +158,22 @@ void game_client::tick() {
         int magic = packet.readInt();
         if (magic != MAGIC) break;
 
-        int message = packet.readInt();
-        switch (message) {
-        case SERV_MESSAGE:
-            messageCmd(packet);
-            break;
-        case SERV_PING:
-            pingCmd(packet);
-            break;
-        case SERV_PING_MSECS:
-            msecCmd(packet);
-            break;
-        case SERV_SCORE:
-            scoreCmd(packet);
-            break;
-        case SERV_SNAPSHOT:
-            snapshotCmd(packet);
-            break;
-        case SERV_ADD_ENT:
-            addCmd(packet);
-            break;
-        case SERV_REM_ENT:
-            remCmd(packet);
-            break;
-        case SERV_SELF:
-            selfCmd(packet);
-            break;
-        case SERV_MAP:
-            mapCmd(packet);
-            break;
-        case SERV_SOUND:
-            soundCmd(packet);
-            break;
-        }
+        handlePacket(packet);
     }
 
     if (SDL_GetTicks() - last_recv_time > TIMEOUT) {
         g_chat.addLine(COLOR_RED, "Timed out from server.");
         world.clear();
         clear();
+    }
+
+    auto it = packet_repeat_ids.begin();
+    while (it != packet_repeat_ids.end()) {
+        if (SDL_GetTicks() - it->second > TIMEOUT) {
+            it = packet_repeat_ids.erase(it);
+        } else {
+            ++it;
+        }
     }
 
     return;
@@ -206,6 +183,45 @@ void game_client::render(SDL_Renderer *renderer) {
     world.render(renderer);
     g_chat.render(renderer);
     g_score.render(renderer);
+}
+
+void game_client::handlePacket(byte_array &packet) {
+    int message = packet.readInt();
+    switch (message) {
+    case SERV_MESSAGE:
+        messageCmd(packet);
+        break;
+    case SERV_PING:
+        pingCmd(packet);
+        break;
+    case SERV_PING_MSECS:
+        msecCmd(packet);
+        break;
+    case SERV_SCORE:
+        scoreCmd(packet);
+        break;
+    case SERV_SNAPSHOT:
+        snapshotCmd(packet);
+        break;
+    case SERV_ADD_ENT:
+        addCmd(packet);
+        break;
+    case SERV_REM_ENT:
+        remCmd(packet);
+        break;
+    case SERV_SELF:
+        selfCmd(packet);
+        break;
+    case SERV_MAP:
+        mapCmd(packet);
+        break;
+    case SERV_SOUND:
+        soundCmd(packet);
+        break;
+    case SERV_REPEAT:
+        repeatCmd(packet);
+        break;
+    }
 }
 
 void game_client::handleEvent(const SDL_Event &event) {
@@ -282,7 +298,7 @@ void game_client::setName(const std::string &name) {
     packet.sendTo(server_ip);
 }
 
-void game_client::messageCmd(packet_ext &packet) {
+void game_client::messageCmd(byte_array &packet) {
     char *message = packet.readString();
     uint32_t color = packet.readInt();
 
@@ -290,7 +306,7 @@ void game_client::messageCmd(packet_ext &packet) {
     g_chat.addLine(color, message);
 }
 
-void game_client::pingCmd(packet_ext &from) {
+void game_client::pingCmd(byte_array &from) {
     if (socket == nullptr) return;
 
     packet_ext packet(socket);
@@ -298,15 +314,15 @@ void game_client::pingCmd(packet_ext &from) {
     packet.sendTo(server_ip);
 }
 
-void game_client::msecCmd(packet_ext &from) {
+void game_client::msecCmd(byte_array &from) {
     ping_msecs = from.readShort();
 }
 
-void game_client::scoreCmd(packet_ext &packet) {
+void game_client::scoreCmd(byte_array &packet) {
     g_score.handlePacket(packet);
 }
 
-void game_client::snapshotCmd(packet_ext &packet) {
+void game_client::snapshotCmd(byte_array &packet) {
     while(!packet.atEnd()) {
         uint16_t id = packet.readShort();
         uint8_t type = packet.readChar();
@@ -316,15 +332,20 @@ void game_client::snapshotCmd(packet_ext &packet) {
         entity *ent = world.findID(id);
         if (ent && ent->getType() == type) {
             ent->readFromByteArray(ba);
+        } else {
+        	ent = entity::newObjFromByteArray(&world, id, type, ba);
+        	world.addEntity(ent);
         }
     }
 }
 
-void game_client::addCmd(packet_ext &packet) {
+void game_client::addCmd(byte_array &packet) {
     while(!packet.atEnd()) {
         uint16_t id = packet.readShort();
         if (! world.findID(id)) {
-            entity *ent = entity::newObjFromPacket(&world, id, packet);
+        	uint8_t type = packet.readChar();
+        	byte_array ba = packet.readByteArray();
+            entity *ent = entity::newObjFromByteArray(&world, id, type, ba);
             if (ent) {
                 world.addEntity(ent);
             }
@@ -332,12 +353,12 @@ void game_client::addCmd(packet_ext &packet) {
     }
 }
 
-void game_client::remCmd(packet_ext &packet) {
+void game_client::remCmd(byte_array &packet) {
     uint16_t id = packet.readShort();
     world.removeEntity(world.findID(id));
 }
 
-void game_client::selfCmd(packet_ext &packet) {
+void game_client::selfCmd(byte_array &packet) {
     uint16_t self_id = packet.readShort();
 
     entity *ent = world.findID(self_id);
@@ -346,11 +367,31 @@ void game_client::selfCmd(packet_ext &packet) {
     }
 }
 
-void game_client::mapCmd(packet_ext &packet) {
+void game_client::mapCmd(byte_array &packet) {
     world.handleMapPacket(packet);
 }
 
-void game_client::soundCmd(packet_ext &packet) {
+void game_client::soundCmd(byte_array &packet) {
     uint8_t sound_id = packet.readChar();
     playWaveById(sound_id);
+}
+
+void game_client::repeatCmd(byte_array &packet) {
+    int packet_id = packet.readInt();
+    //printf("Received packed #: %d\n", packet_id);
+
+    auto it = packet_repeat_ids.find(packet_id);
+    if (it == packet_repeat_ids.end()) {
+        byte_array ba = packet.readByteArray();
+        int magic = ba.readInt();
+        //printf("%d: magic = %x\n", packet_id, magic);
+        if (magic == MAGIC) {
+            handlePacket(ba);
+        } else {
+            //printf("%d: wrong magic\n", packet_id);
+        }
+        packet_repeat_ids[packet_id] = SDL_GetTicks();
+    } else {
+        //printf("Packed %d found\n", packet_id);
+    }
 }

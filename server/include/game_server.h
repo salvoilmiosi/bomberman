@@ -11,6 +11,7 @@
 #include "packet_io.h"
 #include "user.h"
 #include "user_bot.h"
+#include "packet_repeater.h"
 
 static const int TIMEOUT = 1000;
 
@@ -69,6 +70,8 @@ private:
 
     SDL_Thread *game_thread;
 
+    packet_repeater repeater;
+
 public:
     game_server(class game_world *world, uint8_t num_players);
     virtual ~game_server();
@@ -102,7 +105,9 @@ private:
     char *findNewName(const char *username);
 
     user *findUser(const IPaddress &address);
-    void sendToAll(packet_ext &packet);
+
+    void sendRepeatPacket(packet_ext &packet, const IPaddress &addresss, int repeats = 1);
+    void sendToAll(packet_ext &packet, int repeats = 1);
 
     packet_ext snapshotPacket(bool is_add = false);
     packet_ext scorePacket();

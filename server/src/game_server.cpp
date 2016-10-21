@@ -16,6 +16,9 @@ bool game_server::openServer(uint16_t port) {
 
     sock_set = SDLNet_AllocSocketSet(1);
     socket_serv = SDLNet_UDP_Open(port);
+
+    repeater.setSocket(socket_serv);
+
     if (socket_serv) {
         SDLNet_UDP_AddSocket(sock_set, socket_serv);
         open = true;
@@ -36,6 +39,7 @@ void game_server::closeServer() {
     }
 
     users.clear();
+    repeater.clear();
 
     removeBots();
 
@@ -51,10 +55,18 @@ user *game_server::findUser(const IPaddress &address) {
     return it->second;
 }
 
-void game_server::sendToAll(packet_ext &packet) {
+void game_server::sendRepeatPacket(packet_ext &packet, const IPaddress &address, int repeats) {
+    if (repeats > 1) {
+        repeater.addPacket(packet, address, repeats);
+    } else {
+        packet.sendTo(address);
+    }
+}
+
+void game_server::sendToAll(packet_ext &packet, int repeats) {
     for (auto it : users) {
         user *u = it.second;
-        packet.sendTo(u->getAddress());
+        sendRepeatPacket(packet, u->getAddress(), repeats);
     }
 }
 
@@ -102,6 +114,8 @@ int game_server::game_thread_run() {
         sendToAll(m_packet);
 
         world->tick();
+
+        repeater.sendPackets();
 
         SDL_Delay(1000 / TICKRATE);
 
@@ -159,7 +173,7 @@ void game_server::sendRemovePacket(entity *ent) {
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_REM_ENT);
     packet.writeShort(ent->getID());
-    sendToAll(packet);
+    sendToAll(packet, 5);
 }
 
 void game_server::sendSoundPacket(uint8_t sound_id) {
@@ -391,7 +405,7 @@ void game_server::messageToAll(uint32_t color, const char *message) {
     packet.writeString(message);
     packet.writeInt(color);
 
-    sendToAll(packet);
+    sendToAll(packet, 5);
 
     printf("%s\n", message);
 }

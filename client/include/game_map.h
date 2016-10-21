@@ -78,7 +78,7 @@ public:
 
     void render(SDL_Renderer *renderer);
 
-    void readFromPacket(packet_ext &packet);
+    void readFromByteArray(byte_array &packet);
 
     int left();
     int top();

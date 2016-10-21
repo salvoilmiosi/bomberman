@@ -9,9 +9,7 @@
 
 #include "tile_trampoline.h"
 
-entity *entity::newObjFromPacket(game_world *world, uint16_t id, packet_ext &packet) {
-    uint8_t type = packet.readChar();
-    byte_array ba = packet.readByteArray();
+entity *entity::newObjFromByteArray(game_world *world, uint16_t id, uint8_t type, byte_array &ba) {
     switch(type) {
     case TYPE_PLAYER:
         return new player(world, id, ba);

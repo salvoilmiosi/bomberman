@@ -28,6 +28,10 @@ private:
         int16_t ping;
     };
 
+    struct score_info_compare {
+        bool operator()(const score_info &a, const score_info &b);
+    } compare;
+
     score_info info[MAX_INFO_SIZE];
     uint8_t num_players;
 
@@ -43,7 +47,7 @@ public:
 
     void show(bool shown);
 
-    void handlePacket(packet_ext &packet);
+    void handlePacket(byte_array &packet);
 };
 
 #endif // __SCORE_H__
