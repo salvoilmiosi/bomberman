@@ -16,6 +16,8 @@ private:
     const unsigned char ent_type;
     const uint16_t id;
 
+    friend class game_world;
+
 protected:
     class game_world *world;
 
@@ -28,7 +30,7 @@ public:
 
     virtual void render(SDL_Renderer *renderer) = 0;
 
-    static entity *newObjFromPacket(class game_world *world, uint16_t id, packet_ext &packet);
+    static entity *newObjFromByteArray(class game_world *world, uint16_t id, uint8_t type, byte_array &ba);
 
     uint16_t getID() {
         return id;
@@ -63,8 +65,8 @@ public:
 
     entity *findID(uint16_t id);
 
-    void handleMapPacket(packet_ext &packet) {
-        g_map.readFromPacket(packet);
+    void handleMapPacket(byte_array &packet) {
+        g_map.readFromByteArray(packet);
     }
 
     int mapLeft() {

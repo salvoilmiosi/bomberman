@@ -14,9 +14,6 @@ class player: public entity {
 public:
     struct position {
         float ix, iy, iz;
-        float imoving;
-        float idirection;
-        float ipunching;
     };
 
 private:
@@ -28,6 +25,9 @@ private:
     bool alive;
     bool spawned;
 
+    int walk_time;
+    int last_walk_frame;
+    
     bool moving;
     uint8_t direction;
     bool punching;

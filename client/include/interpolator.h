@@ -49,8 +49,8 @@ public:
         }
 
         float time = SDL_GetTicks();
-        T pos_start = last_shot.obj;
-        float time_start = last_shot.time;
+        T pos_start = shots.front().obj;
+        float time_start = shots.front().time;
         for (const snapshot &it : shots) {
             if (it.time > time) {
                 T pos_end = it.obj;

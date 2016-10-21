@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL_net.h>
 #include <string>
+#include <map>
 
 #include "packet_io.h"
 #include "game_world.h"
@@ -34,6 +35,7 @@ static const uint32_t SERV_REM_ENT     = str2int("REMO");
 static const uint32_t SERV_SELF        = str2int("SELF");
 static const uint32_t SERV_MAP         = str2int("MAPP");
 static const uint32_t SERV_SOUND       = str2int("WAVE");
+static const uint32_t SERV_REPEAT      = str2int("REPT");
 
 class game_client {
 private:
@@ -44,6 +46,8 @@ private:
     short ping_msecs;
 
     std::string user_name = "Player";
+
+    std::map<int, int> packet_repeat_ids;
 
 private:
     game_world world;
@@ -91,16 +95,19 @@ public:
     }
 
 private:
-    void messageCmd(packet_ext &);
-    void pingCmd(packet_ext &);
-    void msecCmd(packet_ext &);
-    void scoreCmd(packet_ext &);
-    void snapshotCmd(packet_ext &);
-    void addCmd(packet_ext &);
-    void remCmd(packet_ext &);
-    void selfCmd(packet_ext &);
-    void mapCmd(packet_ext &);
-    void soundCmd(packet_ext &);
+    void handlePacket(byte_array &);
+
+    void messageCmd(byte_array &);
+    void pingCmd(byte_array &);
+    void msecCmd(byte_array &);
+    void scoreCmd(byte_array &);
+    void snapshotCmd(byte_array &);
+    void addCmd(byte_array &);
+    void remCmd(byte_array &);
+    void selfCmd(byte_array &);
+    void mapCmd(byte_array &);
+    void soundCmd(byte_array &);
+    void repeatCmd(byte_array &);
 };
 
 #endif // __GAME_CLIENT_H__

@@ -53,6 +53,8 @@ private:
 
     std::deque<class bomb *> planted_bombs;
 
+    std::deque<class bomb *> kicked_bombs;
+
     float fx = 0.f;
     float fy = 0.f;
     float fz = 0.f;
@@ -118,6 +120,8 @@ public:
 
 private:
     void explodedBomb(class bomb *b);
+    void stoppedKick(class bomb *b);
+    
     void handleInput();
     void spawnItems();
 

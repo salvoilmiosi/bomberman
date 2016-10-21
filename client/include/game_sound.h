@@ -14,6 +14,7 @@ extern Mix_Chunk *wav_slide;
 extern Mix_Chunk *wav_hardhit;
 extern Mix_Chunk *wav_bounce;
 extern Mix_Chunk *wav_jump;
+extern Mix_Chunk *wav_walk;
 
 extern Mix_Chunk *wav_select;
 

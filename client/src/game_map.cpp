@@ -187,7 +187,7 @@ void game_map::render(SDL_Renderer *renderer) {
     }
 }
 
-void game_map::readFromPacket(packet_ext &packet) {
+void game_map::readFromByteArray(byte_array &packet) {
     short w = packet.readShort();
     short h = packet.readShort();
     zone = packet.readChar();
