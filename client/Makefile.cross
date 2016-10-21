@@ -5,7 +5,7 @@ CFLAGS = --std=c++11 -Wall
 LDFLAGS = -mwindows
 LIBS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 INCLUDE = include
-BIN_NAME = bomberman
+BIN_NAME = bomberman.exe
 
 SOURCES = $(wildcard src/*.cpp)
 
@@ -39,7 +39,7 @@ $(OUT_DEBUG): $(OBJECTS_DEBUG)
 	$(LD) -o $(OUT_DEBUG) $(OBJECTS_DEBUG) $(LDFLAGS_DEBUG) $(LIBS)
 
 $(OBJ_DEBUG)/%.o: src/%.cpp $(INCLUDE)/%.h
-	$(CXX) $(CFLAGS_DEBUG) -I$(INCLUDE) -c -o $@ $<
+	g++ $(CFLAGS_DEBUG) -I$(INCLUDE) -c -o $@ $<
 
 $(OBJ_DEBUG)/icon_rc.o: resource/icon.rc
 	$(WINDRES) -i resource/icon.rc -o $(OBJ_DEBUG)/icon_rc.o
