@@ -4,8 +4,8 @@ WINDRES = i686-w64-mingw32-windres
 CFLAGS = --std=c++11 -Wall
 LDFLAGS = -mwindows
 LIBS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
-NCLUDE = include
-BIN_NAME = bomberman.exe
+INCLUDE = include
+BIN_NAME = bomberman
 
 SOURCES = $(wildcard src/*.cpp)
 
@@ -45,7 +45,7 @@ $(OBJ_DEBUG)/icon_rc.o: resource/icon.rc
 	$(WINDRES) -i resource/icon.rc -o $(OBJ_DEBUG)/icon_rc.o
 
 $(BIN_DEBUG)/resource.dat: utils/resource_pack resource/resource.txt
-	utils/resource_pack resource/resource.txt $(BIN_RELEASE)/resource.dat
+	utils/resource_pack resource/resource.txt $(BIN_DEBUG)/resource.dat
 
 debug_clean: clean_debug
 
@@ -72,7 +72,7 @@ $(BIN_RELEASE)/resource.dat: utils/resource_pack resource/resource.txt
 	utils/resource_pack resource/resource.txt $(BIN_RELEASE)/resource.dat
 
 utils/resource_pack: utils/resource_pack.cpp
-	g++ --std=c++11 -Wall -g -o utils/resource_pack utils/resource_pack.cpp
+	$(CXX) $(CFLAGS_DEBUG) -o utils/resource_pack utils/resource_pack.cpp
 
 release_clean: clean_release
 
