@@ -4,7 +4,7 @@ WINDRES = i686-w64-mingw32-windres
 CFLAGS = --std=c++11 -Wall
 LDFLAGS = -mwindows
 LIBS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
-INCLUDE = include
+NCLUDE = include
 BIN_NAME = bomberman.exe
 
 SOURCES = $(wildcard src/*.cpp)
@@ -17,12 +17,12 @@ LDFLAGS_DEBUG = $(LDFLAGS)
 OBJECTS_DEBUG = $(patsubst src/%,$(OBJ_DEBUG)/%,$(SOURCES:.cpp=.o)) $(OBJ_DEBUG)/icon_rc.o
 OUT_DEBUG = $(BIN_DEBUG)/$(BIN_NAME)
 
-CFLAGS_RELEASE = $(CGLAGS) -O2
+CFLAGS_RELEASE = $(CFLAGS) -O2
 OBJ_RELEASE = win32/obj/Release
 BIN_RELEASE = win32/bin/Release
 LDFLAGS_RELEASE = $(LDGLAGS) -s
 
-OBJECTS_RELEASE = $(patsubst src/%,$(OBJ_RELEASE)/%,$(SOURCES:.cpp=.0)) $(OBJ_RELEASE)/icon_rc.o
+OBJECTS_RELEASE = $(patsubst src/%,$(OBJ_RELEASE)/%,$(SOURCES:.cpp=.o)) $(OBJ_RELEASE)/icon_rc.o
 OUT_RELEASE = $(BIN_RELEASE)/$(BIN_NAME)
 
 all: debug release
@@ -34,12 +34,6 @@ debug: before_debug $(OUT_DEBUG) $(BIN_DEBUG)/resource.dat
 before_debug:
 	test -d $(BIN_DEBUG) || mkdir -p $(BIN_DEBUG)
 	test -d $(OBJ_DEBUG) || mkdir -p $(OBJ_DEBUG)
-
-$(OUT_DEBUG): $(OBJECTS_DEBUG)
-	$(LD) -o $(OUT_DEBUG) $(OBJECTS_DEBUG) $(LDFLAGS_DEBUG) $(LIBS)
-
-$(OBJ_DEBUG)/%.o: src/%.cpp $(INCLUDE)/%.h
-	$(CXX) $(CFLAGS_DEBUG) -I$(INCLUDE) -c -o $@ $<
 
 $(OUT_DEBUG): $(OBJECTS_DEBUG)
 	$(LD) -o $(OUT_DEBUG) $(OBJECTS_DEBUG) $(LDFLAGS_DEBUG) $(LIBS)

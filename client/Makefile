@@ -16,12 +16,12 @@ LDFLAGS_DEBUG = $(LDFLAGS)
 OBJECTS_DEBUG = $(patsubst src/%,$(OBJ_DEBUG)/%,$(SOURCES:.cpp=.o))
 OUT_DEBUG = $(BIN_DEBUG)/$(BIN_NAME)
 
-CFLAGS_RELEASE = $(CGLAGS) -O2
+CFLAGS_RELEASE = $(CFLAGS) -O2
 OBJ_RELEASE = obj/Release
 BIN_RELEASE = bin/Release
 LDFLAGS_RELEASE = $(LDGLAGS) -s
 
-OBJECTS_RELEASE = $(patsubst src/%,$(OBJ_RELEASE)/%,$(SOURCES:.cpp=.0))
+OBJECTS_RELEASE = $(patsubst src/%,$(OBJ_RELEASE)/%,$(SOURCES:.cpp=.o))
 OUT_RELEASE = $(BIN_RELEASE)/$(BIN_NAME)
 
 all: debug release
@@ -41,7 +41,7 @@ $(OBJ_DEBUG)/%.o: src/%.cpp $(INCLUDE)/%.h
 	$(CXX) $(CFLAGS_DEBUG) -I$(INCLUDE) -c -o $@ $<
 
 $(BIN_DEBUG)/resource.dat: utils/resource_pack resource/resource.txt
-	utils/resource_pack resource/resource.txt $(BIN_RELEASE)/resource.dat
+	utils/resource_pack resource/resource.txt $(BIN_DEBUG)/resource.dat
 
 debug_clean: clean_debug
 
@@ -61,7 +61,7 @@ $(OUT_RELEASE): $(OBJECTS_RELEASE)
 $(OBJ_RELEASE)/%.o: src/%.cpp $(INCLUDE)/%.h
 	$(CXX) $(CFLAGS_RELEASE) -I$(INCLUDE) -c -o $@ $<
 
-$(BIN_RELEASE)/resource.dat: resource_pack resource/resource.txt
+$(BIN_RELEASE)/resource.dat: utils/resource_pack resource/resource.txt
 	utils/resource_pack resource/resource.txt $(BIN_RELEASE)/resource.dat
 
 utils/resource_pack: utils/resource_pack.cpp
