@@ -39,7 +39,7 @@ $(OUT_DEBUG): $(OBJECTS_DEBUG)
 	$(LD) -o $(OUT_DEBUG) $(OBJECTS_DEBUG) $(LDFLAGS_DEBUG) $(LIBS)
 
 $(OBJ_DEBUG)/%.o: src/%.cpp $(INCLUDE)/%.h
-	g++ $(CFLAGS_DEBUG) -I$(INCLUDE) -c -o $@ $<
+	$(CXX) $(CFLAGS_DEBUG) -I$(INCLUDE) -c -o $@ $<
 
 $(OBJ_DEBUG)/icon_rc.o: resource/icon.rc
 	$(WINDRES) -i resource/icon.rc -o $(OBJ_DEBUG)/icon_rc.o
@@ -72,7 +72,7 @@ $(BIN_RELEASE)/resource.dat: utils/resource_pack resource/resource.txt
 	utils/resource_pack resource/resource.txt $(BIN_RELEASE)/resource.dat
 
 utils/resource_pack: utils/resource_pack.cpp
-	$(CXX) $(CFLAGS_DEBUG) -o utils/resource_pack utils/resource_pack.cpp
+	g++ $(CFLAGS_DEBUG) -o utils/resource_pack utils/resource_pack.cpp
 
 release_clean: clean_release
 
