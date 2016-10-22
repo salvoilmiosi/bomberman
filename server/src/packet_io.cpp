@@ -2,6 +2,12 @@
 #include <cstdio>
 #include <cstring>
 
+byte_array::byte_array(const byte_array &ba) {
+    memcpy(p_data, ba.p_data, PACKET_SIZE);
+    data_ptr = ba.data_ptr - ba.p_data + p_data;
+    data_len = ba.data_len;
+}
+
 void byte_array::clear() {
     memset(p_data, 0, PACKET_SIZE);
     data_ptr = p_data;
@@ -9,9 +15,9 @@ void byte_array::clear() {
 }
 
 void byte_array::setData(const uint8_t *data, size_t len) {
-    clear();
     memcpy(p_data, data, len);
     data_len = len;
+    data_ptr = p_data;
 }
 
 void byte_array::writeChar(const uint8_t num) {
@@ -47,17 +53,17 @@ uint32_t byte_array::readInt() {
     return ret;
 }
 
-void byte_array::writeLong(const Uint64 num) {
+void byte_array::writeLong(const uint64_t num) {
     uint32_t upper = (num & 0xffffffff00000000) >> 32;
     uint32_t lower = (num & 0x00000000ffffffff);
     writeInt(upper);
     writeInt(lower);
 }
 
-uint16_t byte_array::readLong() {
+uint64_t byte_array::readLong() {
     uint32_t upper = readInt();
     uint32_t lower = readInt();
-    return ((Uint64)upper << 32) | lower;
+    return ((uint64_t)upper << 32) | lower;
 }
 
 void byte_array::writeString(const char *str, short max_len) {
@@ -109,6 +115,11 @@ packet_ext::packet_ext(UDPsocket socket, bool input) : socket(socket) {
         writeInt(MAGIC);
 }
 
+packet_ext::packet_ext(const packet_ext &p) : byte_array(p) {
+    packet = p.packet;
+    socket = p.socket;
+}
+
 constexpr uint16_t ntohs(uint16_t num) {
     return ((num & 0xff00) >> 8) | ((num & 0x00ff) << 8);
 }
@@ -144,7 +155,13 @@ int packet_ext::receive() {
     return err;
 }
 
+#include "main.h"
+
 int packet_ext::sendTo(const IPaddress &addr) {
+    if ((random_engine() % 1000) > 1000) {
+        fprintf(stderr, "Lost a packet\n");
+        return 0;
+    }
     packet.len = data_len;
     packet.address = addr;
     return SDLNet_UDP_Send(socket, packet.channel, &packet);

@@ -23,17 +23,15 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    uint8_t num_players = 2;
     uint16_t port = DEFAULT_PORT;
     uint8_t num_bots = 0;
 
-    if (argc > 1) num_players = atoi(argv[1]);
-    if (argc > 2) port = atoi(argv[2]);
-    if (argc > 3) num_bots = atoi(argv[3]);
+    if (argc > 1) port = atoi(argv[1]);
+    if (argc > 2) num_bots = atoi(argv[2]);
 
-    game_world world(num_players);
-
+    game_world world;
     world.addBots(num_bots);
+
     int err = world.startServer(port);
 
     printf("Server quit, returned %d\n", err);

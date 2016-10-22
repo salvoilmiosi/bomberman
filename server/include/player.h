@@ -7,7 +7,7 @@
 #include <deque>
 
 static const size_t     PLAYER_NAME_SIZE = 32;
-static const float      PLAYER_SIDE_MOVE_AMT = 0.3f;
+static const float      PLAYER_SIDE_MOVE_AMT = 0.1f;
 static const int        PLAYER_DEATH_TICKS = TICKRATE / 3;
 static const int        PLAYER_PUNCH_TICKS = TICKRATE / 4;
 static const int        PLAYER_INVULNERABLE_TICKS = TICKRATE * 10;
@@ -32,7 +32,7 @@ private:
 
     char player_name[PLAYER_NAME_SIZE];
 
-    uint8_t player_num;
+    uint8_t player_num = 0xff;
 
     bool alive = false;
     bool spawned = false;
@@ -77,7 +77,7 @@ private:
     int victories;
 
 public:
-    player(game_world *world, input_handler *handler, uint8_t player_num);
+    player(game_world *world, input_handler *handler);
 
 public:
     void tick();
@@ -86,7 +86,7 @@ public:
     void setHandler(input_handler *handle) {
         handler = handle;
     }
-    
+
     void setName(const char *name);
 
     const char *getName() {
@@ -109,6 +109,10 @@ public:
         return player_num;
     }
 
+    void setPlayerNum(uint8_t num) {
+        player_num = num;
+    }
+
     uint16_t getVictories() {
         return victories;
     }
@@ -125,7 +129,7 @@ public:
 private:
     void explodedBomb(class bomb *b);
     void stoppedKick(class bomb *b);
-    
+
     void handleInput();
     void spawnItems();
 

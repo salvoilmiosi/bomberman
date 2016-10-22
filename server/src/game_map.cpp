@@ -28,6 +28,9 @@ void game_map::clear() {
         delete it.second;
     }
     specials.clear();
+    tiles = nullptr;
+    width = 0;
+    height = 0;
 }
 
 void game_map::tick() {
@@ -37,11 +40,11 @@ void game_map::tick() {
 }
 
 void game_map::createMap(int w, int h, int num_players, int m_zone) {
+    clear();
+
     width = w;
     height = h;
     zone = m_zone;
-
-    clear();
 
     tiles = new tile[w * h];
     memset(tiles, 0, w * h * sizeof(tile));

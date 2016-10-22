@@ -193,6 +193,9 @@ void game_map::readFromByteArray(byte_array &packet) {
     zone = packet.readChar();
 
     if (w != width || h != height) {
+        if (tiles) {
+            delete[] tiles;
+        }
         tiles = new tile[w * h];
         memset(tiles, 0, w * h * sizeof(tile));
     }

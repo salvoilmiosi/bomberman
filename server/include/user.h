@@ -35,7 +35,7 @@ public:
     virtual ~user();
 
 public:
-    void createPlayer(class game_world *world, uint8_t player_num);
+    void createPlayer(class game_world *world);
 
     const char *getName() {
         return username;
@@ -49,7 +49,7 @@ public:
 
 public:
     void setPlayer(class player *p);
-    
+
     class player *getPlayer() {
         return ent;
     }

@@ -2,7 +2,7 @@
 
 #include "player.h"
 
-game_server::game_server(game_world *world, uint8_t max_players) : world(world), max_players(max_players) {
+game_server::game_server(game_world *world) : world(world), voter(this) {
     open = false;
 }
 
@@ -33,12 +33,15 @@ void game_server::closeServer() {
     if (!open)
         return;
 
-    for (auto it : users) {
-        if (it.second)
-            delete it.second;
+    while(!users.empty()) {
+        auto it = users.begin();
+        if (it->second) {
+            kickUser(it->second, "Server closed.");
+        } else {
+            users.erase(it);
+        }
     }
 
-    users.clear();
     repeater.clear();
 
     removeBots();
@@ -102,7 +105,7 @@ int game_server::game_thread_run() {
             if (u->tick()) {
                 ++it;
             } else {
-                messageToAll(COLOR_YELLOW, "(%s) %s timed out", ipString(u->getAddress()), u->getName());
+                messageToAll(COLOR_YELLOW, "%s timed out.", u->getName());
                 u->destroyPlayer();
                 it = users.erase(it);
                 delete u;
@@ -115,6 +118,7 @@ int game_server::game_thread_run() {
         sendToAll(m_packet);
 
         world->tick();
+        voter.tick();
 
         repeater.sendPackets();
 
@@ -167,7 +171,7 @@ void game_server::sendAddPacket(entity *ent) {
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_ADD_ENT);
     ent->writeToPacket(packet);
-    sendToAll(packet);
+    sendToAll(packet, 5);
 }
 
 void game_server::sendRemovePacket(entity *ent) {
@@ -175,6 +179,25 @@ void game_server::sendRemovePacket(entity *ent) {
     packet.writeInt(SERV_REM_ENT);
     packet.writeShort(ent->getID());
     sendToAll(packet, 5);
+}
+
+void game_server::sendResetPacket() {
+    packet_ext packet(socket_serv);
+    packet.writeInt(SERV_RESET);
+    sendToAll(packet, 5);
+}
+
+void game_server::kickUser(user *u, const char *message) {
+    packet_ext packet(socket_serv);
+    packet.writeInt(SERV_KICK);
+    packet.writeString(message);
+    sendRepeatPacket(packet, u->getAddress(), 5);
+
+    messageToAll(COLOR_YELLOW, "%s was kicked from the server.", u->getName());
+
+    u->destroyPlayer();
+    users.erase(addrLong(u->getAddress()));
+    delete u;
 }
 
 void game_server::sendSoundPacket(uint8_t sound_id) {
@@ -213,7 +236,7 @@ void game_server::removeBots() {
 
 void game_server::createBotPlayers() {
     for (user_bot *u : bots) {
-        u->createPlayer(world, world->getNextPlayerNum());
+        u->createPlayer(world);
         world->addEntity(u->getPlayer());
     }
 }
@@ -243,27 +266,50 @@ void game_server::connectCmd(packet_ext &from) {
 
     snapshotPacket(true).sendTo(from.getAddress());
 
-    int num_users = users.size() + bots.size();
+    messageToAll(COLOR_YELLOW, "%s connected", u->getName());
+}
 
-    if (num_users <= max_players) {
-        u->createPlayer(world, world->getNextPlayerNum());
+void game_server::joinCmd(packet_ext &from) {
+    user *u = findUser(from.getAddress());
+    if (!u) return;
+    if (u->getPlayer()) return;
+
+    if (countUsers() < MAX_PLAYERS) {
+        u->createPlayer(world);
         world->addEntity(u->getPlayer());
 
         packet_ext packet_self(socket_serv);
         packet_self.writeInt(SERV_SELF);
         packet_self.writeShort(u->getPlayer()->getID());
-        packet_self.sendTo(from.getAddress());
+        sendRepeatPacket(packet_self, from.getAddress(), 5);
 
-        messageToAll(COLOR_YELLOW, "%s connected", u->getName());
-
-        if (num_users == max_players) {
-            createBotPlayers();
-
-            world->startRound();
-        }
+        messageToAll(COLOR_YELLOW, "%s joined the game.", u->getName());
     } else {
-        messageToAll(COLOR_YELLOW, "%s joined the spectators", u->getName());
+        packet_ext packet = messagePacket(COLOR_RED, "You can't join the game right now.");
+        sendRepeatPacket(packet, from.getAddress(), 5);
     }
+}
+
+int game_server::countUsers(bool include_bots) {
+    int num_players = 0;
+    for (auto it : users) {
+        if (it.second->getPlayer()) {
+            ++num_players;
+        }
+    }
+
+    return include_bots ? num_players + bots.size() : num_players;
+}
+
+void game_server::startGame() {
+    if (world->startRound(countUsers())) {
+        createBotPlayers();
+    }
+}
+
+void game_server::resetGame() {
+    world->restartGame();
+    startGame();
 }
 
 void game_server::chatCmd(packet_ext &packet) {
@@ -334,6 +380,7 @@ packet_ext game_server::scorePacket() {
             packet.writeChar(SCORE_PLAYER);
             packet.writeChar(u->getPlayer()->getPlayerNum());
             packet.writeShort(u->getPlayer()->getVictories());
+            packet.writeChar(u->getPlayer()->isAlive() ? 1 : 0);
         } else {
             packet.writeChar(SCORE_SPECTATOR);
         }
@@ -345,6 +392,7 @@ packet_ext game_server::scorePacket() {
             packet.writeChar(SCORE_BOT);
             packet.writeChar(b->getPlayer()->getPlayerNum());
             packet.writeShort(b->getPlayer()->getVictories());
+            packet.writeChar(b->getPlayer()->isAlive() ? 1 : 0);
         }
     }
     return packet;
@@ -362,6 +410,29 @@ void game_server::inputCmd(packet_ext &packet) {
     }
 
     u->handleInputPacket(packet);
+}
+
+void game_server::voteCmd(packet_ext &packet) {
+    user *u = findUser(packet.getAddress());
+    if (!u) {
+        fprintf(stderr, "Invalid user ip %s\n", ipString(packet.getAddress()));
+        return;
+    }
+
+    uint8_t vote_type = packet.readChar();
+
+    voter.sendVote(u, vote_type);
+}
+
+void game_server::killCmd(packet_ext &packet) {
+    user *u = findUser(packet.getAddress());
+    if (!u) {
+        fprintf(stderr, "Invalid user ip %s\n", ipString(packet.getAddress()));
+        return;
+    }
+
+    player *p = u->getPlayer();
+    if (p) p->kill();
 }
 
 void game_server::handlePacket(packet_ext &packet) {
@@ -394,19 +465,28 @@ void game_server::handlePacket(packet_ext &packet) {
     case CMD_INPUT:
         inputCmd(packet);
         break;
+    case CMD_JOIN:
+        joinCmd(packet);
+        break;
+    case CMD_VOTE:
+        voteCmd(packet);
+        break;
+    case CMD_KILL:
+        killCmd(packet);
+        break;
     default:
         fprintf(stderr, "%s: Invalid command %0#8x\n", ipString(packet.getAddress()), command);
         break;
     }
 }
 
-void game_server::messageToAll(uint32_t color, const char *message) {
+packet_ext game_server::messagePacket(uint32_t color, const char *message) {
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_MESSAGE);
     packet.writeString(message);
     packet.writeInt(color);
 
-    sendToAll(packet, 5);
-
     printf("%s\n", message);
+
+    return packet;
 }

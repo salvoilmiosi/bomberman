@@ -71,8 +71,8 @@ int user::getPing() {
     return ping_msecs;
 }
 
-void user::createPlayer(game_world *world, uint8_t player_num) {
-    ent = new player(world, &handler, player_num);
+void user::createPlayer(game_world *world) {
+    ent = new player(world, &handler);
     ent->setName(username);
 }
 

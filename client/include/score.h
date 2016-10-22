@@ -26,6 +26,7 @@ private:
         char player_name[NAME_SIZE];
         uint16_t victories;
         int16_t ping;
+        bool alive;
     };
 
     struct score_info_compare {

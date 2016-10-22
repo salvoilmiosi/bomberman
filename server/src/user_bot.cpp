@@ -39,8 +39,8 @@ user_bot::~user_bot() {
 	//destroyPlayer();
 }
 
-void user_bot::createPlayer(game_world *world, uint8_t player_num) {
-	ent = new player(world, &handler, player_num);
+void user_bot::createPlayer(game_world *world) {
+	ent = new player(world, &handler);
 	ent->setName(username);
 }
 

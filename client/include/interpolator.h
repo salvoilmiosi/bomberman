@@ -28,7 +28,7 @@ public:
 
 public:
     void tick() {
-        while (!shots.empty() && SDL_GetTicks() > shots.front().time + interp_delay) {
+        while (!shots.empty() && SDL_GetTicks() > shots.front().time + 1000) {
             shots.pop_front();
         }
     }

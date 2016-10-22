@@ -8,15 +8,18 @@
 #include "ent_item.h"
 #include "main.h"
 
-game_world::game_world(uint8_t num_players) : server(this, num_players) {
-    NUM_PLAYERS = num_players;
-    restartGame();
-}
+game_world::game_world(): server(this) {}
 
 game_world::~game_world() {
-	for (auto ent : entities) {
-		if (ent) delete ent;
-	}
+    clear();
+}
+
+void game_world::clear() {
+    for (auto ent : entities) {
+        if (ent) delete ent;
+    }
+    entities.clear();
+    g_map.clear();
 }
 
 int game_world::startServer(uint16_t port) {
@@ -94,7 +97,7 @@ void game_world::tick() {
         }
     }
 
-    bool round_end = alive_players <= (NUM_PLAYERS == 1 ? 0 : 1);
+    bool round_end = alive_players <= (num_users == 1 ? 0 : 1);
     if (ticks_to_start < 0 && round_started && round_end) {
         if (alive_players == 0) {
             server.messageToAll(COLOR_RED, "DRAW!");
@@ -110,12 +113,13 @@ void game_world::tick() {
             }
         }
         round_started = false;
-        if (num_players == alive_players) {
-            server.messageToAll(COLOR_RED, "Match is forfeited.");
-            server.closeServer();
-            //restartGame();
+        if (num_players == 0) {
+            // Everyone disconnected
+            server.sendResetPacket();
+            restartGame();
+            clear();
         } else {
-            startRound();
+            startRound(num_players);
         }
     }
 }
@@ -134,27 +138,39 @@ void game_world::restartGame() {
     ticks_to_start = 0;
 }
 
-void game_world::startRound() {
-    if (round_started) return;
-    if (ticks_to_start > 0) return;
+bool game_world::startRound(int num_u) {
+    if (round_started) return false;
+    if (ticks_to_start > 0) return false;
+
+    num_users = num_u;
 
     ++round_num;
 
     ticks_to_start = TICKRATE * COUNTDOWN_SECONDS;
     round_started = true;
+
+    return true;
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, NUM_PLAYERS, random_engine() % 4);
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, random_engine() % 4);
+
+    int num = 0;
 
     for (entity *ent : entities) {
         if (ent && ent->isNotDestroyed()) {
             switch (ent->getType()) {
             case TYPE_PLAYER:
                 {
-                    player *p = (player *)ent;
+                    player *p = dynamic_cast<player *>(ent);
+                    if (!p || !p->isNotDestroyed()) {
+                        continue;
+                    }
+                    p->setPlayerNum(num);
                     point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
                     p->respawn(spawn_pt.x, spawn_pt.y);
+
+                    ++num;
                 }
                 break;
             default:
@@ -227,30 +243,5 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
         return false;
     default:
         return true;
-    }
-}
-
-uint8_t game_world::getNextPlayerNum() {
-    uint8_t nums[4];
-    size_t i = 0;
-    for (entity *ent : entities) {
-        if (ent && ent->getType() == TYPE_PLAYER) {
-            player *p = dynamic_cast<player*>(ent);
-            nums[i] = p->getPlayerNum();
-            ++i;
-        }
-    }
-    uint8_t num = 0;
-    while(true) {
-        uint8_t j;
-        for (j=0; j<i; ++j) {
-            if (num == nums[j]) {
-                ++num;
-                break;
-            }
-        }
-        if (j==i) {
-            return num;
-        }
     }
 }

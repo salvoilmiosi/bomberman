@@ -34,7 +34,13 @@ void score::tick() {
 }
 
 bool score::score_info_compare::operator()(const score_info &a, const score_info &b) {
-    if (a.victories == b.victories) {
+    if (a.user_type == SCORE_SPECTATOR && b.user_type != SCORE_SPECTATOR) {
+        return false;
+    } else if (a.user_type != SCORE_SPECTATOR && b.user_type == SCORE_SPECTATOR) {
+        return true;
+    } else if (a.user_type == SCORE_SPECTATOR && b.user_type == SCORE_SPECTATOR) {
+        return strcmp(a.player_name, b.player_name) < 0;
+    } else if (a.victories == b.victories) {
     	return a.player_num < b.player_num;
     } else {
     	return a.victories > b.victories;
@@ -63,22 +69,24 @@ void score::render(SDL_Renderer *renderer) {
     for (int i=0; i<num_players; ++i) {
         score_info si = info[i];
 
-        switch (si.user_type) {
-        case SCORE_SPECTATOR:
-            renderText(x + 200, y, renderer, "Spectator", COLOR_YELLOW);
-            break;
-        case SCORE_PLAYER:
-            renderText(x, y, renderer, "Player " + std::to_string(si.player_num), COLOR_WHITE);
+        static const char *player_num_name[] = {"WHITE", "BLACK", "BLUE", "RED"};
+
+        if (si.user_type == SCORE_SPECTATOR || si.player_num > 3) {
+            renderText(x, y, renderer, "---", COLOR_YELLOW);
+        } else {
+            renderText(x, y, renderer, player_num_name[si.player_num], si.alive ? COLOR_WHITE : COLOR_RED);
+        }
+        if (si.user_type == SCORE_SPECTATOR) {
+            renderText(x + 200, y, renderer, "SPEC", COLOR_YELLOW);
+        } else {
             renderText(x + 200, y, renderer, std::to_string(si.victories), COLOR_WHITE);
-            renderText(x + 300, y, renderer, std::to_string(si.ping), COLOR_WHITE);
-            break;
-        case SCORE_BOT:
-            renderText(x, y, renderer, "Player " + std::to_string(si.player_num), COLOR_WHITE);
-            renderText(x + 200, y, renderer, std::to_string(si.victories), COLOR_WHITE);
+        }
+        if (si.user_type == SCORE_BOT) {
             renderText(x + 300, y, renderer, "BOT", COLOR_YELLOW);
-            break;
-        default:
-            break;
+        } else if (si.ping >= 0) {
+            renderText(x + 300, y, renderer, std::to_string(si.ping), COLOR_WHITE);
+        } else {
+            renderText(x + 300, y, renderer, "---", COLOR_YELLOW);
         }
         renderText(x + 100, y, renderer, si.player_name, COLOR_WHITE);
 
@@ -105,6 +113,7 @@ void score::handlePacket(byte_array &packet) {
         case SCORE_BOT:
             in.player_num = packet.readChar();
             in.victories = packet.readShort();
+            in.alive = packet.readChar() > 0;
             break;
         case SCORE_SPECTATOR:
         	in.victories = 0;
