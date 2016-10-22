@@ -10,9 +10,10 @@ static const int SERV_REPEAT = str2int("REPT");
 class packet_repeater {
 private:
 	struct repeated {
-		int packet_id;
 		packet_ext *packet;
 		IPaddress address;
+
+		int packet_id;
 		int repeats;
 	};
 

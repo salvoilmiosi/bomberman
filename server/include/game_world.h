@@ -87,19 +87,25 @@ private:
     std::set <entity *> entities;
     game_map g_map;
 
-    bool round_started;
-    int round_num;
+    bool round_started = false;
+    int round_num = 0;
 
-    int ticks_to_start;
+    int ticks_to_start = 0;
 
-    uint8_t NUM_PLAYERS;
+    int num_users;
 
 public:
-    game_world(uint8_t num_players);
+    game_world();
     virtual ~game_world();
 
 public:
+    void clear();
+
     int startServer(uint16_t port);
+
+    void addBots(int num_bots) {
+        server.addBots(num_bots);
+    }
 
     void addEntity(entity *ent);
     void removeEntity(entity *ent);
@@ -114,7 +120,7 @@ public:
 
     void restartGame();
 
-    void startRound();
+    bool startRound(int num_users);
 
     void playWave(uint8_t sound_id) {
         server.sendSoundPacket(sound_id);
@@ -127,8 +133,6 @@ public:
     entity **findEntities(int tx, int ty, uint8_t type = 0);
 
     bool isWalkable(int tx, int ty, uint8_t flags = 0);
-
-    uint8_t getNextPlayerNum();
 
 private:
     void countdownEnd();

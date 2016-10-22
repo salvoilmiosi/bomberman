@@ -12,11 +12,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-player::player(game_world *world, input_handler *handler, uint8_t player_num) : entity(world, TYPE_PLAYER), handler(handler), player_num(player_num) {
-    if (!handler) {
-        fprintf(stderr, "Player must have a handler\n");
-    }
-
+player::player(game_world *world, input_handler *handler) : entity(world, TYPE_PLAYER), handler(handler) {
     memset(player_name, 0, PLAYER_NAME_SIZE);
 
     do_send_updates = false;
@@ -75,6 +71,9 @@ void player::setName(const char *name) {
 }
 
 void player::handleInput() {
+    if (!handler)
+        return;
+
     movement_keys_down[0] = handler->isDown(USR_UP);
     movement_keys_down[1] = handler->isDown(USR_DOWN);
     movement_keys_down[2] = handler->isDown(USR_LEFT);

@@ -16,7 +16,7 @@ user::user(game_server *server, const IPaddress &address, const char *name) : se
 }
 
 user::~user() {
-    destroyPlayer();
+    //destroyPlayer();
 }
 
 bool user::tick() {
@@ -71,9 +71,14 @@ int user::getPing() {
     return ping_msecs;
 }
 
-void user::createPlayer(game_world *world, uint8_t player_num) {
-    ent = new player(world, &handler, player_num);
+void user::createPlayer(game_world *world) {
+    ent = new player(world, &handler);
     ent->setName(username);
+}
+
+void user::setPlayer(player *p) {
+    ent = p;
+    strncpy(username, p->getName(), USER_NAME_SIZE);
 }
 
 void user::destroyPlayer() {

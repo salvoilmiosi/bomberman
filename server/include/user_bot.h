@@ -8,7 +8,7 @@ private:
 	class bot_handler : public input_handler {
 	public:
 		user_bot *bot;
-		
+
 	public:
 		bot_handler(user_bot *bot) : bot(bot) {}
 
@@ -34,7 +34,7 @@ public:
 	virtual ~user_bot();
 
 public:
-	void createPlayer(class game_world *world, uint8_t player_num);
+	void createPlayer(class game_world *world);
 
 	const char *getName() {
 		return username;

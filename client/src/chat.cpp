@@ -21,7 +21,7 @@ void chat::addLine(uint32_t color, const char *line) {
     if (lines.size() > MAX_LINES) {
         lines.pop_front();
     }
-    playWave(wav_select, 0);
+    playWave(wav_select);
 }
 
 void chat::tick() {
@@ -92,61 +92,87 @@ void chat::stopTyping() {
     if (typing_text.empty()) return;
     const std::string &message = typing_text;
 
-    if (message[0] == '/') {
-        size_t space_begin = 1;
-        size_t space_in = message.find(' ', space_begin);
+    static const char *SPACE = " \t";
 
-        std::string cmd = message.substr(space_begin, space_in - space_begin);
+    if (message[0] == '/') {
+        size_t wbegin = 1;
+        size_t wend = message.find_first_of(SPACE, wbegin);
+
+        std::string cmd = message.substr(wbegin, wend - wbegin);
         std::transform(cmd.begin(), cmd.end(), cmd.begin(), tolower);
         if (cmd == "connect") {
             std::string address, port;
 
-            if (space_in == std::string::npos) {
+            if (wend == std::string::npos) {
                 addLine(COLOR_ORANGE, "Usage: connect address [port]");
                 return;
             }
 
-            space_begin = space_in + 1;
-            space_in = message.find(' ', space_begin);
-            address = message.substr(space_begin, space_in - space_begin);
+            wbegin = message.find_first_not_of(SPACE, wend);
+            wend = message.find_first_of(SPACE, wbegin);
+            address = message.substr(wbegin, wend - wbegin);
 
-            if (space_in == std::string::npos) {
+            if (wend == std::string::npos) {
                 client->connect(address.c_str());
                 return;
             }
-            space_begin = space_in + 1;
-            space_in = message.find(' ', space_begin);
-            port = message.substr(space_begin, space_in - space_begin);
+
+            wbegin = message.find_first_not_of(SPACE, wend);
+            port = message.substr(wbegin);
 
             client->connect(address.c_str(), std::stoi(port));
+        } else if (cmd == "join") {
+            client->sendJoinCmd();
         } else if (cmd == "disconnect") {
             client->disconnect();
         } else if (cmd == "name") {
-            if (space_in == std::string::npos) {
+            if (wend == std::string::npos) {
                 addLine(COLOR_ORANGE, "Usage: name new_name");
                 return;
             }
-            space_begin = space_in + 1;
-            space_in = message.find(' ', space_begin);
+            wbegin = message.find_first_not_of(SPACE, wend);
+            wend = message.find_first_of(SPACE, wbegin);
 
-            std::string name = message.substr(space_begin, space_in - space_begin);
+            std::string name = message.substr(wbegin, wend - wbegin);
             client->setName(name);
         } else if (cmd == "music_volume") {
-            if (space_in == std::string::npos) {
+            if (wend == std::string::npos) {
                 addLine(COLOR_ORANGE, "Usage: music_volume [0-100]");
                 return;
             }
 
-            space_begin = space_in + 1;
-            space_in = message.find(' ', space_begin);
+            wbegin = message.find_first_not_of(' ', wend);
 
-            std::string volume = message.substr(space_begin, space_in - space_begin);
+            std::string volume = message.substr(wbegin);
             int volume_int = std::stoi(volume);
             if (volume_int > 100) {
                 volume_int = 100;
             }
             setMusicVolume(volume_int * MIX_MAX_VOLUME / 100);
             addLine(COLOR_ORANGE, "Set volume: %d", volume_int);
+        } else if (cmd == "vote") {
+            if (wend == std::string::npos) {
+                addLine(COLOR_ORANGE, "Usage: vote (start)");
+                return;
+            }
+
+            wbegin = message.find_first_not_of(SPACE, wend);
+            wend = message.find_first_of(SPACE, wbegin);
+
+            std::string vote_type = message.substr(wbegin, wend - wbegin);
+            std::transform(vote_type.begin(), vote_type.end(), vote_type.begin(), tolower);
+
+            if (vote_type == "start") {
+                client->sendVoteCmd(VOTE_START);
+            } else if (vote_type == "stop") {
+                client->sendVoteCmd(VOTE_STOP);
+            } else if (vote_type == "reset") {
+                client->sendVoteCmd(VOTE_RESET);
+            } else {
+                addLine(COLOR_ORANGE, "%s is not a valid vote command", vote_type.c_str());
+            }
+        } else if (cmd == "kill") {
+            client->sendKillCmd();
         } else if (cmd == "quit") {
             client->quit();
         } else {

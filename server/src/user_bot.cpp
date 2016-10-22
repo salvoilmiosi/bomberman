@@ -8,7 +8,14 @@
 #include <cstring>
 
 bool user_bot::bot_handler::isDown(uint8_t input_cmd) {
-	return false;
+	switch (input_cmd) {
+	case USR_LEFT:
+		return true;
+	case USR_RIGHT:
+		return SDL_GetTicks() % 1000 > 500;
+	default:
+		return false;
+	}
 }
 
 bool user_bot::bot_handler::isPressed(uint8_t input_cmd) {
@@ -29,11 +36,11 @@ user_bot::user_bot(game_server *server) : server(server), handler(this) {
 }
 
 user_bot::~user_bot() {
-	destroyPlayer();
+	//destroyPlayer();
 }
 
-void user_bot::createPlayer(game_world *world, uint8_t player_num) {
-	ent = new player(world, &handler, player_num);
+void user_bot::createPlayer(game_world *world) {
+	ent = new player(world, &handler);
 	ent->setName(username);
 }
 

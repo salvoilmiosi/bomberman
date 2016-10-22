@@ -30,6 +30,10 @@ public:
         setData(data, len);
     }
 
+    byte_array(const byte_array &ba);
+
+    virtual ~byte_array() {}
+
 public:
     void clear();
 
@@ -53,7 +57,7 @@ public:
     uint16_t readShort();
 
     void writeLong(const uint64_t num);
-    uint16_t readLong();
+    uint64_t readLong();
 
     void writeString(const char *str, short max_len = 0);
     char *readString();
@@ -72,6 +76,10 @@ private:
 
 public:
     packet_ext(UDPsocket socket, bool input = false);
+
+    packet_ext(const packet_ext &p);
+
+    virtual ~packet_ext() {}
 
 public:
     int receive();

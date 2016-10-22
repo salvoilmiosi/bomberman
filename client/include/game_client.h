@@ -12,6 +12,7 @@
 #include "main.h"
 
 static const int TIMEOUT = 2000;
+static const int CONNECT_ATTEMPTS = 10;
 
 static const uint32_t CMD_CONNECT      = str2int("CONN");
 static const uint32_t CMD_CHAT         = str2int("CHAT");
@@ -20,6 +21,9 @@ static const uint32_t CMD_NAME         = str2int("NAME");
 static const uint32_t CMD_PONG         = str2int("PONG");
 static const uint32_t CMD_SCORE        = str2int("SCOR");
 static const uint32_t CMD_INPUT        = str2int("INPU");
+static const uint32_t CMD_JOIN         = str2int("JOIN");
+static const uint32_t CMD_VOTE         = str2int("VOTE");
+static const uint32_t CMD_KILL         = str2int("KILL");
 
 static const uint32_t SERV_ACCEPT      = str2int("ACPT");
 static const uint32_t SERV_REJECT      = str2int("REJT");
@@ -34,8 +38,13 @@ static const uint32_t SERV_ADD_ENT     = str2int("ADDO");
 static const uint32_t SERV_REM_ENT     = str2int("REMO");
 static const uint32_t SERV_SELF        = str2int("SELF");
 static const uint32_t SERV_MAP         = str2int("MAPP");
+static const uint32_t SERV_RESET       = str2int("RESE");
 static const uint32_t SERV_SOUND       = str2int("WAVE");
 static const uint32_t SERV_REPEAT      = str2int("REPT");
+
+static const uint8_t VOTE_START = 1;
+static const uint8_t VOTE_STOP = 2;
+static const uint8_t VOTE_RESET = 3;
 
 class game_client {
 private:
@@ -76,6 +85,9 @@ public:
 
     bool sendInput(uint8_t cmd, bool down);
     bool sendMouse(int x, int y);
+    bool sendJoinCmd();
+    bool sendVoteCmd(uint8_t vote_type);
+    bool sendKillCmd();
 
     short getPingMsecs() {
         return ping_msecs;
@@ -98,6 +110,7 @@ private:
     void handlePacket(byte_array &);
 
     void messageCmd(byte_array &);
+    void kickCmd(byte_array &);
     void pingCmd(byte_array &);
     void msecCmd(byte_array &);
     void scoreCmd(byte_array &);
@@ -107,6 +120,7 @@ private:
     void selfCmd(byte_array &);
     void mapCmd(byte_array &);
     void soundCmd(byte_array &);
+    void resetCmd(byte_array &);
     void repeatCmd(byte_array &);
 };
 

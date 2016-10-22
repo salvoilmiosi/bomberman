@@ -5,7 +5,6 @@ static const char *const WINDOW_TITLE = "Bomberman";
 static const int WINDOW_WIDTH = 800;
 static const int WINDOW_HEIGHT = 700;
 
-static const int FPS = 300;
 static const int TICKRATE = 300;
 
 static const int DEFAULT_PORT = 27015;

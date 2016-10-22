@@ -9,9 +9,6 @@ packet_repeater::~packet_repeater() {
 }
 
 void packet_repeater::clear() {
-	for (auto it : packets) {
-		delete it.packet;
-	}
 	packets.clear();
 }
 
@@ -21,10 +18,11 @@ void packet_repeater::addPacket(packet_ext &packet, const IPaddress &address, in
 	packet_rep->writeInt(packet_id);
 	packet_rep->writeByteArray(packet);
 
-	++packet_id;
+	packet_rep->sendTo(address); // try first time instantly
 
-	repeated rep = {packet_id, packet_rep, address, repeats};
-	packets.push_back(rep);
+	packets.push_back({packet_rep, address, packet_id, repeats});
+
+	++packet_id;
 }
 
 void packet_repeater::sendPackets() {
