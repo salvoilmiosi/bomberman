@@ -28,6 +28,7 @@ static const uint32_t CMD_PONG         = str2int("PONG");
 static const uint32_t CMD_SCORE        = str2int("SCOR");
 static const uint32_t CMD_INPUT        = str2int("INPU");
 static const uint32_t CMD_JOIN         = str2int("JOIN");
+static const uint32_t CMD_LEAVE        = str2int("LEAV");
 static const uint32_t CMD_VOTE         = str2int("VOTE");
 static const uint32_t CMD_KILL         = str2int("KILL");
 
@@ -98,7 +99,6 @@ public:
 
     void addBots(int num_bots);
     void removeBots();
-    void createBotPlayers();
 
     void sendAddPacket(class entity *ent);
     void sendRemovePacket(class entity *ent);
@@ -146,6 +146,7 @@ private:
 private:
     void connectCmd(packet_ext&);
     void joinCmd(packet_ext&);
+    void leaveCmd(packet_ext&);
     void chatCmd(packet_ext&);
     void nameCmd(packet_ext&);
     void disconnectCmd(packet_ext&);

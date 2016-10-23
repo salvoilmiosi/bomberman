@@ -82,6 +82,8 @@ void user::setPlayer(player *p) {
 }
 
 void user::destroyPlayer() {
-    if (ent)
+    if (ent) {
         ent->destroy();
+        ent = nullptr;
+    }
 }

@@ -53,6 +53,8 @@ void user_bot::tick() {
 }
 
 void user_bot::destroyPlayer() {
-	if (ent)
+	if (ent) {
 		ent->destroy();
+		ent = nullptr;
+	}
 }

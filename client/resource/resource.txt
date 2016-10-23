@@ -7,6 +7,7 @@ IDB_EXPLOSIONS "explosions.png"
 IDB_ITEMS "items.png"
 IDB_PLAYERS "players.png"
 IDB_PLAYERS_WHITE "players_white.png"
+IDB_PLAYER_ICONS "player_icons.png"
 
 IDB_TEXT "text.png"
 

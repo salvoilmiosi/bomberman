@@ -113,9 +113,15 @@ public:
         player_num = num;
     }
 
+    void resetScore() {
+        victories = 0;
+    }
+
     uint16_t getVictories() {
         return victories;
     }
+
+	void addVictory();
 
     byte_array toByteArray();
 
@@ -124,7 +130,6 @@ public:
     void kill();
     void stun();
     void makeInvulnerable();
-	void addVictory();
 
 private:
     void explodedBomb(class bomb *b);

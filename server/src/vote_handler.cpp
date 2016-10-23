@@ -7,7 +7,7 @@ vote_handler::vote_handler(game_server *server) : server(server) {}
 void vote_handler::tick() {
     if (vote_start_time > 0 && SDL_GetTicks() - vote_start_time > VOTE_TIMER) {
         reset();
-        server->messageToAll(COLOR_MAGENTA, "Vote failed.");
+        server->messageToAll(COLOR_MAGENTA, "Not enough players voted.");
     }
 }
 
@@ -17,36 +17,65 @@ void vote_handler::reset() {
     votes.clear();
 }
 
-void vote_handler::sendVote(user *u, uint8_t vote_type) {
+void vote_handler::sendVote(user *u, uint32_t vote_type) {
+    if (!u->getPlayer()) {
+        packet_ext packet = server->messagePacket(COLOR_RED, "Spectators can't vote.");
+        server->sendRepeatPacket(packet, u->getAddress(), 5);
+        return;
+    }
     if (current_vote == 0) {
+        if (vote_type == VOTE_YES || vote_type == VOTE_NO) {
+            packet_ext packet = server->messagePacket(COLOR_MAGENTA, "No vote is up right now");
+            server->sendRepeatPacket(packet, u->getAddress(), 5);
+            return;
+        }
         current_vote = vote_type;
         vote_start_time = SDL_GetTicks();
+        if (votes.find(u) == votes.end()) {
+            votes[u] = VOTE_YES;
+
+            switch (vote_type) {
+            case VOTE_START:
+                server->messageToAll(COLOR_MAGENTA, "%s votes to start the game", u->getName());
+                break;
+            case VOTE_STOP:
+                server->messageToAll(COLOR_MAGENTA, "%s votes to stop the server", u->getName());
+                break;
+            case VOTE_RESET:
+                server->messageToAll(COLOR_MAGENTA, "%s votes to reset the game", u->getName());
+                break;
+            case VOTE_ADD_BOT:
+                server->messageToAll(COLOR_MAGENTA, "%s votes to add a bot", u->getName());
+                break;
+            case VOTE_REMOVE_BOTS:
+                server->messageToAll(COLOR_MAGENTA, "%s votes to remove bots", u->getName());
+                break;
+            }
+        }
+    } else if (vote_type == VOTE_YES || vote_type == VOTE_NO) {
+        votes[u] = vote_type;
+        server->messageToAll(COLOR_MAGENTA, "%s voted %s", u->getName(), vote_type == VOTE_YES ? "yes" : "no");
+    } else if (vote_type == current_vote) {
+        votes[u] = VOTE_YES;
+        server->messageToAll(COLOR_MAGENTA, "%s voted yes", u->getName());
     } else if (current_vote != vote_type) {
         packet_ext packet = server->messagePacket(COLOR_MAGENTA, "Another vote is up right now");
         server->sendRepeatPacket(packet, u->getAddress(), 5);
         return;
     }
-    if (votes.find(u) == votes.end()) {
-        votes[u] = vote_type;
-    } else {
-        packet_ext packet = server->messagePacket(COLOR_MAGENTA, "You already voted");
-        server->sendRepeatPacket(packet, u->getAddress(), 5);
-        return;
+
+    uint32_t num_users = server->countUsers(false);
+    uint32_t num_yes = 0;
+    uint32_t num_no = 0;
+    for (auto it : votes) {
+        if (it.second == VOTE_YES) ++num_yes;
+        else if (it.second == VOTE_NO) ++num_no;
     }
 
-    int num_users = server->countUsers(false);
-    switch (vote_type) {
-    case VOTE_START:
-        server->messageToAll(COLOR_MAGENTA, "%s votes to start the game (%d / %d)", u->getName(), votes.size(), num_users);
-        break;
-    case VOTE_STOP:
-        server->messageToAll(COLOR_MAGENTA, "%s votes to stop the server (%d / %d)", u->getName(), votes.size(), num_users);
-        break;
-    case VOTE_RESET:
-        server->messageToAll(COLOR_MAGENTA, "%s votes to reset the game (%d / %d)", u->getName(), votes.size(), num_users);
-        break;
-    }
-    if (int(votes.size()) == num_users) {
+    if (num_yes > num_users / 2) {
+        if (num_users > 1) {
+            server->messageToAll(COLOR_MAGENTA, "Yes: %d, No: %d - Vote succeeded.", num_yes, num_no);
+        }
         switch (current_vote) {
         case VOTE_START:
             server->startGame();
@@ -57,7 +86,16 @@ void vote_handler::sendVote(user *u, uint8_t vote_type) {
         case VOTE_RESET:
             server->resetGame();
             break;
+        case VOTE_ADD_BOT:
+            server->addBots(1);
+            break;
+        case VOTE_REMOVE_BOTS:
+            server->removeBots();
+            break;
         }
         reset();
+    } else if (num_yes + num_no >= num_users) {
+        reset();
+        server->messageToAll(COLOR_MAGENTA, "Yes: %d, No: %d - Vote failed.", num_yes, num_no);
     }
 }

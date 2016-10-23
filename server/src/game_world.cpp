@@ -93,7 +93,9 @@ void game_world::tick() {
         } else {
             it = entities.erase(it);
             removeEntity(ent);
-            delete ent;
+            if (ent) {
+                delete ent;
+            }
         }
     }
 
@@ -167,10 +169,15 @@ void game_world::countdownEnd() {
                         continue;
                     }
                     p->setPlayerNum(num);
-                    point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
-                    p->respawn(spawn_pt.x, spawn_pt.y);
+                    try {
+                        point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
+                        p->respawn(spawn_pt.x, spawn_pt.y);
 
-                    ++num;
+                        ++num;
+                    } catch (int n) {
+                        p->setPlayerNum(0xff);
+                        // Could not spawn that player
+                    }
                 }
                 break;
             default:

@@ -5,6 +5,8 @@
 #include "bindings.h"
 #include "game_sound.h"
 
+#include <algorithm>
+
 game_client::game_client() : g_chat(this), g_score(this) {
     sock_set = SDLNet_AllocSocketSet(1);
 }
@@ -225,6 +227,100 @@ void game_client::handlePacket(byte_array &packet) {
     }
 }
 
+void game_client::execCmd(const std::string &message) {
+    static const char *SPACE = " \t";
+
+    size_t wbegin = 0;
+    size_t wend = message.find_first_of(SPACE, wbegin);
+
+    std::string cmd = message.substr(wbegin, wend - wbegin);
+    std::transform(cmd.begin(), cmd.end(), cmd.begin(), tolower);
+    if (cmd == "connect") {
+        wbegin = message.find_first_not_of(SPACE, wend);
+        if (wbegin == std::string::npos) {
+            g_chat.addLine(COLOR_ORANGE, "Usage: connect address [port]");
+            return;
+        }
+        wend = message.find_first_of(SPACE, wbegin);
+
+        std::string address = message.substr(wbegin, wend - wbegin);
+
+        wbegin = message.find_first_not_of(SPACE, wend);
+        if (wbegin == std::string::npos) {
+            connect(address.c_str());
+            return;
+        }
+
+        std::string port = message.substr(wbegin);
+
+        connect(address.c_str(), std::stoi(port));
+    } else if (cmd == "join") {
+        sendJoinCmd();
+    } else if (cmd == "spectate") {
+        sendLeaveCmd();
+    } else if (cmd == "disconnect") {
+        disconnect();
+    } else if (cmd == "name") {
+        wbegin = message.find_first_not_of(SPACE, wend);
+        if (wbegin == std::string::npos) {
+            g_chat.addLine(COLOR_ORANGE, "Usage: name new_name");
+            return;
+        }
+        wend = message.find_last_not_of(SPACE);
+
+        std::string name = message.substr(wbegin, wend - wbegin + 1);
+        setName(name);
+    } else if (cmd == "music_volume") {
+        wbegin = message.find_first_not_of(' ', wend);
+        if (wbegin == std::string::npos) {
+            g_chat.addLine(COLOR_ORANGE, "Usage: music_volume [0-100]");
+            return;
+        }
+
+        std::string volume = message.substr(wbegin);
+        int volume_int = std::stoi(volume);
+        if (volume_int > 100) {
+            volume_int = 100;
+        }
+        setMusicVolume(volume_int * MIX_MAX_VOLUME / 100);
+        g_chat.addLine(COLOR_ORANGE, "Set volume: %d", volume_int);
+    } else if (cmd == "vote") {
+        wbegin = message.find_first_not_of(SPACE, wend);
+        if (wbegin == std::string::npos) {
+            g_chat.addLine(COLOR_ORANGE, "Usage: vote (start | stop | reset | add_bot | remove_bots)");
+            return;
+        }
+        wend = message.find_first_of(SPACE, wbegin);
+
+        std::string vote_type = message.substr(wbegin, wend - wbegin);
+        std::transform(vote_type.begin(), vote_type.end(), vote_type.begin(), tolower);
+
+        if (vote_type == "start") {
+            sendVoteCmd(VOTE_START);
+        } else if (vote_type == "stop") {
+            sendVoteCmd(VOTE_STOP);
+        } else if (vote_type == "reset") {
+            sendVoteCmd(VOTE_RESET);
+        } else if (vote_type == "add_bot") {
+            sendVoteCmd(VOTE_ADD_BOT);
+        } else if (vote_type == "remove_bots") {
+            sendVoteCmd(VOTE_REMOVE_BOTS);
+        } else if (vote_type == "yes") {
+            sendVoteCmd(VOTE_YES);
+        } else if (vote_type == "no") {
+            sendVoteCmd(VOTE_NO);
+        } else {
+            g_chat.addLine(COLOR_ORANGE, "%s is not a valid vote command", vote_type.c_str());
+        }
+    } else if (cmd == "kill") {
+        sendKillCmd();
+    } else if (cmd == "quit") {
+        quit();
+    } else {
+        g_chat.addLine(COLOR_ORANGE, "%s is not a valid command", cmd.c_str());
+    }
+}
+
 void game_client::handleEvent(const SDL_Event &event) {
     if (g_chat.isTyping()) {
         g_chat.handleEvent(event);
@@ -271,45 +367,71 @@ void game_client::handleEvent(const SDL_Event &event) {
 }
 
 bool game_client::sendJoinCmd() {
-    if (socket == nullptr) return false;
+    if (socket == nullptr) {
+        g_chat.addLine(COLOR_RED, "You are not connected to a server.");
+        return false;
+    }
 
     packet_ext packet(socket);
     packet.writeInt(CMD_JOIN);
     return packet.sendTo(server_ip);
 }
 
-bool game_client::sendVoteCmd(uint8_t vote_type) {
-    if (socket == nullptr) return false;
+bool game_client::sendLeaveCmd() {
+    if (socket == nullptr) {
+        g_chat.addLine(COLOR_RED, "You are not connected to a server.");
+        return false;
+    }
+
+    packet_ext packet(socket);
+    packet.writeInt(CMD_LEAVE);
+    return packet.sendTo(server_ip);
+}
+
+bool game_client::sendVoteCmd(uint32_t vote_type) {
+    if (socket == nullptr) {
+        g_chat.addLine(COLOR_RED, "You are not connected to a server.");
+        return false;
+    }
 
     packet_ext packet(socket);
     packet.writeInt(CMD_VOTE);
-    packet.writeChar(vote_type);
+    packet.writeInt(vote_type);
     return packet.sendTo(server_ip);
 }
 
 bool game_client::sendKillCmd() {
-    if (socket == nullptr) return false;
+    if (socket == nullptr) {
+        g_chat.addLine(COLOR_RED, "You are not connected to a server.");
+        return false;
+    }
 
     packet_ext packet(socket);
     packet.writeInt(CMD_KILL);
     return packet.sendTo(server_ip);
 }
 
-void game_client::sendChatMessage(const char *message) {
-    if (socket == nullptr) return;
+bool game_client::sendChatMessage(const char *message) {
+    if (socket == nullptr) {
+        g_chat.addLine(COLOR_RED, "You are not connected to a server.");
+        return false;
+    }
 
     packet_ext packet(socket);
     packet.writeInt(CMD_CHAT);
     packet.writeString(message);
-    packet.sendTo(server_ip);
+    return packet.sendTo(server_ip);
 }
 
-void game_client::sendScorePacket() {
-    if (socket == nullptr) return;
+bool game_client::sendScorePacket() {
+    if (socket == nullptr) {
+        //g_chat.addLine(COLOR_RED, "You are not connected to a server.");
+        return false;
+    }
 
     packet_ext packet(socket);
     packet.writeInt(CMD_SCORE);
-    packet.sendTo(server_ip);
+    return packet.sendTo(server_ip);
 }
 
 void game_client::setName(const std::string &name) {
@@ -403,6 +525,8 @@ void game_client::selfCmd(byte_array &packet) {
     if (ent && ent->getType() == TYPE_PLAYER) {
         dynamic_cast<player *>(ent)->setSelf(true);
     }
+
+    g_score.setSelfID(packet.readShort());
 }
 
 void game_client::mapCmd(byte_array &packet) {

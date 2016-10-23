@@ -19,6 +19,7 @@ SDL_Texture *explosions_texture = nullptr;
 SDL_Texture *items_texture = nullptr;
 SDL_Texture *players_texture = nullptr;
 SDL_Texture *players_white_texture = nullptr;
+SDL_Texture *player_icons_texture = nullptr;
 
 SDL_Surface *icon_surface = nullptr;
 
@@ -119,6 +120,7 @@ void loadResources(SDL_Renderer *renderer) {
     items_texture = loadTexture(renderer, "IDB_ITEMS");
     players_texture = loadTexture(renderer, "IDB_PLAYERS");
     players_white_texture = loadTexture(renderer, "IDB_PLAYERS_WHITE");
+    player_icons_texture = loadTexture(renderer, "IDB_PLAYER_ICONS");
 
     resource_font = TTF_OpenFontRW(getResourceRW("IDF_FONT"), 1, CHAR_H);
 }
@@ -135,6 +137,7 @@ void clearResources() {
     SDL_DestroyTexture(items_texture);
     SDL_DestroyTexture(players_texture);
     SDL_DestroyTexture(players_white_texture);
+    SDL_DestroyTexture(player_icons_texture);
 
     TTF_CloseFont(resource_font);
 }

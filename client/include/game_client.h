@@ -22,6 +22,7 @@ static const uint32_t CMD_PONG         = str2int("PONG");
 static const uint32_t CMD_SCORE        = str2int("SCOR");
 static const uint32_t CMD_INPUT        = str2int("INPU");
 static const uint32_t CMD_JOIN         = str2int("JOIN");
+static const uint32_t CMD_LEAVE        = str2int("LEAV");
 static const uint32_t CMD_VOTE         = str2int("VOTE");
 static const uint32_t CMD_KILL         = str2int("KILL");
 
@@ -42,9 +43,13 @@ static const uint32_t SERV_RESET       = str2int("RESE");
 static const uint32_t SERV_SOUND       = str2int("WAVE");
 static const uint32_t SERV_REPEAT      = str2int("REPT");
 
-static const uint8_t VOTE_START = 1;
-static const uint8_t VOTE_STOP = 2;
-static const uint8_t VOTE_RESET = 3;
+static const uint32_t VOTE_YES = str2int("VYES");
+static const uint32_t VOTE_NO = str2int("V_NO");
+static const uint32_t VOTE_START = str2int("STRT");
+static const uint32_t VOTE_STOP = str2int("STOP");
+static const uint32_t VOTE_RESET = str2int("RESE");
+static const uint32_t VOTE_ADD_BOT = str2int("BOT+");
+static const uint32_t VOTE_REMOVE_BOTS = str2int("BOT-");
 
 class game_client {
 private:
@@ -83,11 +88,16 @@ public:
 
     void handleEvent(const SDL_Event &event);
 
+    void execCmd(const std::string &message);
+
     bool sendInput(uint8_t cmd, bool down);
     bool sendMouse(int x, int y);
     bool sendJoinCmd();
-    bool sendVoteCmd(uint8_t vote_type);
+    bool sendLeaveCmd();
+    bool sendVoteCmd(uint32_t vote_type);
     bool sendKillCmd();
+    bool sendChatMessage(const char *message);
+    bool sendScorePacket();
 
     short getPingMsecs() {
         return ping_msecs;
@@ -97,8 +107,6 @@ public:
         return world;
     }
 
-    void sendChatMessage(const char *message);
-    void sendScorePacket();
     void setName(const std::string &name);
     void quit();
 
