@@ -69,14 +69,16 @@ bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB) {
     }
 }
 
-bool bomb::kick(uint8_t direction) {
+bool bomb::kick(player *kicker) {
     if (kicked || flying) return false;
 
     speedx = 0;
     speedy = 0;
     kick_ticks = 0;
 
-    switch (direction) {
+    p = kicker;
+
+    switch (kicker->direction) {
     case 0:
         speedy = -KICK_SPEED / TICKRATE;
         break;
@@ -99,7 +101,7 @@ bool bomb::kick(uint8_t direction) {
     return true;
 }
 
-bool bomb::punch(uint8_t direction) {
+bool bomb::punch(player *puncher) {
     if (kicked) kicked = false;
     if (flying) return false;
 
@@ -108,7 +110,9 @@ bool bomb::punch(uint8_t direction) {
     speedx = 0;
     speedy = 0;
 
-    switch (direction) {
+    p = puncher;
+
+    switch (puncher->direction) {
     case 0:
         speedy = -PUNCH_SPEED / TICKRATE;
         break;
@@ -140,7 +144,9 @@ void bomb::stopKick() {
     if (kick_ticks > 1) {
         world->playWave(WAV_HARDHIT);
     }
-    p->stoppedKick(this);
+    if (p) {
+        p->stoppedKick(this);
+    }
 }
 
 void bomb::tick() {

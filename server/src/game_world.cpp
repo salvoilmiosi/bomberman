@@ -65,7 +65,7 @@ void game_world::tick() {
     }
 
     if (ticks_to_start < 0 && g_map.getZone() == ZONE_BOMB) {
-        if ((-ticks_to_start) % (TICKRATE * 10) == 0) {
+        if ((-ticks_to_start) % (TICKRATE * 6) == 0) {
             int rand_x = random_engine() % (g_map.getWidth() - 4) + 2;
             int rand_y = random_engine() % (g_map.getHeight() - 2) + 1;
             addEntity(new bomb(this, rand_x, rand_y));
@@ -155,7 +155,7 @@ bool game_world::startRound(int num_u) {
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, random_engine() % 4);
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, ZONE_BOMB);//random_engine() % 4);
 
     int num = 0;
 

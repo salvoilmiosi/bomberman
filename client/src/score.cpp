@@ -77,7 +77,7 @@ void score::render(SDL_Renderer *renderer) {
             SDL_RenderCopy(renderer, player_icons_texture, &src_rect, &dst_rect);
         }
 
-        bool is_self = si.user_type == SCORE_PLAYER && si.user_id == self_id;
+        bool is_self = si.user_type != SCORE_BOT && si.user_id == self_id;
 
         renderText(x + 40, y, renderer, si.player_name, is_self ? COLOR_YELLOW : COLOR_WHITE);
         if (si.user_type == SCORE_SPECTATOR) {
@@ -144,6 +144,7 @@ void score::handlePacket(byte_array &packet) {
             break;
         case SCORE_SPECTATOR:
         	in.victories = 0;
+        	in.user_id = packet.readShort();
         	break;
         default:
             break;
@@ -154,4 +155,13 @@ void score::handlePacket(byte_array &packet) {
     num_players = i;
 
     std::sort(std::begin(info), std::begin(info) + num_players, compare);
+}
+
+int score::findUserID(const char *name) {
+    for (int i=0; i<num_players; ++i) {
+        if (strcasecmp(name, info[i].player_name) == 0) {
+            return info[i].user_id;
+        }
+    }
+    return -1;
 }

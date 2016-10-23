@@ -128,6 +128,8 @@ public:
         sendToAll(packet, 5);
     }
 
+    user *findUserByID(int id);
+
 private:
     friend int game_thread_func(void *data);
     int game_thread_run();

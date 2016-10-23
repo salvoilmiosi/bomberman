@@ -17,7 +17,7 @@ void vote_handler::reset() {
     votes.clear();
 }
 
-void vote_handler::sendVote(user *u, uint32_t vote_type) {
+void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
     if (!u->getPlayer()) {
         packet_ext packet = server->messagePacket(COLOR_RED, "Spectators can't vote.");
         server->sendRepeatPacket(packet, u->getAddress(), 5);
@@ -30,6 +30,7 @@ void vote_handler::sendVote(user *u, uint32_t vote_type) {
             return;
         }
         current_vote = vote_type;
+        vote_args = args;
         vote_start_time = SDL_GetTicks();
         if (votes.find(u) == votes.end()) {
             votes[u] = VOTE_YES;
@@ -45,10 +46,25 @@ void vote_handler::sendVote(user *u, uint32_t vote_type) {
                 server->messageToAll(COLOR_MAGENTA, "%s votes to reset the game", u->getName());
                 break;
             case VOTE_ADD_BOT:
-                server->messageToAll(COLOR_MAGENTA, "%s votes to add a bot", u->getName());
+                server->messageToAll(COLOR_MAGENTA, "%s votes to add %d bots", u->getName(), args);
                 break;
             case VOTE_REMOVE_BOTS:
                 server->messageToAll(COLOR_MAGENTA, "%s votes to remove bots", u->getName());
+                break;
+            case VOTE_KICK:
+            {
+                user *kick_user = server->findUserByID(args);
+                if (kick_user) {
+                    server->messageToAll(COLOR_MAGENTA, "%s votes to kick %s", u->getName(), kick_user->getName());
+                } else {
+                    reset();
+                }
+                break;
+            }
+            default:
+                packet_ext packet = server->messagePacket(COLOR_MAGENTA, "You started an incorrect vote");
+                server->sendRepeatPacket(packet, u->getAddress(), 5);
+                reset();
                 break;
             }
         }
@@ -87,10 +103,13 @@ void vote_handler::sendVote(user *u, uint32_t vote_type) {
             server->resetGame();
             break;
         case VOTE_ADD_BOT:
-            server->addBots(1);
+            server->addBots(vote_args);
             break;
         case VOTE_REMOVE_BOTS:
             server->removeBots();
+            break;
+        case VOTE_KICK:
+            server->kickUser(server->findUserByID(vote_args), "You have been voted off.");
             break;
         }
         reset();

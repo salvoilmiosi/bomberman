@@ -5,6 +5,7 @@
 #include "input_handler.h"
 
 #include <deque>
+#include <list>
 
 static const size_t     PLAYER_NAME_SIZE = 32;
 static const float      PLAYER_SIDE_MOVE_AMT = 0.1f;
@@ -51,9 +52,9 @@ private:
 
     std::deque<uint8_t> item_pickups;
 
-    std::deque<class bomb *> planted_bombs;
+    std::list<class bomb *> planted_bombs;
 
-    std::deque<class bomb *> kicked_bombs;
+    std::list<class bomb *> kicked_bombs;
 
     float fx = 0.f;
     float fy = 0.f;

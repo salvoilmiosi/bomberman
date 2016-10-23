@@ -252,8 +252,11 @@ void game_client::execCmd(const std::string &message) {
         }
 
         std::string port = message.substr(wbegin);
-
-        connect(address.c_str(), std::stoi(port));
+        try {
+            connect(address.c_str(), std::stoi(port));
+        } catch (std::invalid_argument) {
+            g_chat.addLine(COLOR_RED, "%s is not a number", port.c_str());
+        }
     } else if (cmd == "join") {
         sendJoinCmd();
     } else if (cmd == "spectate") {
@@ -278,16 +281,20 @@ void game_client::execCmd(const std::string &message) {
         }
 
         std::string volume = message.substr(wbegin);
-        int volume_int = std::stoi(volume);
-        if (volume_int > 100) {
-            volume_int = 100;
+        try {
+            int volume_int = std::stoi(volume);
+            if (volume_int > 100) {
+                volume_int = 100;
+            }
+            setMusicVolume(volume_int * MIX_MAX_VOLUME / 100);
+            g_chat.addLine(COLOR_ORANGE, "Set volume: %d", volume_int);
+        } catch (std::invalid_argument) {
+            g_chat.addLine(COLOR_RED, "%s is not a number", volume.c_str());
         }
-        setMusicVolume(volume_int * MIX_MAX_VOLUME / 100);
-        g_chat.addLine(COLOR_ORANGE, "Set volume: %d", volume_int);
     } else if (cmd == "vote") {
         wbegin = message.find_first_not_of(SPACE, wend);
         if (wbegin == std::string::npos) {
-            g_chat.addLine(COLOR_ORANGE, "Usage: vote (start | stop | reset | add_bot | remove_bots)");
+            g_chat.addLine(COLOR_ORANGE, "Usage: vote (start | stop | reset | bot_add | bot_remove)");
             return;
         }
         wend = message.find_first_of(SPACE, wbegin);
@@ -295,20 +302,41 @@ void game_client::execCmd(const std::string &message) {
         std::string vote_type = message.substr(wbegin, wend - wbegin);
         std::transform(vote_type.begin(), vote_type.end(), vote_type.begin(), tolower);
 
+        std::string args;
+
+        wbegin = message.find_first_not_of(SPACE, wend);
+        if (wbegin != std::string::npos) {
+            wend = message.find_last_not_of(SPACE);
+            args = message.substr(wbegin, wend - wbegin + 1);
+        }
+
         if (vote_type == "start") {
-            sendVoteCmd(VOTE_START);
+            sendVoteCmd(VOTE_START, 0);
         } else if (vote_type == "stop") {
-            sendVoteCmd(VOTE_STOP);
+            sendVoteCmd(VOTE_STOP, 0);
         } else if (vote_type == "reset") {
-            sendVoteCmd(VOTE_RESET);
-        } else if (vote_type == "add_bot") {
-            sendVoteCmd(VOTE_ADD_BOT);
-        } else if (vote_type == "remove_bots") {
-            sendVoteCmd(VOTE_REMOVE_BOTS);
+            sendVoteCmd(VOTE_RESET, 0);
+        } else if (vote_type == "bot_add") {
+            if (args.empty()) {
+                sendVoteCmd(VOTE_ADD_BOT, 1);
+            } else try {
+                sendVoteCmd(VOTE_ADD_BOT, std::stoi(args));
+            } catch (std::invalid_argument) {
+                g_chat.addLine(COLOR_RED, "%s is not a number", args.c_str());
+            }
+        } else if (vote_type == "bot_remove") {
+            sendVoteCmd(VOTE_REMOVE_BOTS, 0);
+        } else if (vote_type == "kick") {
+            int user_id = g_score.findUserID(args.c_str());
+            if (user_id > 0) {
+                sendVoteCmd(VOTE_KICK, user_id);
+            } else {
+                g_chat.addLine(COLOR_RED, "%s is not a user", args.c_str());
+            }
         } else if (vote_type == "yes") {
-            sendVoteCmd(VOTE_YES);
+            sendVoteCmd(VOTE_YES, 0);
         } else if (vote_type == "no") {
-            sendVoteCmd(VOTE_NO);
+            sendVoteCmd(VOTE_NO, 0);
         } else {
             g_chat.addLine(COLOR_ORANGE, "%s is not a valid vote command", vote_type.c_str());
         }
@@ -388,7 +416,7 @@ bool game_client::sendLeaveCmd() {
     return packet.sendTo(server_ip);
 }
 
-bool game_client::sendVoteCmd(uint32_t vote_type) {
+bool game_client::sendVoteCmd(uint32_t vote_type, uint32_t args) {
     if (socket == nullptr) {
         g_chat.addLine(COLOR_RED, "You are not connected to a server.");
         return false;
@@ -397,6 +425,7 @@ bool game_client::sendVoteCmd(uint32_t vote_type) {
     packet_ext packet(socket);
     packet.writeInt(CMD_VOTE);
     packet.writeInt(vote_type);
+    packet.writeInt(args);
     return packet.sendTo(server_ip);
 }
 

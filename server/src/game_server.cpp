@@ -58,6 +58,16 @@ user *game_server::findUser(const IPaddress &address) {
     return it->second;
 }
 
+user *game_server::findUserByID(int id) {
+    for (auto it : users) {
+        user *u = it.second;
+        if (u && u->getID() == id) {
+            return u;
+        }
+    }
+    return nullptr;
+}
+
 void game_server::sendRepeatPacket(packet_ext &packet, const IPaddress &address, int repeats) {
     if (repeats > 1) {
         repeater.addPacket(packet, address, repeats);
@@ -187,6 +197,8 @@ void game_server::sendResetPacket() {
 }
 
 void game_server::kickUser(user *u, const char *message) {
+    if (!u) return;
+
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_KICK);
     packet.writeString(message);
@@ -274,20 +286,23 @@ void game_server::joinCmd(packet_ext &from) {
     if (!u) return;
     if (u->getPlayer()) return;
 
+    uint16_t player_id = 0;
+
     if (countUsers() < MAX_PLAYERS) {
         u->createPlayer(world);
         world->addEntity(u->getPlayer());
-
-        packet_ext packet_self(socket_serv);
-        packet_self.writeInt(SERV_SELF);
-        packet_self.writeShort(u->getPlayer()->getID());
-        packet_self.writeShort(u->getID());
-        sendRepeatPacket(packet_self, from.getAddress(), 5);
+        player_id = u->getPlayer()->getID();
 
         messageToAll(COLOR_YELLOW, "%s joined the game.", u->getName());
     } else {
         messageToAll(COLOR_YELLOW, "%s is spectating.", u->getName());
     }
+
+    packet_ext packet_self(socket_serv);
+    packet_self.writeInt(SERV_SELF);
+    packet_self.writeShort(player_id);
+    packet_self.writeShort(u->getID());
+    sendRepeatPacket(packet_self, from.getAddress(), 5);
 }
 
 void game_server::leaveCmd(packet_ext &from) {
@@ -405,6 +420,7 @@ packet_ext game_server::scorePacket() {
             packet.writeChar(u->getPlayer()->isAlive() ? 1 : 0);
         } else {
             packet.writeChar(SCORE_SPECTATOR);
+            packet.writeShort(u->getID());
         }
     }
     for (user_bot *b : bots) {
@@ -444,7 +460,9 @@ void game_server::voteCmd(packet_ext &packet) {
 
     uint32_t vote_type = packet.readInt();
 
-    voter.sendVote(u, vote_type);
+    uint32_t args = packet.readInt();
+
+    voter.sendVote(u, vote_type, args);
 }
 
 void game_server::killCmd(packet_ext &packet) {

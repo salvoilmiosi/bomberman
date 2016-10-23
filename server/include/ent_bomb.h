@@ -48,8 +48,8 @@ public:
 public:
     void tick();
 
-    bool kick(uint8_t direction);
-    bool punch(uint8_t direction);
+    bool kick(player *kicker);
+    bool punch(player *puncher);
 
     void stopKick();
 

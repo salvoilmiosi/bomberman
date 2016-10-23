@@ -149,7 +149,7 @@ void player::handleInput() {
             entity *ent = ents[i];
             if (!ent) break;
             bomb *b = dynamic_cast<bomb*>(ent);
-            b->punch(direction);
+            b->punch(this);
         }
     }
 
@@ -227,7 +227,7 @@ void player::handleInput() {
                     if (*ents) {
                         if (kick_ticks <= 0) {
                             bomb *b = dynamic_cast<bomb *>(*ents);
-                            if (b->kick(direction)) {
+                            if (b->kick(this)) {
                                 kicked_bombs.push_back(b);
                             }
                         } else {

@@ -43,13 +43,14 @@ static const uint32_t SERV_RESET       = str2int("RESE");
 static const uint32_t SERV_SOUND       = str2int("WAVE");
 static const uint32_t SERV_REPEAT      = str2int("REPT");
 
-static const uint32_t VOTE_YES = str2int("VYES");
-static const uint32_t VOTE_NO = str2int("V_NO");
-static const uint32_t VOTE_START = str2int("STRT");
-static const uint32_t VOTE_STOP = str2int("STOP");
-static const uint32_t VOTE_RESET = str2int("RESE");
-static const uint32_t VOTE_ADD_BOT = str2int("BOT+");
+static const uint32_t VOTE_YES         = str2int("VYES");
+static const uint32_t VOTE_NO          = str2int("V_NO");
+static const uint32_t VOTE_START       = str2int("STRT");
+static const uint32_t VOTE_STOP        = str2int("STOP");
+static const uint32_t VOTE_RESET       = str2int("RESE");
+static const uint32_t VOTE_ADD_BOT     = str2int("BOT+");
 static const uint32_t VOTE_REMOVE_BOTS = str2int("BOT-");
+static const uint32_t VOTE_KICK        = str2int("KICK");
 
 class game_client {
 private:
@@ -94,7 +95,7 @@ public:
     bool sendMouse(int x, int y);
     bool sendJoinCmd();
     bool sendLeaveCmd();
-    bool sendVoteCmd(uint32_t vote_type);
+    bool sendVoteCmd(uint32_t vote_type, uint32_t args);
     bool sendKillCmd();
     bool sendChatMessage(const char *message);
     bool sendScorePacket();

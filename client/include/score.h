@@ -59,6 +59,8 @@ public:
     void setSelfID(uint16_t id) {
         self_id = id;
     }
+
+    int findUserID(const char *name);
 };
 
 #endif // __SCORE_H__
