@@ -220,6 +220,9 @@ char *game_server::findNewName(const char *username) {
 
 void game_server::addBots(int num_bots) {
     for (;num_bots>0; --num_bots) {
+        if (countUsers(true) >= MAX_PLAYERS) {
+            break;
+        }
         user_bot* b = new user_bot(this);
         bots.push_back(b);
 
