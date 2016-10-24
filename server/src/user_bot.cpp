@@ -8,7 +8,7 @@
 
 #include <cstring>
 
-bool user_bot::bot_handler::isDown(uint8_t input_cmd) {
+bool user_bot::bot_handler::isDown(usr_input input_cmd) {
 	switch (input_cmd) {
 	case USR_LEFT:
 		return true;
@@ -19,7 +19,7 @@ bool user_bot::bot_handler::isDown(uint8_t input_cmd) {
 	}
 }
 
-bool user_bot::bot_handler::isPressed(uint8_t input_cmd) {
+bool user_bot::bot_handler::isPressed(usr_input input_cmd) {
 	return false;
 }
 

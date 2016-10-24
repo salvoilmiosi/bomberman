@@ -51,7 +51,7 @@ void player::respawn(int tx, int ty) {
     do_send_updates = true;
 }
 
-void player::kill() {
+void player::kill(player *killer) {
     if (!alive) return;
     if (jumping) return;
     if (invulnerable_ticks > 0) return;
@@ -60,6 +60,8 @@ void player::kill() {
     death_ticks = PLAYER_DEATH_TICKS;
 
     world->playWave(WAV_DEATH);
+
+    world->sendKillMessage(killer, this);
 }
 
 void player::makeInvulnerable() {
@@ -374,9 +376,9 @@ void player::spawnItems() {
         if (i >= tiles.size()) {
             break;
         }
-        uint8_t item_type = item_pickups.front();
+        item_type type = item_pickups.front();
 
-        world->addEntity(new game_item(world, tiles[i], item_type));
+        world->addEntity(new game_item(world, tiles[i], type));
         item_pickups.pop_front();
         ++i;
     }

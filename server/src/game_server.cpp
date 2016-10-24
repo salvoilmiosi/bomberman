@@ -202,7 +202,7 @@ void game_server::kickUser(user *u, const char *message) {
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_KICK);
     packet.writeString(message);
-    sendRepeatPacket(packet, u->getAddress(), 5);
+    sendRepeatPacket(packet, u->getAddress());
 
     messageToAll(COLOR_YELLOW, "%s was kicked from the server.", u->getName());
 
@@ -302,7 +302,7 @@ void game_server::joinCmd(packet_ext &from) {
     packet_self.writeInt(SERV_SELF);
     packet_self.writeShort(player_id);
     packet_self.writeShort(u->getID());
-    sendRepeatPacket(packet_self, from.getAddress(), 5);
+    sendRepeatPacket(packet_self, from.getAddress());
 }
 
 void game_server::leaveCmd(packet_ext &from) {
@@ -473,7 +473,7 @@ void game_server::killCmd(packet_ext &packet) {
     }
 
     player *p = u->getPlayer();
-    if (p) p->kill();
+    if (p) p->kill(nullptr);
 }
 
 void game_server::handlePacket(packet_ext &packet) {

@@ -20,13 +20,13 @@ void vote_handler::reset() {
 void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
     if (!u->getPlayer()) {
         packet_ext packet = server->messagePacket(COLOR_RED, "Spectators can't vote.");
-        server->sendRepeatPacket(packet, u->getAddress(), 5);
+        server->sendRepeatPacket(packet, u->getAddress());
         return;
     }
     if (current_vote == 0) {
         if (vote_type == VOTE_YES || vote_type == VOTE_NO) {
             packet_ext packet = server->messagePacket(COLOR_MAGENTA, "No vote is up right now");
-            server->sendRepeatPacket(packet, u->getAddress(), 5);
+            server->sendRepeatPacket(packet, u->getAddress());
             return;
         }
         current_vote = vote_type;
@@ -63,7 +63,7 @@ void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
             }
             default:
                 packet_ext packet = server->messagePacket(COLOR_MAGENTA, "You started an incorrect vote");
-                server->sendRepeatPacket(packet, u->getAddress(), 5);
+                server->sendRepeatPacket(packet, u->getAddress());
                 reset();
                 break;
             }
@@ -76,7 +76,7 @@ void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
         server->messageToAll(COLOR_MAGENTA, "%s voted yes", u->getName());
     } else if (current_vote != vote_type) {
         packet_ext packet = server->messagePacket(COLOR_MAGENTA, "Another vote is up right now");
-        server->sendRepeatPacket(packet, u->getAddress(), 5);
+        server->sendRepeatPacket(packet, u->getAddress());
         return;
     }
 

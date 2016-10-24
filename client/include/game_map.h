@@ -8,26 +8,35 @@
 
 static const int TILE_SIZE = 48;
 
-static const uint8_t TILE_FLOOR = 0;
-static const uint8_t TILE_WALL = 2;
-static const uint8_t TILE_BREAKABLE = 3;
-static const uint8_t TILE_SPECIAL = 5;
+enum tile_type {
+    TILE_FLOOR,
+    TILE_SPAWN,
+    TILE_WALL,
+    TILE_BREAKABLE,
+    TILE_ITEM,
+    TILE_SPECIAL
+};
 
-static const uint8_t ZONE_NORMAL = 0;
-static const uint8_t ZONE_WESTERN = 1;
-static const uint8_t ZONE_BOMB = 2;
-static const uint8_t ZONE_JUMP = 3;
+enum map_zone {
+    ZONE_NORMAL,
+    ZONE_WESTERN,
+    ZONE_BOMB,
+    ZONE_JUMP
+};
 
-static const uint8_t SPECIAL_TRAMPOLINE = 1;
+enum special_type {
+    SPECIAL_NONE,
+    SPECIAL_TRAMPOLINE
+};
 
 struct tile {
-    uint8_t type;
+    tile_type type;
     uint8_t data;
 };
 
 class tile_entity {
 private:
-    uint8_t type;
+    special_type type;
 
     tile *t_tile;
 
@@ -58,7 +67,8 @@ private:
 
     int width = 0;
     int height = 0;
-    int zone = 0;
+
+    map_zone zone;
 
     std::map<tile *, tile_entity *> specials;
 

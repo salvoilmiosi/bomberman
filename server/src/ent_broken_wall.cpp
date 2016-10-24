@@ -10,7 +10,7 @@ broken_wall::broken_wall(game_world *world, tile *t) : entity(world, TYPE_BROKEN
 
     drop_item = t->type == TILE_ITEM;
     if (drop_item) {
-        item_type = t->data;
+        type = static_cast<item_type>(t->data);
     }
 
     do_send_updates = false;
@@ -19,7 +19,7 @@ broken_wall::broken_wall(game_world *world, tile *t) : entity(world, TYPE_BROKEN
 void broken_wall::tick() {
     if (life_ticks == 0) {
         if (drop_item) {
-            world->addEntity(new game_item(world, world->getMap().getTile(tx,ty), item_type));
+            world->addEntity(new game_item(world, world->getMap().getTile(tx,ty), type));
         }
         destroy();
     }

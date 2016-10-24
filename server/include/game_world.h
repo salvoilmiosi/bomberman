@@ -8,11 +8,14 @@
 #include "game_map.h"
 #include "game_server.h"
 
-static const uint8_t TYPE_PLAYER = 1;
-static const uint8_t TYPE_BOMB = 2;
-static const uint8_t TYPE_EXPLOSION = 3;
-static const uint8_t TYPE_BROKEN_WALL = 4;
-static const uint8_t TYPE_ITEM = 5;
+enum entity_type {
+    TYPE_NONE,
+    TYPE_PLAYER,
+    TYPE_BOMB,
+    TYPE_EXPLOSION,
+    TYPE_BROKEN_WALL,
+    TYPE_ITEM
+};
 
 static const size_t SEARCH_SIZE = 8;
 static const int COUNTDOWN_SECONDS = 4;
@@ -23,7 +26,7 @@ static const uint8_t WALK_BLOCK_ITEMS = (1 << 2);
 
 class entity {
 private:
-    const uint8_t type;
+    const entity_type type;
 
     uint16_t id;
 
@@ -37,7 +40,7 @@ protected:
     class game_world *world;
 
 public:
-    entity(class game_world *world, const uint8_t type) : type(type), world(world) {
+    entity(class game_world *world, const entity_type type) : type(type), world(world) {
         static uint16_t max_id = 1;
         id = max_id++;
         destroyed = false;
@@ -52,12 +55,12 @@ public:
         return id;
     }
 
-    uint8_t getType() {
+    const entity_type getType() {
         return type;
     }
 
-    virtual uint8_t getTileX() const = 0;
-    virtual uint8_t getTileY() const = 0;
+    virtual const uint8_t getTileX() = 0;
+    virtual const uint8_t getTileY() = 0;
 
     bool isNotDestroyed() {
         return !destroyed;
@@ -117,6 +120,8 @@ public:
     void writeMapToPacket(packet_ext &packet) {
         g_map.writeToPacket(packet);
     }
+
+    void sendKillMessage(player *killer, player *p);
 
     void restartGame();
 

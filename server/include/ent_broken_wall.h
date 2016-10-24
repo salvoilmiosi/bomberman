@@ -2,6 +2,7 @@
 #define __ENT_BROKEN_WALL_H__
 
 #include "game_world.h"
+#include "ent_item.h"
 
 static const float BROKEN_WALL_LIFE = TICKRATE * 2 / 3;
 
@@ -15,7 +16,7 @@ private:
     int life_ticks;
 
     bool drop_item;
-    uint8_t item_type;
+    item_type type;
 
 public:
     broken_wall(game_world *world, tile *t);
@@ -23,11 +24,11 @@ public:
 public:
     void tick();
 
-    uint8_t getTileX() const {
+    const uint8_t getTileX() {
         return tx;
     }
 
-    uint8_t getTileY() const {
+    const uint8_t getTileY() {
         return ty;
     }
 

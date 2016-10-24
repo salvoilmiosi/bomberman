@@ -134,6 +134,16 @@ void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
     }
 }
 
+void game_world::sendKillMessage(player *killer, player *p) {
+    if (p == killer) {
+        server.messageToAll(COLOR_WHITE, "%s couldn't handle it and killed himself.", p->getName());
+    } else if (killer == nullptr) {
+        server.messageToAll(COLOR_WHITE, "%s was killed by the world.", p->getName());
+    } else {
+        server.messageToAll(COLOR_WHITE, "%s exploded %s.", killer->getName(), p->getName());
+    }
+}
+
 void game_world::restartGame() {
     round_started = false;
     round_num = 0;
@@ -155,7 +165,7 @@ bool game_world::startRound(int num_u) {
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, ZONE_BOMB);//random_engine() % 4);
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, static_cast<map_zone>(random_engine() % 4));
 
     int num = 0;
 
@@ -233,13 +243,15 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
         case TYPE_PLAYER:
             if (flags & WALK_BLOCK_PLAYERS) {
                 player *p = dynamic_cast<player *>(ent);
-                if (p && p->isAlive()) {
+                if (p && p->isAlive() && !p->isFlying()) {
                     return false;
                 }
             }
             break;
         case TYPE_BROKEN_WALL:
             return false;
+        default:
+            break;
         }
     }
 

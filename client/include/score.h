@@ -4,6 +4,9 @@
 #include "packet_io.h"
 #include "player.h"
 
+#include <map>
+#include <deque>
+
 static const int SCOREBOARD_WIDTH = 420;
 
 static const int MAX_INFO_SIZE = 16;
@@ -11,9 +14,14 @@ static const int MAX_INFO_SIZE = 16;
 static const int SCORE_LINE_SPACE = 20;
 static const int ICON_SIZE = 32;
 
-static const uint8_t SCORE_SPECTATOR = 0;
-static const uint8_t SCORE_PLAYER    = 1;
-static const uint8_t SCORE_BOT       = 2;
+static const size_t PING_Q_SIZE = 10;
+static const int SCORE_RATE = 4;
+
+enum score_user_type {
+    SCORE_SPECTATOR,
+    SCORE_PLAYER,
+    SCORE_BOT
+};
 
 class score {
 private:
@@ -28,12 +36,14 @@ private:
     struct score_info {
         uint16_t user_id;
         uint8_t player_num;
-        uint8_t user_type;
+        score_user_type user_type;
         char player_name[NAME_SIZE];
         uint16_t victories;
         int16_t ping;
         bool alive;
     };
+
+    std::map<uint16_t, std::deque<int16_t> > avg_pings;
 
     struct score_info_compare {
         bool operator()(const score_info &a, const score_info &b);

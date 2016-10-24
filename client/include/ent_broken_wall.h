@@ -8,7 +8,7 @@ private:
     uint8_t tx;
     uint8_t ty;
 
-    uint8_t zone;
+    map_zone zone;
 
     int create_time;
 

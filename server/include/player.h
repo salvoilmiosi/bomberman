@@ -3,6 +3,7 @@
 
 #include "game_world.h"
 #include "input_handler.h"
+#include "ent_item.h"
 
 #include <deque>
 #include <list>
@@ -50,7 +51,7 @@ private:
 
     std::deque<uint8_t> movement_priority;
 
-    std::deque<uint8_t> item_pickups;
+    std::deque<item_type> item_pickups;
 
     std::list<class bomb *> planted_bombs;
 
@@ -98,11 +99,15 @@ public:
         return alive;
     }
 
-    uint8_t getTileX() const {
+    bool isFlying() {
+        return jumping;
+    }
+
+    const uint8_t getTileX() {
         return fx / TILE_SIZE + 0.5f;
     }
 
-    uint8_t getTileY() const {
+    const uint8_t getTileY() {
         return fy / TILE_SIZE + 0.5f;
     }
 
@@ -128,7 +133,7 @@ public:
 
 public:
     void respawn(int tx, int ty);
-    void kill();
+    void kill(player *killer);
     void stun();
     void makeInvulnerable();
 

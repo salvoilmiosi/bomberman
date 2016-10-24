@@ -9,6 +9,7 @@
 #include <string>
 #include <cstring>
 #include <algorithm>
+#include <numeric>
 
 score::score(game_client *client) : client(client) {
     is_shown = false;
@@ -27,7 +28,7 @@ void score::clear() {
 void score::tick() {
     if (ticks_to_send_score <= 0) {
         client->sendScorePacket();
-        ticks_to_send_score = TICKRATE / 4;
+        ticks_to_send_score = TICKRATE / SCORE_RATE;
     } else {
         --ticks_to_send_score;
     }
@@ -81,37 +82,42 @@ void score::render(SDL_Renderer *renderer) {
 
         renderText(x + 40, y, renderer, si.player_name, is_self ? COLOR_YELLOW : COLOR_WHITE);
         if (si.user_type == SCORE_SPECTATOR) {
-            renderText(x + 330, y, renderer, "SPEC", COLOR_YELLOW, ALIGN_RIGHT);
+            renderText(x + 330, y, renderer, "Spectator", COLOR_YELLOW, ALIGN_RIGHT);
         } else {
-            int trophy_size = ICON_SIZE;
+            int trophy_size = ICON_SIZE / 2;
+            icon_y = y - (trophy_size - CHAR_H) / 2;
+
             SDL_Rect src_rect = {0, 48, 16, 16};
-            if (si.victories > 5) {
-                trophy_size = ICON_SIZE / 2;
-            }
             if (si.victories > 20) {
-                icon_y = y - (trophy_size - CHAR_H) / 2;
                 SDL_Rect dst_rect = {x + 330 - trophy_size, icon_y, trophy_size, trophy_size};
                 renderText(x + 330 - trophy_size - 5, y, renderer, std::to_string(si.victories) + " x", COLOR_WHITE, ALIGN_RIGHT);
                 SDL_RenderCopy(renderer, player_icons_texture, &src_rect, &dst_rect);
             } else {
-                if (si.victories <= 10) {
-                    icon_y = y - (trophy_size - CHAR_H) / 2;
+                if (si.victories > 10) {
+                    icon_y -= trophy_size / 2;
                 }
                 SDL_Rect dst_rect = {x + 330 - trophy_size, icon_y, trophy_size, trophy_size};
                 for (int i=0; i<si.victories; ++i) {
                     SDL_RenderCopy(renderer, player_icons_texture, &src_rect, &dst_rect);
                     dst_rect.x -= trophy_size + 5;
-                    if (dst_rect.x < x + 120) {
+                    if (i >= 10) {
                         dst_rect.x = x + 330 - trophy_size;
                         dst_rect.y += trophy_size;
                     }
                 }
             }
         }
+
+        int16_t avg_ping = 0;
+        if (si.user_id > 0) {
+            std::deque<int16_t> &ping_q = avg_pings[si.user_id];
+            avg_ping = std::accumulate(ping_q.begin(), ping_q.end(), 0) / ping_q.size();
+        }
+
         if (si.user_type == SCORE_BOT) {
             renderText(x + 350, y, renderer, "BOT", COLOR_YELLOW);
-        } else if (si.ping >= 0) {
-            renderText(x + 350, y, renderer, std::to_string(si.ping), COLOR_WHITE);
+        } else if (avg_ping >= 0) {
+            renderText(x + 350, y, renderer, std::to_string(avg_ping), COLOR_WHITE);
         } else {
             renderText(x + 350, y, renderer, "---", COLOR_YELLOW);
         }
@@ -133,7 +139,7 @@ void score::handlePacket(byte_array &packet) {
         strncpy(in.player_name, player_name, NAME_SIZE);
 
         in.ping = packet.readShort();
-        in.user_type = packet.readChar();
+        in.user_type = static_cast<score_user_type>(packet.readChar());
         switch (in.user_type) {
         case SCORE_PLAYER:
         case SCORE_BOT:
@@ -148,6 +154,14 @@ void score::handlePacket(byte_array &packet) {
         	break;
         default:
             break;
+        }
+
+        if (in.user_id > 0) {
+            std::deque<int16_t> &ping_q = avg_pings[in.user_id];
+            ping_q.push_back(in.ping);
+            if (ping_q.size() > PING_Q_SIZE) {
+                ping_q.pop_front();
+            }
         }
         ++i;
     }

@@ -273,23 +273,41 @@ void game_client::execCmd(const std::string &message) {
 
         std::string name = message.substr(wbegin, wend - wbegin + 1);
         setName(name);
-    } else if (cmd == "music_volume") {
+    } else if (cmd == "volume") {
         wbegin = message.find_first_not_of(' ', wend);
         if (wbegin == std::string::npos) {
-            g_chat.addLine(COLOR_ORANGE, "Usage: music_volume [0-100]");
+            g_chat.addLine(COLOR_ORANGE, "Usage: volume [0-100] [music]");
             return;
         }
+        wend = message.find_first_of(SPACE, wbegin);
 
-        std::string volume = message.substr(wbegin);
+        std::string arg1 = message.substr(wbegin, wend - wbegin);
+
+        std::string arg2;
+
+        wbegin = message.find_first_not_of(SPACE, wend);
+        if (wbegin != std::string::npos) {
+            wend = message.find_last_not_of(SPACE);
+            arg2 = message.substr(wbegin, wend - wbegin + 1);
+        }
+
+        int volume_int = 0;
         try {
-            int volume_int = std::stoi(volume);
+            volume_int = std::stoi(arg1);
             if (volume_int > 100) {
                 volume_int = 100;
             }
-            setMusicVolume(volume_int * MIX_MAX_VOLUME / 100);
-            g_chat.addLine(COLOR_ORANGE, "Set volume: %d", volume_int);
         } catch (std::invalid_argument) {
-            g_chat.addLine(COLOR_RED, "%s is not a number", volume.c_str());
+            g_chat.addLine(COLOR_RED, "%s is not a number", arg1.c_str());
+            return;
+        }
+
+        if (arg2 == "music") {
+            setMusicVolume(volume_int * MIX_MAX_VOLUME / 100);
+            g_chat.addLine(COLOR_ORANGE, "Set music volume: %d", volume_int);
+        } else {
+            setVolume(volume_int * MIX_MAX_VOLUME / 100);
+            g_chat.addLine(COLOR_ORANGE, "Set sounds volume: %d", volume_int);
         }
     } else if (cmd == "vote") {
         wbegin = message.find_first_not_of(SPACE, wend);
@@ -518,7 +536,7 @@ void game_client::snapshotCmd(byte_array &packet) {
         if (ent && ent->getType() == type) {
             ent->readFromByteArray(ba);
         } else {
-        	ent = entity::newObjFromByteArray(&world, id, type, ba);
+        	ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
             if (ent) {
             	world.addEntity(ent);
             }
@@ -532,7 +550,7 @@ void game_client::addCmd(byte_array &packet) {
         if (! world.findID(id)) {
         	uint8_t type = packet.readChar();
         	byte_array ba = packet.readByteArray();
-            entity *ent = entity::newObjFromByteArray(&world, id, type, ba);
+            entity *ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
             if (ent) {
                 world.addEntity(ent);
             }
@@ -563,8 +581,8 @@ void game_client::mapCmd(byte_array &packet) {
 }
 
 void game_client::soundCmd(byte_array &packet) {
-    uint8_t sound_id = packet.readChar();
-    playWaveById(sound_id);
+    uint8_t id = packet.readChar();
+    playWave(static_cast<wave_id>(id));
 }
 
 void game_client::resetCmd(byte_array &packet) {

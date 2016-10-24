@@ -5,15 +5,18 @@
 
 #include <map>
 
-static const int TYPE_PLAYER = 1;
-static const int TYPE_BOMB = 2;
-static const int TYPE_EXPLOSION = 3;
-static const int TYPE_BROKEN_WALL = 4;
-static const int TYPE_ITEM = 5;
+enum entity_type {
+    TYPE_NONE,
+    TYPE_PLAYER,
+    TYPE_BOMB,
+    TYPE_EXPLOSION,
+    TYPE_BROKEN_WALL,
+    TYPE_ITEM
+};
 
 class entity {
 private:
-    const unsigned char ent_type;
+    const entity_type ent_type;
     const uint16_t id;
 
     friend class game_world;
@@ -22,7 +25,7 @@ protected:
     class game_world *world;
 
 public:
-    entity(class game_world *world, const unsigned char type, uint16_t id) : ent_type(type), id(id), world(world) {}
+    entity(class game_world *world, const entity_type type, uint16_t id) : ent_type(type), id(id), world(world) {}
 
     virtual ~entity() {};
 
@@ -30,7 +33,7 @@ public:
 
     virtual void render(SDL_Renderer *renderer) = 0;
 
-    static entity *newObjFromByteArray(class game_world *world, uint16_t id, uint8_t type, byte_array &ba);
+    static entity *newObjFromByteArray(class game_world *world, uint16_t id, entity_type type, byte_array &ba);
 
     uint16_t getID() {
         return id;

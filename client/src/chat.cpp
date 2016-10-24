@@ -19,7 +19,7 @@ void chat::addLine(uint32_t color, const char *line) {
     if (lines.size() > MAX_LINES) {
         lines.pop_front();
     }
-    playWave(wav_select);
+    playWave(WAV_SELECT);
 }
 
 void chat::tick() {

@@ -13,9 +13,9 @@ private:
 		bot_handler(user_bot *bot) : bot(bot) {}
 
 	public:
-		bool isDown(uint8_t input_cmd);
+		bool isDown(usr_input input_cmd);
 
-		bool isPressed(uint8_t input_cmd);
+		bool isPressed(usr_input input_cmd);
 
 		int getMouseX();
 

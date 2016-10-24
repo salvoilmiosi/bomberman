@@ -46,6 +46,7 @@ static const uint32_t SERV_SELF        = str2int("SELF");
 static const uint32_t SERV_MAP         = str2int("MAPP");
 static const uint32_t SERV_SOUND       = str2int("WAVE");
 static const uint32_t SERV_RESET       = str2int("RESE");
+static const uint32_t SERV_REPEAT      = str2int("REPT");
 
 static const uint32_t COLOR_RED        = 0xff0000ff;
 static const uint32_t COLOR_GREEN      = 0x00ff00ff;
@@ -56,9 +57,11 @@ static const uint32_t COLOR_CYAN       = 0x00ffffff;
 static const uint32_t COLOR_BLACK      = 0x000000ff;
 static const uint32_t COLOR_WHITE      = 0xffffffff;
 
-static const uint8_t SCORE_SPECTATOR   = 0;
-static const uint8_t SCORE_PLAYER      = 1;
-static const uint8_t SCORE_BOT         = 2;
+enum score_user_type {
+    SCORE_SPECTATOR,
+    SCORE_PLAYER,
+    SCORE_BOT
+};
 
 static const int MAX_PLAYERS = 4;
 
@@ -111,7 +114,7 @@ public:
     int countUsers(bool include_bots = true);
 
 public:
-    void sendRepeatPacket(packet_ext &packet, const IPaddress &addresss, int repeats = 1);
+    void sendRepeatPacket(packet_ext &packet, const IPaddress &addresss, int repeats = DEFAULT_REPEATS);
     void sendToAll(packet_ext &packet, int repeats = 1);
 
     packet_ext messagePacket(uint32_t color, const char *message);
@@ -125,7 +128,7 @@ public:
 
     template<typename ... T> void messageToAll(uint32_t color, const char *format, T ... args) {
         packet_ext packet = messagePacket(color, format, args ...);
-        sendToAll(packet, 5);
+        sendToAll(packet, DEFAULT_REPEATS);
     }
 
     user *findUserByID(int id);
