@@ -3,19 +3,22 @@
 
 #include <SDL2/SDL.h>
 
-static const uint8_t USR_UP = 1;
-static const uint8_t USR_DOWN = 2;
-static const uint8_t USR_LEFT = 3;
-static const uint8_t USR_RIGHT = 4;
-static const uint8_t USR_PLANT = 5;
-static const uint8_t USR_PUNCH = 6;
-static const uint8_t USR_DETONATE = 7;
-static const uint8_t USR_STOP_KICK = 8;
+enum usr_input {
+    USR_NONE,
+    USR_UP,
+    USR_DOWN,
+    USR_LEFT,
+    USR_RIGHT,
+    USR_PLANT,
+    USR_PUNCH,
+    USR_DETONATE,
+    USR_STOP_KICK
+};
 
 class input_handler {
 public:
-    virtual bool isDown(uint8_t input_cmd) = 0;
-    virtual bool isPressed(uint8_t input_cmd) = 0;
+    virtual bool isDown(usr_input input_cmd) = 0;
+    virtual bool isPressed(usr_input input_cmd) = 0;
 
     virtual int getMouseX() = 0;
     virtual int getMouseY() = 0;

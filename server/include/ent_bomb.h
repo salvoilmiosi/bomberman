@@ -15,7 +15,8 @@ static const float PUNCH_Z_ACCEL = 2880.f;
 
 class bomb : public entity {
 private:
-    class player *p = nullptr;
+    class player *const planter;
+    class player *kicker = nullptr;
 
     float fx;
     float fy;
@@ -48,8 +49,8 @@ public:
 public:
     void tick();
 
-    bool kick(uint8_t direction);
-    bool punch(uint8_t direction);
+    bool kick(player *kicker);
+    bool punch(player *puncher);
 
     void stopKick();
 
@@ -59,11 +60,11 @@ public:
         return flying;
     }
 
-    uint8_t getTileX() const {
+    const uint8_t getTileX() {
         return (fx / TILE_SIZE) + 0.5f;
     }
 
-    uint8_t getTileY() const {
+    const uint8_t getTileY() {
         return (fy / TILE_SIZE) + 0.5f;
     }
 

@@ -6,7 +6,7 @@
 #include "main.h"
 #include "game_sound.h"
 
-bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
+bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), planter(p) {
     fx = p->getTileX() * TILE_SIZE;
     fy = p->getTileY() * TILE_SIZE;
     fz = 0.f;
@@ -33,7 +33,7 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), p(p) {
     world->playWave(WAV_PLANT);
 }
 
-bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB) {
+bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB), planter(nullptr) {
     fx = tx * TILE_SIZE;
     fy = ty * TILE_SIZE;
     fz = BOMB_HEIGHT;
@@ -69,14 +69,19 @@ bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB) {
     }
 }
 
-bool bomb::kick(uint8_t direction) {
+bool bomb::kick(player *p) {
     if (kicked || flying) return false;
 
     speedx = 0;
     speedy = 0;
     kick_ticks = 0;
 
-    switch (direction) {
+    if (kicker) {
+        kicker->stoppedKick(this);
+    }
+    kicker = p;
+
+    switch (p->direction) {
     case 0:
         speedy = -KICK_SPEED / TICKRATE;
         break;
@@ -99,16 +104,21 @@ bool bomb::kick(uint8_t direction) {
     return true;
 }
 
-bool bomb::punch(uint8_t direction) {
+bool bomb::punch(player *p) {
     if (kicked) kicked = false;
     if (flying) return false;
+
+    if (kicker) {
+        kicker->stoppedKick(this);
+        kicker = nullptr;
+    }
 
     world->playWave(WAV_PUNCH);
 
     speedx = 0;
     speedy = 0;
 
-    switch (direction) {
+    switch (p->direction) {
     case 0:
         speedy = -PUNCH_SPEED / TICKRATE;
         break;
@@ -140,7 +150,10 @@ void bomb::stopKick() {
     if (kick_ticks > 1) {
         world->playWave(WAV_HARDHIT);
     }
-    p->stoppedKick(this);
+    if (kicker) {
+        kicker->stoppedKick(this);
+        kicker = nullptr;
+    }
 }
 
 void bomb::tick() {
@@ -230,8 +243,11 @@ void bomb::tick() {
 void bomb::explode() {
     if (exploded) return;
 
-    if (p) {
-        p->explodedBomb(this);
+    if (planter) {
+        planter->explodedBomb(this);
+    }
+    if (kicker) {
+        kicker->stoppedKick(this);
     }
 
     exploded = true;
@@ -245,8 +261,8 @@ byte_array bomb::toByteArray() {
     ba.writeInt(fx);
     ba.writeInt(fy);
     ba.writeInt(fz);
-    if (p) {
-        ba.writeShort(p->getID());
+    if (planter) {
+        ba.writeShort(planter->getID());
     } else {
         ba.writeShort(0);
     }

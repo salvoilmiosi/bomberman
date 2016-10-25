@@ -3,11 +3,12 @@
 
 #include "game_world.h"
 #include "input_handler.h"
+#include "ent_item.h"
 
 #include <deque>
+#include <list>
 
 static const size_t     PLAYER_NAME_SIZE = 32;
-static const float      PLAYER_SIDE_MOVE_AMT = 0.1f;
 static const int        PLAYER_DEATH_TICKS = TICKRATE / 3;
 static const int        PLAYER_PUNCH_TICKS = TICKRATE / 4;
 static const int        PLAYER_INVULNERABLE_TICKS = TICKRATE * 10;
@@ -49,11 +50,11 @@ private:
 
     std::deque<uint8_t> movement_priority;
 
-    std::deque<uint8_t> item_pickups;
+    std::deque<item_type> item_pickups;
 
-    std::deque<class bomb *> planted_bombs;
+    std::list<class bomb *> planted_bombs;
 
-    std::deque<class bomb *> kicked_bombs;
+    std::list<class bomb *> kicked_bombs;
 
     float fx = 0.f;
     float fy = 0.f;
@@ -97,11 +98,15 @@ public:
         return alive;
     }
 
-    uint8_t getTileX() const {
+    bool isFlying() {
+        return jumping;
+    }
+
+    const uint8_t getTileX() {
         return fx / TILE_SIZE + 0.5f;
     }
 
-    uint8_t getTileY() const {
+    const uint8_t getTileY() {
         return fy / TILE_SIZE + 0.5f;
     }
 
@@ -113,18 +118,23 @@ public:
         player_num = num;
     }
 
+    void resetScore() {
+        victories = 0;
+    }
+
     uint16_t getVictories() {
         return victories;
     }
+
+	void addVictory();
 
     byte_array toByteArray();
 
 public:
     void respawn(int tx, int ty);
-    void kill();
+    void kill(player *killer);
     void stun();
     void makeInvulnerable();
-	void addVictory();
 
 private:
     void explodedBomb(class bomb *b);

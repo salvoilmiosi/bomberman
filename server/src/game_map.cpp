@@ -39,7 +39,7 @@ void game_map::tick() {
     }
 }
 
-void game_map::createMap(int w, int h, int num_players, int m_zone) {
+void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     clear();
 
     width = w;
@@ -207,10 +207,6 @@ void game_map::createMap(int w, int h, int num_players, int m_zone) {
 
     std::shuffle(floor_tiles.begin(), floor_tiles.end(), random_engine);
 
-    int breakables_per_zone[] = {80, 65, 60, 55};
-    int num_breakables = breakables_per_zone[zone];
-    std::vector<tile *> breakables;
-
     if (zone == ZONE_JUMP) {
         int num_trampolines = 12 + random_engine() % 4;
         while (num_trampolines>0) {
@@ -224,95 +220,44 @@ void game_map::createMap(int w, int h, int num_players, int m_zone) {
         }
     }
 
-    for (int i=0; i<num_breakables; ++i) {
-        tile *t = floor_tiles[i];
-        t->type = TILE_BREAKABLE;
-        breakables.push_back(t);
+    static const std::map<map_zone, int> breakables_per_zone = {
+        {ZONE_NORMAL, 80}, {ZONE_WESTERN, 65}, {ZONE_BOMB, 60}, {ZONE_JUMP, 55}
+    };
+
+    std::vector<tile *> breakables;
+    auto it = breakables_per_zone.find(zone);
+    if (it != breakables_per_zone.end()) {
+        for (int i=0; i<it->second; ++i) {
+            tile *t = floor_tiles[i];
+            t->type = TILE_BREAKABLE;
+            breakables.push_back(t);
+        }
     }
 
+    static const std::map<map_zone, std::map<item_type, int> > item_numbers_per_zone = {
+        {ZONE_NORMAL, {{ITEM_BOMB, 7}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2}, {ITEM_REDBOMB, 2} }},
+        {ZONE_WESTERN, {{ITEM_BOMB, 4}, {ITEM_FIRE, 3}, {ITEM_ROLLERBLADE, 2}, {ITEM_FULL_FIRE, 2}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 1} }},
+        {ZONE_BOMB, {{ITEM_BOMB, 3}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2}, {ITEM_REMOCON, 2} }},
+        {ZONE_JUMP, {{ITEM_BOMB, 4}, {ITEM_FIRE, 4}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2} }},
+    };
+
     std::shuffle(breakables.begin(), breakables.end(), random_engine);
-    for (int i=0; true; ++i) {
-        tile *t = breakables[i];
-        if (!t) break;
-        switch (zone) {
-        case ZONE_NORMAL:
-            if (i < 7) {
-                t->data = ITEM_BOMB;
-            } else if (i < 12) {
-                t->data = ITEM_FIRE;
-            } else if (i < 15) {
-                t->data = ITEM_ROLLERBLADE;
-            } else if (i < 18) {
-                t->data = ITEM_KICK;
-            } else if (i < 21) {
-                t->data = ITEM_PUNCH;
-            } else if (i < 23) {
-                t->data = ITEM_SKULL;
-            } else if (i < 26) {
-                t->data = ITEM_REDBOMB;
-            } else {
+
+    const auto zone_it = item_numbers_per_zone.find(zone);
+    auto tile_it = breakables.begin();
+    if (zone_it == item_numbers_per_zone.end()) return;
+
+    for (auto item_pair : zone_it->second) {
+        for (int i=0; i<item_pair.second; ++i) {
+            tile *t = *tile_it;
+            if (t) {
+                t->type = TILE_ITEM;
+                t->data = item_pair.first;
+            }
+            if (++tile_it == breakables.end()) {
                 return;
             }
-            break;
-        case ZONE_WESTERN:
-            if (i < 4) {
-                t->data = ITEM_BOMB;
-            } else if (i < 7) {
-                t->data = ITEM_FIRE;
-            } else if (i < 9) {
-                t->data = ITEM_ROLLERBLADE;
-            } else if (i < 11) {
-                t->data = ITEM_FULL_FIRE;
-            } else if (i < 14) {
-                t->data = ITEM_KICK;
-            } else if (i < 17) {
-                t->data = ITEM_PUNCH;
-            } else if (i < 18) {
-                t->data = ITEM_SKULL;
-            } else {
-                return;
-            }
-            break;
-        case ZONE_BOMB:
-            if (i < 3) {
-                t->data = ITEM_BOMB;
-            } else if (i < 8) {
-                t->data = ITEM_FIRE;
-            } else if (i < 11) {
-                t->data = ITEM_ROLLERBLADE;
-            } else if (i < 14) {
-                t->data = ITEM_KICK;
-            } else if (i < 17) {
-                t->data = ITEM_PUNCH;
-            } else if (i < 19) {
-                t->data = ITEM_SKULL;
-            } else if (i < 21) {
-                t->data = ITEM_REMOCON;
-            } else {
-                return;
-            }
-            break;
-        case ZONE_JUMP:
-            if (i < 4) {
-                t->data = ITEM_BOMB;
-            } else if (i < 8) {
-                t->data = ITEM_FIRE;
-            } else if (i < 11) {
-                t->data = ITEM_ROLLERBLADE;
-            } else if (i < 14) {
-                t->data = ITEM_KICK;
-            } else if (i < 17) {
-                t->data = ITEM_PUNCH;
-            } else if (i < 19) {
-                t->data = ITEM_SKULL;
-            } else {
-                return;
-            }
-            break;
-        default:
-            return;
         }
-        t->type = TILE_ITEM;
     }
 }
 

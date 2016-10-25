@@ -4,7 +4,7 @@
 #include "player.h"
 #include "game_sound.h"
 
-game_item::game_item(game_world *world, tile *t, uint8_t it_type) : entity(world, TYPE_ITEM), item_type(it_type) {
+game_item::game_item(game_world *world, tile *t, item_type type) : entity(world, TYPE_ITEM), type(type) {
     tx = world->getMap().getTileX(t);
     ty = world->getMap().getTileY(t);
 
@@ -24,13 +24,15 @@ void game_item::tick() {
 void game_item::pickup(player *p) {
     if (exploded) return;
 
-    if (item_type == ITEM_SKULL) {
+    if (type == ITEM_SKULL) {
         world->playWave(WAV_SKULL);
     } else {
         world->playWave(WAV_PICKUP);
     }
 
-    switch (item_type) {
+    switch (type) {
+    case ITEM_NONE:
+        break;
     case ITEM_BOMB:
         ++p->num_bombs;
         if (p->num_bombs > 10) {
@@ -74,7 +76,7 @@ byte_array game_item::toByteArray() {
 
     ba.writeChar(tx);
     ba.writeChar(ty);
-    ba.writeChar(item_type);
+    ba.writeChar(type);
     ba.writeChar(exploded ? 1 : 0);
 
     return ba;

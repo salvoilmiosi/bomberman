@@ -80,6 +80,7 @@ int main(int argc, char **argv) {
     loadResources(renderer);
     loadSounds();
     setMusicVolume(0);
+    setVolume(10);
 
     setupBindings();
 

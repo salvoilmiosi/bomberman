@@ -2,52 +2,41 @@
 
 #include "resources.h"
 
+#include <map>
+
 Mix_Music *music_battle = nullptr;
 
-Mix_Chunk *wav_plant = nullptr;
-Mix_Chunk *wav_explode = nullptr;
-Mix_Chunk *wav_pickup = nullptr;
-Mix_Chunk *wav_skull = nullptr;
-Mix_Chunk *wav_death = nullptr;
-Mix_Chunk *wav_punch = nullptr;
-Mix_Chunk *wav_slide = nullptr;
-Mix_Chunk *wav_hardhit = nullptr;
-Mix_Chunk *wav_bounce = nullptr;
-Mix_Chunk *wav_jump = nullptr;
-Mix_Chunk *wav_walk = nullptr;
-Mix_Chunk *wav_select = nullptr;
+static std::map<wave_id, Mix_Chunk*> wave_map;
 
 void loadSounds() {
     music_battle = Mix_LoadMUS_RW(getResourceRW("IDM_BATTLE"), 1);
 
-    wav_plant 	 = Mix_LoadWAV_RW(getResourceRW("IDW_PLANT"), 1);
-    wav_explode  = Mix_LoadWAV_RW(getResourceRW("IDW_EXPLODE"), 1);
-    wav_pickup   = Mix_LoadWAV_RW(getResourceRW("IDW_PICKUP"),  1);
-    wav_skull    = Mix_LoadWAV_RW(getResourceRW("IDW_SKULL"),  1);
-    wav_death    = Mix_LoadWAV_RW(getResourceRW("IDW_DEATH"),  1);
-    wav_punch    = Mix_LoadWAV_RW(getResourceRW("IDW_PUNCH"),  1);
-    wav_slide    = Mix_LoadWAV_RW(getResourceRW("IDW_SLIDE"),  1);
-    wav_hardhit  = Mix_LoadWAV_RW(getResourceRW("IDW_HARDHIT"),  1);
-    wav_bounce   = Mix_LoadWAV_RW(getResourceRW("IDW_BOUNCE"),  1);
-    wav_jump     = Mix_LoadWAV_RW(getResourceRW("IDW_JUMP"), 1);
-    wav_walk     = Mix_LoadWAV_RW(getResourceRW("IDW_WALK"), 1);
-    wav_select   = Mix_LoadWAV_RW(getResourceRW("IDW_SELECT"), 1);
+    static const std::map<wave_id, const char *> wav_resource_map = {
+        {WAV_PLANT,     "IDW_PLANT"},
+        {WAV_EXPLODE,   "IDW_EXPLODE"},
+        {WAV_PICKUP,    "IDW_PICKUP"},
+        {WAV_SKULL,     "IDW_SKULL"},
+        {WAV_DEATH,     "IDW_DEATH"},
+        {WAV_PUNCH,     "IDW_PUNCH"},
+        {WAV_SLIDE,     "IDW_SLIDE"},
+        {WAV_HARDHIT,   "IDW_HARDHIT"},
+        {WAV_BOUNCE,    "IDW_BOUNCE"},
+        {WAV_JUMP,      "IDW_JUMP"},
+        {WAV_WALK,      "IDW_WALK"},
+        {WAV_SELECT,    "IDW_SELECT"}
+    };
+
+    for (auto it : wav_resource_map) {
+        wave_map[it.first] = Mix_LoadWAV_RW(getResourceRW(it.second), 1);
+    }
 }
 
 void clearSounds() {
     Mix_FreeMusic(music_battle);
-    Mix_FreeChunk(wav_plant);
-    Mix_FreeChunk(wav_explode);
-    Mix_FreeChunk(wav_pickup);
-    Mix_FreeChunk(wav_skull);
-    Mix_FreeChunk(wav_death);
-    Mix_FreeChunk(wav_punch);
-    Mix_FreeChunk(wav_slide);
-    Mix_FreeChunk(wav_hardhit);
-    Mix_FreeChunk(wav_bounce);
-    Mix_FreeChunk(wav_jump);
-    Mix_FreeChunk(wav_walk);
-    Mix_FreeChunk(wav_select);
+
+    for (auto it : wave_map) {
+        Mix_FreeChunk(it.second);
+    }
 }
 
 void playMusic(Mix_Music *music) {
@@ -58,47 +47,15 @@ void stopMusic() {
     Mix_HaltMusic();
 }
 
-void playWave(Mix_Chunk *wave, int channel) {
-    if (!wave) return;
-    
-    Mix_PlayChannel(channel, wave, 0);
+void playWave(wave_id id, int channel) {
+    auto it = wave_map.find(id);
+    if (it == wave_map.end()) return;
+
+    Mix_PlayChannel(-1, it->second, 0);
 }
 
-void playWaveById(uint8_t sound_id) {
-    switch(sound_id) {
-    case WAV_PLANT:
-        playWave(wav_plant);
-        break;
-    case WAV_EXPLODE:
-        playWave(wav_explode);
-        break;
-    case WAV_PICKUP:
-        playWave(wav_pickup);
-        break;
-    case WAV_SKULL:
-        playWave(wav_skull);
-        break;
-    case WAV_DEATH:
-        playWave(wav_death);
-        break;
-    case WAV_PUNCH:
-        playWave(wav_punch);
-        break;
-    case WAV_SLIDE:
-        playWave(wav_slide);
-        break;
-    case WAV_HARDHIT:
-        playWave(wav_hardhit);
-        break;
-    case WAV_BOUNCE:
-        playWave(wav_bounce);
-        break;
-    case WAV_JUMP:
-        playWave(wav_jump);
-        break;
-    default:
-        break;
-    }
+void setVolume(int volume) {
+    Mix_Volume(-1, volume);
 }
 
 void setMusicVolume(int volume) {

@@ -6,7 +6,6 @@
 #include <cstdlib>
 
 #include "interpolator.h"
-#include "healthbar.h"
 
 static const size_t NAME_SIZE = 32;
 
@@ -27,7 +26,7 @@ private:
 
     int walk_time;
     int last_walk_frame;
-    
+
     bool moving;
     uint8_t direction;
     bool punching;

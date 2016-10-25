@@ -32,5 +32,5 @@ void broken_wall::render(SDL_Renderer *renderer) {
 void broken_wall::readFromByteArray(byte_array &ba) {
     tx = ba.readChar();
     ty = ba.readChar();
-    zone = ba.readChar();
+    zone = static_cast<map_zone>(ba.readChar());
 }

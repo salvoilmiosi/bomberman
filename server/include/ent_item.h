@@ -3,21 +3,27 @@
 
 #include "game_world.h"
 
-static const uint8_t ITEM_BOMB = 1;
-static const uint8_t ITEM_FIRE = 2;
-static const uint8_t ITEM_ROLLERBLADE = 3;
-static const uint8_t ITEM_KICK = 4;
-static const uint8_t ITEM_PUNCH = 5;
-static const uint8_t ITEM_SKULL = 6;
-static const uint8_t ITEM_FULL_FIRE = 7;
-static const uint8_t ITEM_REDBOMB = 8;
-static const uint8_t ITEM_REMOCON = 9;
+enum item_type {
+    ITEM_NONE,
+    ITEM_BOMB,
+    ITEM_FIRE,
+    ITEM_ROLLERBLADE,
+    ITEM_KICK,
+    ITEM_PUNCH,
+    ITEM_SKULL,
+    ITEM_FULL_FIRE,
+    ITEM_REDBOMB,
+    ITEM_REMOCON
+};
 
-static const uint8_t SKULL_RAPID_PACE = 1;
-static const uint8_t SKULL_SLOW_PACE = 2;
-static const uint8_t SKULL_DIARRHEA = 3;
-static const uint8_t SKULL_LOW_POWER = 4;
-static const uint8_t SKULL_CONSTIPATION = 5;
+enum disease_effect {
+    SKULL_NONE,
+    SKULL_RAPID_PACE,
+    SKULL_SLOW_PACE,
+    SKULL_DIARRHEA,
+    SKULL_LOW_POWER,
+    SKULL_CONSTIPATION
+};
 
 static const int SKULL_LIFE = TICKRATE * 20;
 
@@ -30,26 +36,26 @@ private:
     int life_ticks;
     bool exploded;
 
-    uint8_t item_type;
+    item_type type;
 
 public:
-    game_item(game_world *world, tile *t, uint8_t it_type);
+    game_item(game_world *world, tile *t, item_type type);
 
 public:
     void tick();
 
     byte_array toByteArray();
 
-    uint8_t getTileX() const {
+    const uint8_t getTileX() {
         return tx;
     }
 
-    uint8_t getTileY() const {
+    const uint8_t getTileY() {
         return ty;
     }
 
-    uint8_t getItemType() const {
-        return item_type;
+    const item_type getItemType() {
+        return type;
     }
 
     void pickup(class player *p);

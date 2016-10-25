@@ -7,7 +7,7 @@
 uint16_t user::maxuserid = 0;
 
 user::user(game_server *server, const IPaddress &address, const char *name) : server(server), address(address) {
-    userid = maxuserid++;
+    userid = ++maxuserid;
     has_pinged = false;
     ping_msecs = -1;
     attempts = 0;
@@ -82,6 +82,8 @@ void user::setPlayer(player *p) {
 }
 
 void user::destroyPlayer() {
-    if (ent)
+    if (ent) {
         ent->destroy();
+        ent = nullptr;
+    }
 }

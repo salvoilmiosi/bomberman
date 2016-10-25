@@ -66,7 +66,7 @@ static inline SDL_Rect getSprite(int x, int y, int player_num) {
 
 void player::render(SDL_Renderer *renderer) {
     if (!spawned) return;
-    
+
     position ip = interp.interpolate();
 
     x = (ip.ix / 100.f + 0.5f) * TILE_SIZE;
@@ -182,8 +182,8 @@ const char *player::getName() {
 }
 
 void player::readFromByteArray(byte_array &ba) {
-    float ix = ba.readInt();
-    float iy = ba.readInt();
+    float ix = (int)(ba.readInt());
+    float iy = (int)(ba.readInt());
     float iz = ba.readInt();
 
     position pos = {ix, iy, iz};

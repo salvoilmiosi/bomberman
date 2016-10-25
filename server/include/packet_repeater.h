@@ -5,7 +5,7 @@
 
 #include <deque>
 
-static const int SERV_REPEAT = str2int("REPT");
+static const int DEFAULT_REPEATS = 5;
 
 class packet_repeater {
 private:

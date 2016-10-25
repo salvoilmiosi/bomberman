@@ -14,6 +14,7 @@ extern SDL_Texture *explosions_texture;
 extern SDL_Texture *items_texture;
 extern SDL_Texture *players_texture;
 extern SDL_Texture *players_white_texture;
+extern SDL_Texture *player_icons_texture;
 
 #define TILE(x, y) {(x)*16, (y)*16, 16, 16}
 

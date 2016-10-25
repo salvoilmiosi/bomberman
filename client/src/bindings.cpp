@@ -3,8 +3,8 @@
 static const int NUM_KEYS = 512;
 static const int NUM_MOUSE_BUTTONS = 16;
 
-static uint8_t key_bindings[NUM_KEYS];
-static uint8_t mouse_bindings[NUM_MOUSE_BUTTONS];
+static usr_input key_bindings[NUM_KEYS];
+static usr_input mouse_bindings[NUM_MOUSE_BUTTONS];
 
 void setupBindings() {
     memset(key_bindings, 0, NUM_KEYS);
@@ -27,10 +27,10 @@ void setupBindings() {
     //mouse_bindings[SDL_BUTTON_RIGHT] = USR_PUNCH;
 }
 
-uint8_t getKeyBinding(SDL_Scancode code) {
+usr_input getKeyBinding(SDL_Scancode code) {
     return key_bindings[code];
 }
 
-uint8_t getMouseBinding(uint8_t button) {
+usr_input getMouseBinding(uint8_t button) {
     return mouse_bindings[button];
 }

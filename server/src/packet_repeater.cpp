@@ -2,6 +2,8 @@
 
 #include <cstdio>
 
+#include "game_server.h"
+
 int packet_repeater::packet_id = 0;
 
 packet_repeater::~packet_repeater() {

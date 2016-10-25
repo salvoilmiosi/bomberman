@@ -8,7 +8,7 @@
 #include "game_sound.h"
 
 explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION) {
-    bomb_id = b->getID();
+    self_bomb = b;
 
     tx = b->getTileX();
     ty = b->getTileY();
@@ -84,26 +84,26 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
             if (! ent) break;
             switch (ent->getType()) {
             case TYPE_BOMB:
-                {
-                    bomb *b = dynamic_cast<bomb *>(ent);
-                    if (bomb_id == b->getID()) {
-                        continue;
-                    }
-                    if (!piercing) {
-                        return i+1;
-                    }
+            {
+                bomb *b = dynamic_cast<bomb *>(ent);
+                if (self_bomb == b) {
+                    continue;
+                }
+                if (!b->isFlying()) {
+                    return i + 1;
                 }
                 break;
+            }
             case TYPE_ITEM:
-                {
-                    game_item *it = dynamic_cast<game_item *>(ent);
-                    it->explode();
-                    if (!piercing) {
-                        *trunc = true;
-                        return i;
-                    }
+            {
+                game_item *it = dynamic_cast<game_item *>(ent);
+                it->explode();
+                if (!piercing) {
+                    *trunc = true;
+                    return i;
                 }
                 break;
+            }
             default:
                 break;
             }
@@ -111,6 +111,7 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
 
         tile *t = world->getMap().getTile(x, y);
         if (!t) {
+            *trunc = true;
             break;
         }
         switch (t->type) {
@@ -160,7 +161,7 @@ void explosion::checkEntities(int dx, int dy) {
             if (!ent) break;
             switch(ent->getType()) {
             case TYPE_PLAYER:
-                dynamic_cast<player *>(ent)->kill();
+                dynamic_cast<player *>(ent)->kill(self_bomb->planter);
                 break;
             case TYPE_BOMB:
                 if (EXPLOSION_LIFE - life_ticks >= EXPLOSION_CHAIN_DELAY) {
@@ -182,10 +183,8 @@ void explosion::tick() {
     for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
         entity *ent = ents[i];
         if (!ent) break;
-        switch (ent->getType()) {
-        case TYPE_PLAYER:
-            dynamic_cast<player*>(ent)->kill();
-            break;
+        if (ent->getType() == TYPE_PLAYER) {
+            dynamic_cast<player*>(ent)->kill(self_bomb->planter);
         }
     }
 
@@ -217,7 +216,7 @@ byte_array explosion::toByteArray() {
     trunc |= (1 << 3) * trunc_b;
 
     ba.writeChar(trunc);
-    ba.writeShort(bomb_id);
+    ba.writeShort(self_bomb->getID());
 
     return ba;
 }

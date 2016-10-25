@@ -51,7 +51,7 @@ void player::respawn(int tx, int ty) {
     do_send_updates = true;
 }
 
-void player::kill() {
+void player::kill(player *killer) {
     if (!alive) return;
     if (jumping) return;
     if (invulnerable_ticks > 0) return;
@@ -60,6 +60,8 @@ void player::kill() {
     death_ticks = PLAYER_DEATH_TICKS;
 
     world->playWave(WAV_DEATH);
+
+    world->sendKillMessage(killer, this);
 }
 
 void player::makeInvulnerable() {
@@ -149,7 +151,7 @@ void player::handleInput() {
             entity *ent = ents[i];
             if (!ent) break;
             bomb *b = dynamic_cast<bomb*>(ent);
-            b->punch(direction);
+            b->punch(this);
         }
     }
 
@@ -213,12 +215,20 @@ void player::handleInput() {
             switch (direction) {
             case 0:
             case 1:
-                fx += (getTileX() * TILE_SIZE - fx) * PLAYER_SIDE_MOVE_AMT;
+            {
+                float dx = getTileX() * TILE_SIZE - fx;
+                if (dx > 0) fx += dx > move_speed ? move_speed : dx;
+                else if (dx < 0) fx += dx < -move_speed ? -move_speed : dx;
                 break;
+            }
             case 2:
             case 3:
-                fy += (getTileY() * TILE_SIZE - fy) * PLAYER_SIDE_MOVE_AMT;
+            {
+                float dy = getTileY() * TILE_SIZE - fy;
+                if (dy > 0) fy += dy > move_speed ? move_speed : dy;
+                else if (dy < 0) fy += dy < -move_speed ? -move_speed : dy;
                 break;
+            }
             }
 
             if (to_tx != getTileX() || to_ty != getTileY()) {
@@ -227,7 +237,7 @@ void player::handleInput() {
                     if (*ents) {
                         if (kick_ticks <= 0) {
                             bomb *b = dynamic_cast<bomb *>(*ents);
-                            if (b->kick(direction)) {
+                            if (b->kick(this)) {
                                 kicked_bombs.push_back(b);
                             }
                         } else {
@@ -374,9 +384,9 @@ void player::spawnItems() {
         if (i >= tiles.size()) {
             break;
         }
-        uint8_t item_type = item_pickups.front();
+        item_type type = item_pickups.front();
 
-        world->addEntity(new game_item(world, tiles[i], item_type));
+        world->addEntity(new game_item(world, tiles[i], type));
         item_pickups.pop_front();
         ++i;
     }

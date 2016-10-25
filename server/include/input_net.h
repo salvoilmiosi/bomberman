@@ -21,11 +21,11 @@ public:
     void handlePacket(packet_ext &packet);
 
 public:
-    bool isDown(uint8_t input_cmd) {
+    bool isDown(usr_input input_cmd) {
         return cmds[input_cmd];
     }
 
-    bool isPressed(uint8_t input_cmd) {
+    bool isPressed(usr_input input_cmd) {
         bool ret = cmds[input_cmd];
         cmds[input_cmd] = false;
         return ret;

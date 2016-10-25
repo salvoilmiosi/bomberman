@@ -3,15 +3,18 @@
 
 #include "game_world.h"
 
-static const uint8_t ITEM_BOMB = 1;
-static const uint8_t ITEM_FIRE = 2;
-static const uint8_t ITEM_ROLLERBLADE = 3;
-static const uint8_t ITEM_KICK = 4;
-static const uint8_t ITEM_PUNCH = 5;
-static const uint8_t ITEM_SKULL = 6;
-static const uint8_t ITEM_FULL_FIRE = 7;
-static const uint8_t ITEM_REDBOMB = 8;
-static const uint8_t ITEM_REMOCON = 9;
+enum item_type {
+    ITEM_NONE,
+    ITEM_BOMB,
+    ITEM_FIRE,
+    ITEM_ROLLERBLADE,
+    ITEM_KICK,
+    ITEM_PUNCH,
+    ITEM_SKULL,
+    ITEM_FULL_FIRE,
+    ITEM_REDBOMB,
+    ITEM_REMOCON
+};
 
 class game_item : public entity {
 private:

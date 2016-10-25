@@ -9,7 +9,7 @@
 
 #include "tile_trampoline.h"
 
-entity *entity::newObjFromByteArray(game_world *world, uint16_t id, uint8_t type, byte_array &ba) {
+entity *entity::newObjFromByteArray(game_world *world, uint16_t id, entity_type type, byte_array &ba) {
     switch(type) {
     case TYPE_PLAYER:
         return new player(world, id, ba);

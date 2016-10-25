@@ -7,7 +7,7 @@
 #include "resources.h"
 
 tile_entity::tile_entity(tile *t_tile) : t_tile(t_tile) {
-    type = (t_tile->data & 0xe0) >> 5;
+    type = static_cast<special_type>((t_tile->data & 0xe0) >> 5);
 }
 
 game_map::game_map() {
@@ -190,7 +190,7 @@ void game_map::render(SDL_Renderer *renderer) {
 void game_map::readFromByteArray(byte_array &packet) {
     short w = packet.readShort();
     short h = packet.readShort();
-    zone = packet.readChar();
+    zone = static_cast<map_zone>(packet.readChar());
 
     if (w != width || h != height) {
         if (tiles) {
@@ -216,7 +216,7 @@ void game_map::readFromByteArray(byte_array &packet) {
 
             tile *t = getTile(x, y);
             if (t) {
-                t->type = type;
+                t->type = static_cast<tile_type>(type);
                 t->data = data;
                 if (t->type == TILE_SPECIAL) {
                     uint8_t ent_type = (data & 0xe0) >> 5;

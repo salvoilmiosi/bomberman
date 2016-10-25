@@ -58,6 +58,16 @@ user *game_server::findUser(const IPaddress &address) {
     return it->second;
 }
 
+user *game_server::findUserByID(int id) {
+    for (auto it : users) {
+        user *u = it.second;
+        if (u && u->getID() == id) {
+            return u;
+        }
+    }
+    return nullptr;
+}
+
 void game_server::sendRepeatPacket(packet_ext &packet, const IPaddress &address, int repeats) {
     if (repeats > 1) {
         repeater.addPacket(packet, address, repeats);
@@ -120,8 +130,6 @@ int game_server::game_thread_run() {
         world->tick();
         voter.tick();
 
-        repeater.sendPackets();
-
         SDL_Delay(1000 / TICKRATE);
 
         ++tick_count;
@@ -155,6 +163,7 @@ int game_server::run() {
 
     while (open) {
         packet_ext packet(socket_serv, true);
+        repeater.sendPackets();
         int err = receive(packet);
         if (err > 0) {
             //printf("%s sent %d bytes\n", ipString(packet->address), packet->len);
@@ -188,10 +197,12 @@ void game_server::sendResetPacket() {
 }
 
 void game_server::kickUser(user *u, const char *message) {
+    if (!u) return;
+
     packet_ext packet(socket_serv);
     packet.writeInt(SERV_KICK);
     packet.writeString(message);
-    sendRepeatPacket(packet, u->getAddress(), 5);
+    sendRepeatPacket(packet, u->getAddress());
 
     messageToAll(COLOR_YELLOW, "%s was kicked from the server.", u->getName());
 
@@ -221,24 +232,25 @@ char *game_server::findNewName(const char *username) {
 
 void game_server::addBots(int num_bots) {
     for (;num_bots>0; --num_bots) {
+        if (countUsers(true) >= MAX_PLAYERS) {
+            break;
+        }
         user_bot* b = new user_bot(this);
         bots.push_back(b);
+
+        b->createPlayer(world);
+        world->addEntity(b->getPlayer());
     }
 }
 
 void game_server::removeBots() {
     for (auto it : bots) {
-        if (it)
+        if (it) {
+            it->destroyPlayer();
             delete it;
+        }
     }
     bots.clear();
-}
-
-void game_server::createBotPlayers() {
-    for (user_bot *u : bots) {
-        u->createPlayer(world);
-        world->addEntity(u->getPlayer());
-    }
 }
 
 void game_server::connectCmd(packet_ext &from) {
@@ -274,20 +286,32 @@ void game_server::joinCmd(packet_ext &from) {
     if (!u) return;
     if (u->getPlayer()) return;
 
+    uint16_t player_id = 0;
+
     if (countUsers() < MAX_PLAYERS) {
         u->createPlayer(world);
         world->addEntity(u->getPlayer());
-
-        packet_ext packet_self(socket_serv);
-        packet_self.writeInt(SERV_SELF);
-        packet_self.writeShort(u->getPlayer()->getID());
-        sendRepeatPacket(packet_self, from.getAddress(), 5);
+        player_id = u->getPlayer()->getID();
 
         messageToAll(COLOR_YELLOW, "%s joined the game.", u->getName());
     } else {
-        packet_ext packet = messagePacket(COLOR_RED, "You can't join the game right now.");
-        sendRepeatPacket(packet, from.getAddress(), 5);
+        messageToAll(COLOR_YELLOW, "%s is spectating.", u->getName());
     }
+
+    packet_ext packet_self(socket_serv);
+    packet_self.writeInt(SERV_SELF);
+    packet_self.writeShort(player_id);
+    packet_self.writeShort(u->getID());
+    sendRepeatPacket(packet_self, from.getAddress());
+}
+
+void game_server::leaveCmd(packet_ext &from) {
+    user *u = findUser(from.getAddress());
+    if (!u) return;
+    if (!u->getPlayer()) return;
+
+    messageToAll(COLOR_YELLOW, "%s is spectating.", u->getName());
+    u->destroyPlayer();
 }
 
 int game_server::countUsers(bool include_bots) {
@@ -303,11 +327,23 @@ int game_server::countUsers(bool include_bots) {
 
 void game_server::startGame() {
     if (world->startRound(countUsers())) {
-        createBotPlayers();
+        //createBotPlayers();
     }
 }
 
 void game_server::resetGame() {
+    for (auto it : users) {
+        if (it.second) {
+            player *p = it.second->getPlayer();
+            if (p) p->resetScore();
+        }
+    }
+    for (user_bot* b : bots) {
+        if (b) {
+            player *p = b->getPlayer();
+            if (p) p->resetScore();
+        }
+    }
     world->restartGame();
     startGame();
 }
@@ -378,11 +414,13 @@ packet_ext game_server::scorePacket() {
         packet.writeShort(u->getPing());
         if (u->getPlayer()) {
             packet.writeChar(SCORE_PLAYER);
+            packet.writeShort(u->getID());
             packet.writeChar(u->getPlayer()->getPlayerNum());
             packet.writeShort(u->getPlayer()->getVictories());
             packet.writeChar(u->getPlayer()->isAlive() ? 1 : 0);
         } else {
             packet.writeChar(SCORE_SPECTATOR);
+            packet.writeShort(u->getID());
         }
     }
     for (user_bot *b : bots) {
@@ -390,6 +428,7 @@ packet_ext game_server::scorePacket() {
             packet.writeString(b->getName());
             packet.writeShort(0);
             packet.writeChar(SCORE_BOT);
+            packet.writeShort(0);
             packet.writeChar(b->getPlayer()->getPlayerNum());
             packet.writeShort(b->getPlayer()->getVictories());
             packet.writeChar(b->getPlayer()->isAlive() ? 1 : 0);
@@ -419,9 +458,11 @@ void game_server::voteCmd(packet_ext &packet) {
         return;
     }
 
-    uint8_t vote_type = packet.readChar();
+    uint32_t vote_type = packet.readInt();
 
-    voter.sendVote(u, vote_type);
+    uint32_t args = packet.readInt();
+
+    voter.sendVote(u, vote_type, args);
 }
 
 void game_server::killCmd(packet_ext &packet) {
@@ -432,7 +473,7 @@ void game_server::killCmd(packet_ext &packet) {
     }
 
     player *p = u->getPlayer();
-    if (p) p->kill();
+    if (p) p->kill(nullptr);
 }
 
 void game_server::handlePacket(packet_ext &packet) {
@@ -467,6 +508,9 @@ void game_server::handlePacket(packet_ext &packet) {
         break;
     case CMD_JOIN:
         joinCmd(packet);
+        break;
+    case CMD_LEAVE:
+        leaveCmd(packet);
         break;
     case CMD_VOTE:
         voteCmd(packet);

@@ -65,7 +65,7 @@ void game_world::tick() {
     }
 
     if (ticks_to_start < 0 && g_map.getZone() == ZONE_BOMB) {
-        if ((-ticks_to_start) % (TICKRATE * 10) == 0) {
+        if ((-ticks_to_start) % (TICKRATE * 6) == 0) {
             int rand_x = random_engine() % (g_map.getWidth() - 4) + 2;
             int rand_y = random_engine() % (g_map.getHeight() - 2) + 1;
             addEntity(new bomb(this, rand_x, rand_y));
@@ -93,7 +93,9 @@ void game_world::tick() {
         } else {
             it = entities.erase(it);
             removeEntity(ent);
-            delete ent;
+            if (ent) {
+                delete ent;
+            }
         }
     }
 
@@ -132,6 +134,49 @@ void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
     }
 }
 
+void game_world::sendKillMessage(player *killer, player *p) {
+    static const std::vector<const char *> SUICIDE_MSG = {
+        "%s couldn't handle it and killed himself.",
+        "%s forgot that his own bombs hurt.",
+        "%s has an explosive personality.",
+        "%s obviously is not fireproof.",
+        "%s clicked the big red button.",
+        "%s bid farewell, cruel world!",
+        "%s fears explosions too much.",
+        "%s cut the wrong wire.",
+        "%s never learned not to play with fire.",
+    };
+
+    static const std::vector<const char *> WORLD_DEATH_MSG = {
+        "Life just isn't fair for %s.",
+        "%s was killed by the world.",
+        "%s was killed by the world. What a pity.",
+        "%s had it coming for him.",
+        "%s got hit by a stray bomb.",
+        "%s is having a really bad day.",
+        "That, right there, is a bomb, %s.",
+    };
+
+    static const std::vector<const char *> MURDER_MSG = {
+        "%s was exploded by %s.",
+        "%s's bits were sent everywhere by %s.",
+        "%s was killed to death by %s.",
+        "%s didn't pay enough attention to %s.",
+        "%s died at the sight of %s.",
+        "%s just wanted an hug from %s.",
+        "%s thinks that %s is cheating.",
+        "%s wondered what %s's bomb might be.",
+    };
+
+    if (p == killer) {
+        server.messageToAll(COLOR_WHITE, SUICIDE_MSG[random_engine() % SUICIDE_MSG.size()], p->getName());
+    } else if (killer == nullptr) {
+        server.messageToAll(COLOR_WHITE, WORLD_DEATH_MSG[random_engine() % WORLD_DEATH_MSG.size()], p->getName());
+    } else {
+        server.messageToAll(COLOR_WHITE, MURDER_MSG[random_engine() % MURDER_MSG.size()], p->getName(), killer->getName());
+    }
+}
+
 void game_world::restartGame() {
     round_started = false;
     round_num = 0;
@@ -153,7 +198,7 @@ bool game_world::startRound(int num_u) {
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, random_engine() % 4);
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, static_cast<map_zone>(random_engine() % 4));
 
     int num = 0;
 
@@ -167,10 +212,15 @@ void game_world::countdownEnd() {
                         continue;
                     }
                     p->setPlayerNum(num);
-                    point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
-                    p->respawn(spawn_pt.x, spawn_pt.y);
+                    try {
+                        point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
+                        p->respawn(spawn_pt.x, spawn_pt.y);
 
-                    ++num;
+                        ++num;
+                    } catch (int n) {
+                        p->setPlayerNum(0xff);
+                        // Could not spawn that player
+                    }
                 }
                 break;
             default:
@@ -226,13 +276,15 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
         case TYPE_PLAYER:
             if (flags & WALK_BLOCK_PLAYERS) {
                 player *p = dynamic_cast<player *>(ent);
-                if (p && p->isAlive()) {
+                if (p && p->isAlive() && !p->isFlying()) {
                     return false;
                 }
             }
             break;
         case TYPE_BROKEN_WALL:
             return false;
+        default:
+            break;
         }
     }
 
