@@ -23,7 +23,7 @@ private:
 	};
 
 	class game_server *server;
-	char username[USER_NAME_SIZE] = "BOT ";
+	char username[USER_NAME_SIZE];
 
 	class player *ent = nullptr;
 

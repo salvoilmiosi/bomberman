@@ -7,6 +7,7 @@
 #include "main.h"
 
 #include <cstring>
+#include <vector>
 
 bool user_bot::bot_handler::isDown(usr_input input_cmd) {
 	switch (input_cmd) {
@@ -32,10 +33,10 @@ int user_bot::bot_handler::getMouseY() {
 }
 
 user_bot::user_bot(game_server *server) : server(server), handler(this) {
-	static const char *NAMES[] = {"Bud", "Milan", "Rolland", "Don", "Milford", "Gayle", "Alberto", "Alec", "Bennett", "Eloy", "Marcel", "Mathew", "Wilbert", "Charlie", "Mikel", "Olen", "Lincoln", "Hai", "Sam", "Angelo", "Elmer", "Lance", "Leandro", "Alexander", "Carlo", "Heath", "Boyd", "Cameron", "Sang", "Julius", "Robt", "Damien", "Eduardo", "Wilford", "Graig", "Jonas", "Rusty", "Norbert", "Billy", "Abe", "David", "Orval", "Joesph", "Anibal", "Josue", "Leonel", "Jefferson", "Robby", "Sydney", "Darren"};
-	static const size_t NUM_NAMES = sizeof(NAMES) / sizeof(*NAMES);
+	static const std::vector<const char *> NAMES = {"Bud", "Milan", "Rolland", "Don", "Milford", "Gayle", "Alberto", "Alec", "Bennett", "Eloy", "Marcel", "Mathew", "Wilbert", "Charlie", "Mikel", "Olen", "Lincoln", "Hai", "Sam", "Angelo", "Elmer", "Lance", "Leandro", "Alexander", "Carlo", "Heath", "Boyd", "Cameron", "Sang", "Julius", "Robt", "Damien", "Eduardo", "Wilford", "Graig", "Jonas", "Rusty", "Norbert", "Billy", "Abe", "David", "Orval", "Joesph", "Anibal", "Josue", "Leonel", "Jefferson", "Robby", "Sydney", "Darren"};
 
-	strcat(username, NAMES[random_engine() % NUM_NAMES]);
+	strcpy(username, "BOT ");
+	strcat(username, NAMES[random_engine() % NAMES.size()]);
 }
 
 user_bot::~user_bot() {
