@@ -215,12 +215,20 @@ void player::handleInput() {
             switch (direction) {
             case 0:
             case 1:
-                fx += (getTileX() * TILE_SIZE - fx) * PLAYER_SIDE_MOVE_AMT;
+            {
+                float dx = getTileX() * TILE_SIZE - fx;
+                if (dx > 0) fx += dx > move_speed ? move_speed : dx;
+                else if (dx < 0) fx += dx < -move_speed ? -move_speed : dx;
                 break;
+            }
             case 2:
             case 3:
-                fy += (getTileY() * TILE_SIZE - fy) * PLAYER_SIDE_MOVE_AMT;
+            {
+                float dy = getTileY() * TILE_SIZE - fy;
+                if (dy > 0) fy += dy > move_speed ? move_speed : dy;
+                else if (dy < 0) fy += dy < -move_speed ? -move_speed : dy;
                 break;
+            }
             }
 
             if (to_tx != getTileX() || to_ty != getTileY()) {

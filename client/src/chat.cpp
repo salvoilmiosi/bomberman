@@ -132,6 +132,7 @@ void chat::handleEvent(const SDL_Event &e) {
     }
 }
 
+#define _SDL_TTF_H
 #ifdef _SDL_TTF_H
 SDL_Texture *createTextTexture(SDL_Renderer *renderer, const std::string &text, SDL_Rect *clip_rect) {
     static const SDL_Color white = {0xff, 0xff, 0xff};
@@ -183,6 +184,16 @@ void renderLine(int ox, int oy, SDL_Renderer *renderer, chat::chat_line &line) {
     if (line.texture == nullptr) {
         line.texture = createTextTexture(renderer, line.message, &line.clip_rect);
     }
+
+    SDL_Rect dst_rect = line.clip_rect;
+    dst_rect.x += ox;
+    dst_rect.y += oy;
+
+    uint8_t a = (line.color & 0x000000ff) >> (8 * 0) * 0x80 / 0xff;
+    SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0x0, a);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_RenderFillRect(renderer, &dst_rect);
+
     renderTextTexture(ox, oy, renderer, line.texture, line.clip_rect, line.color, ALIGN_LEFT);
 }
 

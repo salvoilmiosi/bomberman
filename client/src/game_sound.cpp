@@ -11,18 +11,24 @@ static std::map<wave_id, Mix_Chunk*> wave_map;
 void loadSounds() {
     music_battle = Mix_LoadMUS_RW(getResourceRW("IDM_BATTLE"), 1);
 
-    wave_map[WAV_PLANT]    = Mix_LoadWAV_RW(getResourceRW("IDW_PLANT"), 1);
-    wave_map[WAV_EXPLODE]  = Mix_LoadWAV_RW(getResourceRW("IDW_EXPLODE"), 1);
-    wave_map[WAV_PICKUP]   = Mix_LoadWAV_RW(getResourceRW("IDW_PICKUP"),  1);
-    wave_map[WAV_SKULL]    = Mix_LoadWAV_RW(getResourceRW("IDW_SKULL"),  1);
-    wave_map[WAV_DEATH]    = Mix_LoadWAV_RW(getResourceRW("IDW_DEATH"),  1);
-    wave_map[WAV_PUNCH]    = Mix_LoadWAV_RW(getResourceRW("IDW_PUNCH"),  1);
-    wave_map[WAV_SLIDE]    = Mix_LoadWAV_RW(getResourceRW("IDW_SLIDE"),  1);
-    wave_map[WAV_HARDHIT]  = Mix_LoadWAV_RW(getResourceRW("IDW_HARDHIT"),  1);
-    wave_map[WAV_BOUNCE]   = Mix_LoadWAV_RW(getResourceRW("IDW_BOUNCE"),  1);
-    wave_map[WAV_JUMP]     = Mix_LoadWAV_RW(getResourceRW("IDW_JUMP"), 1);
-    wave_map[WAV_WALK]     = Mix_LoadWAV_RW(getResourceRW("IDW_WALK"), 1);
-    wave_map[WAV_SELECT]   = Mix_LoadWAV_RW(getResourceRW("IDW_SELECT"), 1);
+    static const std::map<wave_id, const char *> wav_resource_map = {
+        {WAV_PLANT,     "IDW_PLANT"},
+        {WAV_EXPLODE,   "IDW_EXPLODE"},
+        {WAV_PICKUP,    "IDW_PICKUP"},
+        {WAV_SKULL,     "IDW_SKULL"},
+        {WAV_DEATH,     "IDW_DEATH"},
+        {WAV_PUNCH,     "IDW_PUNCH"},
+        {WAV_SLIDE,     "IDW_SLIDE"},
+        {WAV_HARDHIT,   "IDW_HARDHIT"},
+        {WAV_BOUNCE,    "IDW_BOUNCE"},
+        {WAV_JUMP,      "IDW_JUMP"},
+        {WAV_WALK,      "IDW_WALK"},
+        {WAV_SELECT,    "IDW_SELECT"}
+    };
+
+    for (auto it : wav_resource_map) {
+        wave_map[it.first] = Mix_LoadWAV_RW(getResourceRW(it.second), 1);
+    }
 }
 
 void clearSounds() {

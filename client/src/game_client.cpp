@@ -238,7 +238,7 @@ void game_client::execCmd(const std::string &message) {
     if (cmd == "connect") {
         wbegin = message.find_first_not_of(SPACE, wend);
         if (wbegin == std::string::npos) {
-            g_chat.addLine(COLOR_ORANGE, "Usage: connect address [port]");
+            g_chat.addLine(COLOR_ORANGE, "Usage: connect (address) [port]");
             return;
         }
         wend = message.find_first_of(SPACE, wbegin);
@@ -266,7 +266,7 @@ void game_client::execCmd(const std::string &message) {
     } else if (cmd == "name") {
         wbegin = message.find_first_not_of(SPACE, wend);
         if (wbegin == std::string::npos) {
-            g_chat.addLine(COLOR_ORANGE, "Usage: name new_name");
+            g_chat.addLine(COLOR_ORANGE, "Usage: name (new_name)");
             return;
         }
         wend = message.find_last_not_of(SPACE);
@@ -276,7 +276,7 @@ void game_client::execCmd(const std::string &message) {
     } else if (cmd == "volume") {
         wbegin = message.find_first_not_of(' ', wend);
         if (wbegin == std::string::npos) {
-            g_chat.addLine(COLOR_ORANGE, "Usage: volume [0-100] [music]");
+            g_chat.addLine(COLOR_ORANGE, "Usage: volume (0-100) [music]");
             return;
         }
         wend = message.find_first_of(SPACE, wbegin);
@@ -345,6 +345,10 @@ void game_client::execCmd(const std::string &message) {
         } else if (vote_type == "bot_remove") {
             sendVoteCmd(VOTE_REMOVE_BOTS, 0);
         } else if (vote_type == "kick") {
+            if (args.empty()) {
+                g_chat.addLine(COLOR_ORANGE, "Usage: vote kick (user)");
+                return;
+            }
             int user_id = g_score.findUserID(args.c_str());
             if (user_id > 0) {
                 sendVoteCmd(VOTE_KICK, user_id);

@@ -135,12 +135,45 @@ void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
 }
 
 void game_world::sendKillMessage(player *killer, player *p) {
+    static const std::vector<const char *> SUICIDE_MSG = {
+        "%s couldn't handle it and killed himself.",
+        "%s forgot that his own bombs hurt.",
+        "%s has an explosive personality.",
+        "%s obviously is not fireproof.",
+        "%s clicked the big red button.",
+        "%s bid farewell, cruel world!",
+        "%s fears explosions too much.",
+        "%s cut the wrong wire.",
+        "%s never learned not to play with fire.",
+    };
+
+    static const std::vector<const char *> WORLD_DEATH_MSG = {
+        "Life just isn't fair for %s.",
+        "%s was killed by the world.",
+        "%s was killed by the world. What a pity.",
+        "%s had it coming for him.",
+        "%s got hit by a stray bomb.",
+        "%s is having a really bad day.",
+        "That, right there, is a bomb, %s.",
+    };
+
+    static const std::vector<const char *> MURDER_MSG = {
+        "%s was exploded by %s.",
+        "%s's bits were sent everywhere by %s.",
+        "%s was killed to death by %s.",
+        "%s didn't pay enough attention to %s.",
+        "%s died at the sight of %s.",
+        "%s just wanted an hug from %s.",
+        "%s thinks that %s is cheating.",
+        "%s wondered what %s's bomb might be.",
+    };
+
     if (p == killer) {
-        server.messageToAll(COLOR_WHITE, "%s couldn't handle it and killed himself.", p->getName());
+        server.messageToAll(COLOR_WHITE, SUICIDE_MSG[random_engine() % SUICIDE_MSG.size()], p->getName());
     } else if (killer == nullptr) {
-        server.messageToAll(COLOR_WHITE, "%s was killed by the world.", p->getName());
+        server.messageToAll(COLOR_WHITE, WORLD_DEATH_MSG[random_engine() % WORLD_DEATH_MSG.size()], p->getName());
     } else {
-        server.messageToAll(COLOR_WHITE, "%s exploded %s.", killer->getName(), p->getName());
+        server.messageToAll(COLOR_WHITE, MURDER_MSG[random_engine() % MURDER_MSG.size()], p->getName(), killer->getName());
     }
 }
 

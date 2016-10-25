@@ -89,7 +89,9 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
                 if (self_bomb == b) {
                     continue;
                 }
-                return i + 1;
+                if (!b->isFlying()) {
+                    return i + 1;
+                }
                 break;
             }
             case TYPE_ITEM:

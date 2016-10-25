@@ -9,7 +9,6 @@
 #include <list>
 
 static const size_t     PLAYER_NAME_SIZE = 32;
-static const float      PLAYER_SIDE_MOVE_AMT = 0.1f;
 static const int        PLAYER_DEATH_TICKS = TICKRATE / 3;
 static const int        PLAYER_PUNCH_TICKS = TICKRATE / 4;
 static const int        PLAYER_INVULNERABLE_TICKS = TICKRATE * 10;
