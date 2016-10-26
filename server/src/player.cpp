@@ -27,6 +27,7 @@ void player::respawn(int tx, int ty) {
 
     spawned = true;
     alive = true;
+    on_trampoline = false;
 
     pickups = 0;
 
@@ -315,25 +316,20 @@ void player::checkTrampoline() {
     tile *walkingon = world->getMap().getTile(getTileX(), getTileY());
     if (walkingon->type == TILE_SPECIAL) {
         tile_entity *ent = world->getMap().getSpecial(walkingon);
-        if (ent) {
-            switch (ent->getType()) {
-            case SPECIAL_TRAMPOLINE:
-                {
-                    tile_trampoline *tramp = dynamic_cast<tile_trampoline *>(ent);
-                    if (tramp->jump()) {
-                        world->playWave(WAV_JUMP);
-                        jumping = true;
+        if (ent && ent->getType() == SPECIAL_TRAMPOLINE) {
+            tile_trampoline *tramp = dynamic_cast<tile_trampoline *>(ent);
+            if (! on_trampoline && tramp->jump()) {
+                world->playWave(WAV_JUMP);
+                jumping = true;
 
-                        speedz = PLAYER_JUMP_SPEED / TICKRATE;
-                        fz = 0.f;
-                    }
-                    break;
-                }
-            default:
-                break;
+                speedz = PLAYER_JUMP_SPEED / TICKRATE;
+                fz = 0.f;
             }
+            on_trampoline = true;
+            return;
         }
     }
+    on_trampoline = false;
 }
 
 void player::tick() {

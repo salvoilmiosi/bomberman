@@ -64,6 +64,8 @@ private:
 
     bool moving;
     bool jumping;
+    bool on_trampoline;
+
     uint8_t direction;
 
     uint8_t pickups;
