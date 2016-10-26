@@ -10,7 +10,9 @@ private:
     int jump_ticks = 0;
 
 public:
-    tile_trampoline(tile *t_tile) : tile_entity(SPECIAL_TRAMPOLINE, t_tile) {}
+    tile_trampoline(tile *t_tile, game_map *g_map) : tile_entity(SPECIAL_TRAMPOLINE, t_tile, g_map) {
+        setData(0);
+    }
 
     void tick() {
         setData(jump_ticks > 0);
@@ -24,6 +26,14 @@ public:
             jump_ticks = TRAMPOLINE_JUMP_TICKS;
             return true;
         }
+        return false;
+    }
+
+    bool isWalkable() {
+        return true;
+    }
+
+    bool bombHit() {
         return false;
     }
 };

@@ -52,6 +52,8 @@ public:
     bool kick(player *kicker);
     bool punch(player *puncher);
 
+    bool move(float dx, float dy);
+
     void stopKick();
 
     void explode();

@@ -15,11 +15,10 @@ private:
 
     int life_ticks;
 
-    bool drop_item;
-    item_type type;
+    item_type item = ITEM_NONE;
 
 public:
-    broken_wall(game_world *world, tile *t);
+    broken_wall(game_world *world, tile *t, item_type item = ITEM_NONE);
 
 public:
     void tick();

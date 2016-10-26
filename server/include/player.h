@@ -102,6 +102,8 @@ public:
         return jumping;
     }
 
+    void move(float dx, float dy);
+
     const uint8_t getTileX() {
         return fx / TILE_SIZE + 0.5f;
     }

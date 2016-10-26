@@ -8,6 +8,7 @@
 #include "ent_item.h"
 
 #include "tile_trampoline.h"
+#include "tile_belt.h"
 
 entity *entity::newObjFromByteArray(game_world *world, uint16_t id, entity_type type, byte_array &ba) {
     switch(type) {
@@ -27,11 +28,13 @@ entity *entity::newObjFromByteArray(game_world *world, uint16_t id, entity_type 
 }
 
 tile_entity *tile_entity::newTileEntity(tile *t_tile) {
-    uint8_t type = (t_tile->data & 0xe0) >> 5;
+    uint8_t type = (t_tile->data & 0xe000) >> 13;
 
     switch (type) {
     case SPECIAL_TRAMPOLINE:
         return new tile_trampoline(t_tile);
+    case SPECIAL_BELT:
+        return new tile_belt(t_tile);
     default:
         return nullptr;
     }

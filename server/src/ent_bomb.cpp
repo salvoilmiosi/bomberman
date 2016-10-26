@@ -156,38 +156,49 @@ void bomb::stopKick() {
     }
 }
 
+bool bomb::move(float dx, float dy) {
+    do_send_updates = true;
+
+    float to_fx = fx + dx;
+    float to_fy = fy + dy;
+
+    float check_fx = to_fx;
+    float check_fy = to_fy;
+
+    if (dx > 0) {
+        check_fx += TILE_SIZE / 2;
+    } else if (dx < 0) {
+        check_fx -= TILE_SIZE / 2;
+    } else if (dy > 0) {
+        check_fy += TILE_SIZE / 2;
+    } else if (dy < 0) {
+        check_fy -= TILE_SIZE / 2;
+    }
+
+    int to_tx = (check_fx / TILE_SIZE) + 0.5f;
+    int to_ty = (check_fy / TILE_SIZE) + 0.5f;
+
+    if ((to_tx == getTileX() && to_ty == getTileY()) ||
+        world->isWalkable(to_tx, to_ty, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
+        fx = to_fx;
+        fy = to_fy;
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void bomb::tick() {
     if (kicked) {
-        float to_fx = fx + speedx;
-        float to_fy = fy + speedy;
-
-        float check_fx = to_fx;
-        float check_fy = to_fy;
-
-        if (speedx > 0) {
-            check_fx += TILE_SIZE / 2;
-        } else if (speedx < 0) {
-            check_fx -= TILE_SIZE / 2;
-        } else if (speedy > 0) {
-            check_fy += TILE_SIZE / 2;
-        } else if (speedy < 0) {
-            check_fy -= TILE_SIZE / 2;
-        }
-
-        int to_tx = (check_fx / TILE_SIZE) + 0.5f;
-        int to_ty = (check_fy / TILE_SIZE) + 0.5f;
-
-        if ((to_tx == getTileX() && to_ty == getTileY()) ||
-            world->isWalkable(to_tx, to_ty, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
-            fx = to_fx;
-            fy = to_fy;
-
-            ++kick_ticks;
-            if (kick_ticks % 5 == 0) {
-                world->playWave(WAV_SLIDE);
+        if (kicked) {
+            if (!move(speedx, speedy)) {
+                stopKick();
+            } else {
+                ++kick_ticks;
+                if (kick_ticks % 5 == 0) {
+                    world->playWave(WAV_SLIDE);
+                }
             }
-        } else {
-            stopKick();
         }
     } else if (flying) {
         if (speedx > 1 || speedx < -1) fx += speedx;

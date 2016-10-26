@@ -9,7 +9,6 @@ private:
 
 public:
     tile_trampoline(tile *t_tile) : tile_entity(t_tile) {
-        printf("Created tile entity.\n");
     }
 
 public:

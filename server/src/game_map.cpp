@@ -9,8 +9,9 @@
 #include "ent_item.h"
 
 #include "tile_trampoline.h"
+#include "tile_belt.h"
 
-game_map::game_map() {
+game_map::game_map(game_world *world) : world(world) {
     tiles = nullptr;
     width = 0;
     height = 0;
@@ -55,13 +56,12 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     case ZONE_NORMAL:
     case ZONE_BOMB:
     case ZONE_JUMP:
+    case ZONE_BELT:
         spawns = {{2, 1}, {width-3,1}, {2,height-2}, {width-3,height-2}};
         break;
     case ZONE_WESTERN:
         spawns = {{6, 5}, {width-7,5}, {6, height-6}, {width -7, height -6}};
         break;
-    default:
-        return;
     }
     std::shuffle(spawns.begin(), spawns.end(), random_engine);
 
@@ -76,6 +76,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     case ZONE_NORMAL:
     case ZONE_BOMB:
     case ZONE_JUMP:
+    case ZONE_BELT:
         for (const point &pt : spawn_pts) {
             for (int y = pt.y - 1; y <= pt.y + 1; ++y) {
                 for (int x = pt.x - 1; x <= pt.x + 1; ++x) {
@@ -95,8 +96,6 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
             }
         }
         break;
-    default:
-        return;
     }
 
     std::vector<tile *> floor_tiles;
@@ -196,6 +195,34 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
                     if (x >= width - 2) {
                         t->data |= 0x80;
                     }
+                    break;
+                case ZONE_BELT:
+                    if (x == 0 || x  == width - 1) {
+                        if (y == 0 || y == height - 1) {
+                            t->data = 5;
+                        } else if ((y % 2) == 1) {
+                            t->data = 3;
+                        } else {
+                            t->data = 6;
+                        }
+                    } else if (x == 1 || x == width - 2) {
+                        if (y == 0 || y == height - 1) {
+                            t->data = 1;
+                        } else if ((y % 2) == 1) {
+                            t->data = 4;
+                        } else {
+                            t->data = 7;
+                        }
+                    } else if (y == 0 || y == height - 1) {
+                        t->data = 2;
+                        if ((x > (width / 2) || x == (width / 2 - 1))) {
+                            t->data |= 0x80;
+                        }
+                    }
+                    if (x >= width - 2) {
+                        t->data |= 0x80;
+                    }
+                    break;
                 }
             } else if (x % 2 == 1 && y % 2 == 0) {
                 t->type = TILE_WALL;
@@ -212,7 +239,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
         while (num_trampolines>0) {
             tile *t = floor_tiles.back();
             t->type = TILE_SPECIAL;
-            tile_trampoline *ent = new tile_trampoline(t);
+            tile_trampoline *ent = new tile_trampoline(t, this);
             specials[t] = ent;
             floor_tiles.pop_back();
 
@@ -221,7 +248,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     }
 
     static const std::map<map_zone, int> breakables_per_zone = {
-        {ZONE_NORMAL, 80}, {ZONE_WESTERN, 65}, {ZONE_BOMB, 60}, {ZONE_JUMP, 55}
+        {ZONE_NORMAL, 80}, {ZONE_WESTERN, 65}, {ZONE_BOMB, 60}, {ZONE_JUMP, 55}, {ZONE_BELT, 55},
     };
 
     std::vector<tile *> breakables;
@@ -239,6 +266,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
         {ZONE_WESTERN, {{ITEM_BOMB, 4}, {ITEM_FIRE, 3}, {ITEM_ROLLERBLADE, 2}, {ITEM_FULL_FIRE, 2}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 1} }},
         {ZONE_BOMB, {{ITEM_BOMB, 3}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2}, {ITEM_REMOCON, 2} }},
         {ZONE_JUMP, {{ITEM_BOMB, 4}, {ITEM_FIRE, 4}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2} }},
+        {ZONE_BELT, {{ITEM_BOMB, 5}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}}},
     };
 
     std::shuffle(breakables.begin(), breakables.end(), random_engine);
@@ -255,8 +283,41 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
                 t->data = item_pair.first;
             }
             if (++tile_it == breakables.end()) {
-                return;
+                goto end_items;
             }
+        }
+    }
+    end_items:
+
+    if (zone == ZONE_BELT) {
+        int x, y;
+        for (x = 5; x <= width - 5; ++x) {
+            y = 3;
+            tile *t = getTile(x, y);
+            tile_belt *ent = new tile_belt(t, this, BELT_DIR_RIGHT);
+            specials[t] = ent;
+            t->type = TILE_SPECIAL;
+        }
+        for (x = 4; x <= width - 6; ++x) {
+            y = height - 4;
+            tile *t = getTile(x, y);
+            tile_belt *ent = new tile_belt(t, this, BELT_DIR_LEFT);
+            specials[t] = ent;
+            t->type = TILE_SPECIAL;
+        }
+        for (y = 3; y <= height - 5; ++y) {
+            x = 4;
+            tile *t = getTile(x, y);
+            tile_belt *ent = new tile_belt(t, this, BELT_DIR_UP);
+            specials[t] = ent;
+            t->type = TILE_SPECIAL;
+        }
+        for (y = 4; y <= height - 4; ++y) {
+            x = width - 5;
+            tile *t = getTile(x, y);
+            tile_belt *ent = new tile_belt(t, this, BELT_DIR_DOWN);
+            specials[t] = ent;
+            t->type = TILE_SPECIAL;
         }
     }
 }
@@ -306,15 +367,15 @@ void game_map::writeToPacket(packet_ext &packet) {
         switch (t->type) {
         case TILE_SPAWN:
             packet.writeChar(TILE_FLOOR);
-            packet.writeChar(0);
+            packet.writeShort(0);
             break;
         case TILE_ITEM:
             packet.writeChar(TILE_BREAKABLE);
-            packet.writeChar(0);
+            packet.writeShort(0);
             break;
         default:
             packet.writeChar(t->type);
-            packet.writeChar(t->data);
+            packet.writeShort(t->data);
             break;
         }
     }

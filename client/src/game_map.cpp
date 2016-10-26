@@ -7,7 +7,7 @@
 #include "resources.h"
 
 tile_entity::tile_entity(tile *t_tile) : t_tile(t_tile) {
-    type = static_cast<special_type>((t_tile->data & 0xe0) >> 5);
+    type = static_cast<special_type>((t_tile->data & 0xe000) >> 13);
 }
 
 game_map::game_map() {
@@ -75,6 +75,7 @@ void game_map::render(SDL_Renderer *renderer) {
             tile *t_up = getTile(x, y-1);
             if (!t) continue;
             switch (t->type) {
+            case TILE_SPAWN:
             case TILE_FLOOR:
                 switch (zone) {
                 case ZONE_NORMAL:
@@ -105,6 +106,13 @@ void game_map::render(SDL_Renderer *renderer) {
                 case ZONE_JUMP:
                     src_rect = TILE(1, 2);
                     break;
+                case ZONE_BELT:
+                    if (t_up && t_up->type == TILE_WALL && t_up->data == 0) {
+                        src_rect = TILE(2, 2);
+                    } else {
+                        src_rect = TILE(7, 0);
+                    }
+                    break;
                 }
                 break;
             case TILE_WALL:
@@ -121,8 +129,12 @@ void game_map::render(SDL_Renderer *renderer) {
                 case ZONE_JUMP:
                     src_rect = TILE((t->data & 0x3f) % 7, (t->data & 0x3f) / 7);
                     break;
+                case ZONE_BELT:
+                    src_rect = TILE((t->data & 0x3f) % 3, (t->data & 0x3f) / 3);
+                    break;
                 }
                 break;
+            case TILE_ITEM:
             case TILE_BREAKABLE:
                 switch (zone) {
                 case ZONE_NORMAL:
@@ -144,34 +156,48 @@ void game_map::render(SDL_Renderer *renderer) {
                     }
                     break;
                 case ZONE_JUMP:
-                    {
-                        static const SDL_Rect jump_breakables[] = {
-                            TILE(2, 2), TILE(3, 2), TILE(4, 2), TILE(5, 2), TILE(6, 2),
-                            TILE(2, 3), TILE(3, 3), TILE(4, 3), TILE(5, 3),
-                        };
+                {
+                    static const SDL_Rect jump_breakables[] = {
+                        TILE(2, 2), TILE(3, 2), TILE(4, 2), TILE(5, 2), TILE(6, 2),
+                        TILE(2, 3), TILE(3, 3), TILE(4, 3), TILE(5, 3),
+                    };
 
-                        frame = (SDL_GetTicks() * 9 / 2000) % 9;
-                        src_rect = jump_breakables[frame];
-                    }
+                    frame = (SDL_GetTicks() * 9 / 2000) % 9;
+                    src_rect = jump_breakables[frame];
                     break;
+                }
+                case ZONE_BELT:
+                {
+                    static const SDL_Rect belt_breakables[] = {
+                        TILE(3, 0), TILE(4, 0), TILE(5, 0), TILE(6, 0),
+                        TILE(3, 1), TILE(4, 1), TILE(5, 1), TILE(6, 1),
+                        TILE(3, 2), TILE(4, 2), TILE(5, 2), TILE(6, 2),
+                    };
+
+                    frame = (SDL_GetTicks() * 12 / 2000) % 12;
+                    src_rect = belt_breakables[frame];
+                    break;
+                }
                 }
                 break;
             case TILE_SPECIAL:
-                {
-                    auto it = specials.find(t);
-                    if (it != specials.end() && it->second) {
-                        src_rect = it->second->getSrcRect();
-                    }
+            {
+                auto it = specials.find(t);
+                if (it != specials.end() && it->second) {
+                    src_rect = it->second->getSrcRect();
                 }
                 break;
-            default:
-                continue;
+            }
             }
             dst_rect.x = TILE_SIZE * x + left();
             dst_rect.y = TILE_SIZE * y + top();
 
-            SDL_Texture *tilesets[] = {
-                tileset_1_texture, tileset_2_texture, tileset_3_texture, tileset_4_texture,
+            static std::map<map_zone, SDL_Texture *> tilesets = {
+                {ZONE_NORMAL, tileset_1_texture},
+                {ZONE_WESTERN, tileset_2_texture},
+                {ZONE_BOMB, tileset_3_texture},
+                {ZONE_JUMP, tileset_4_texture},
+                {ZONE_BELT, tileset_5_texture},
             };
 
             SDL_RendererFlip flip = SDL_FLIP_NONE;
@@ -212,26 +238,29 @@ void game_map::readFromByteArray(byte_array &packet) {
     for (int y=0; y<h; ++y) {
         for (int x=0; x<w; ++x) {
             uint8_t type = packet.readChar();
-            uint8_t data = packet.readChar();
+            uint16_t data = packet.readShort();
 
             tile *t = getTile(x, y);
             if (t) {
                 t->type = static_cast<tile_type>(type);
                 t->data = data;
                 if (t->type == TILE_SPECIAL) {
-                    uint8_t ent_type = (data & 0xe0) >> 5;
+                    uint8_t ent_type = (data & 0xe000) >> 13;
                     auto it = specials.find(t);
                     tile_entity *ent = nullptr;
                     if (it == specials.end()) {
                         ent = tile_entity::newTileEntity(t);
-                    } else if (it->second->type != ent_type) {
-                        delete it->second;
-                        ent = tile_entity::newTileEntity(t);
                     } else {
                         ent = it->second;
+                        if (ent->type != ent_type) {
+                            delete ent;
+                            ent = tile_entity::newTileEntity(t);
+                        }
                     }
-                    ent->used = true;
-                    specials[t] = ent;
+                    if (ent) {
+                        ent->used = true;
+                        specials[t] = ent;
+                    }
                 }
             }
         }

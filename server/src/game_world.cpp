@@ -8,7 +8,7 @@
 #include "ent_item.h"
 #include "main.h"
 
-game_world::game_world(): server(this) {}
+game_world::game_world(): server(this), g_map(this) {}
 
 game_world::~game_world() {
     clear();
@@ -198,7 +198,7 @@ bool game_world::startRound(int num_u) {
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, static_cast<map_zone>(random_engine() % 4));
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, static_cast<map_zone>(random_engine() % 5));
 
     int num = 0;
 
@@ -293,6 +293,16 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
     case TILE_BREAKABLE:
     case TILE_ITEM:
         return false;
+    case TILE_SPECIAL:
+    {
+        tile_entity *special = g_map.getSpecial(t);
+        if (special) {
+            return special->isWalkable();
+        } else {
+            return true;
+        }
+        break;
+    }
     default:
         return true;
     }

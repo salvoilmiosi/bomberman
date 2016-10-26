@@ -127,6 +127,21 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
         case TILE_WALL:
             *trunc = true;
             return i;
+        case TILE_SPECIAL:
+        {
+            tile_entity *special = world->getMap().getSpecial(t);
+            if (!special) break;
+            if (special->bombHit()) {
+                if (piercing) {
+                    break;
+                } else {
+                    *trunc = true;
+                    return i;
+                }
+            } else {
+                break;
+            }
+        }
         default:
             break;
         }

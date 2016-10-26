@@ -95,12 +95,6 @@ void player::handleInput() {
     if (jumping) return;
     if (stun_ticks > 0) return;
 
-    float to_fx = fx;
-    float to_fy = fy;
-
-    float check_fx = fx;
-    float check_fy = fy;
-
     if (punch_ticks > 0) return;
 
     if (skull_effect != SKULL_CONSTIPATION && (skull_effect == SKULL_DIARRHEA || handler->isPressed(USR_PLANT))) {
@@ -182,77 +176,109 @@ void player::handleInput() {
         if (movement_keys_down[prio]) {
             switch (prio) {
             case 0:
-                to_fy -= move_speed;
-                check_fy = to_fy - TILE_SIZE / 2;
+                move(0, -move_speed);
                 break;
             case 1:
-                to_fy += move_speed;
-                check_fy = to_fy + TILE_SIZE / 2;
+                move(0, move_speed);
                 break;
             case 2:
-                to_fx -= move_speed;
-                check_fx = to_fx - TILE_SIZE / 2;
+                move(-move_speed, 0);
                 break;
             case 3:
-                to_fx += move_speed;
-                check_fx = to_fx + TILE_SIZE / 2;
+                move(move_speed, 0);
                 break;
             }
 
             direction = prio;
             moving = true;
-
-            int to_tx = check_fx / TILE_SIZE + 0.5f;
-            int to_ty = check_fy / TILE_SIZE + 0.5f;
-
-            if ((to_tx == getTileX() && to_ty == getTileY() &&
-                 !world->isWalkable(getTileX(), getTileY())) ||
-                world->isWalkable(to_tx, to_ty)) {
-                fx = to_fx;
-                fy = to_fy;
-            }
-
-            switch (direction) {
-            case 0:
-            case 1:
-            {
-                float dx = getTileX() * TILE_SIZE - fx;
-                if (dx > 0) fx += dx > move_speed ? move_speed : dx;
-                else if (dx < 0) fx += dx < -move_speed ? -move_speed : dx;
-                break;
-            }
-            case 2:
-            case 3:
-            {
-                float dy = getTileY() * TILE_SIZE - fy;
-                if (dy > 0) fy += dy > move_speed ? move_speed : dy;
-                else if (dy < 0) fy += dy < -move_speed ? -move_speed : dy;
-                break;
-            }
-            }
-
-            if (to_tx != getTileX() || to_ty != getTileY()) {
-                if (pickups & PICKUP_HAS_KICK) {
-                    entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
-                    if (*ents) {
-                        if (kick_ticks <= 0) {
-                            bomb *b = dynamic_cast<bomb *>(*ents);
-                            if (b->kick(this)) {
-                                kicked_bombs.push_back(b);
-                            }
-                        } else {
-                            --kick_ticks;
-                        }
-                    } else {
-                        kick_ticks = PLAYER_KICK_TICKS;
-                    }
-                }
-            }
-
             break;
         } else {
             moving = false;
             movement_priority.pop_front();
+        }
+    }
+}
+
+void player::move(float dx, float dy) {
+    do_send_updates = true;
+
+    float to_fx = fx;
+    float to_fy = fy;
+
+    float check_fx = fx;
+    float check_fy = fy;
+
+    float move_speed = 0;
+    uint8_t dir;
+
+    if (dy < 0) {
+        dir = 0;
+        move_speed = -dy;
+        to_fy += dy;
+        check_fy = to_fy - TILE_SIZE / 2;
+    } else if (dy > 0) {
+        dir = 1;
+        move_speed = dy;
+        to_fy += dy;
+        check_fy = to_fy + TILE_SIZE / 2;
+    } else if (dx < 0) {
+        dir = 2;
+        move_speed = -dx;
+        to_fx += dx;
+        check_fx = to_fx - TILE_SIZE / 2;
+    } else if (dx > 0) {
+        dir = 3;
+        move_speed = dx;
+        to_fx += dx;
+        check_fx = to_fx + TILE_SIZE / 2;
+    } else {
+        return;
+    }
+
+    int to_tx = check_fx / TILE_SIZE + 0.5f;
+    int to_ty = check_fy / TILE_SIZE + 0.5f;
+
+    if ((to_tx == getTileX() && to_ty == getTileY() &&
+         !world->isWalkable(getTileX(), getTileY())) ||
+        world->isWalkable(to_tx, to_ty)) {
+        fx = to_fx;
+        fy = to_fy;
+    }
+
+    switch (dir) {
+    case 0:
+    case 1:
+    {
+        float side_dx = getTileX() * TILE_SIZE - fx;
+        if (side_dx > 0) fx += side_dx > move_speed ? move_speed : side_dx;
+        else if (side_dx < 0) fx += side_dx < -move_speed ? -move_speed : side_dx;
+        break;
+    }
+    case 2:
+    case 3:
+    {
+        float side_dy = getTileY() * TILE_SIZE - fy;
+        if (side_dy > 0) fy += side_dy > move_speed ? move_speed : side_dy;
+        else if (side_dy < 0) fy += side_dy < -move_speed ? -move_speed : side_dy;
+        break;
+    }
+    }
+
+    if (to_tx != getTileX() || to_ty != getTileY()) {
+        if (alive && pickups & PICKUP_HAS_KICK) {
+            entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
+            if (*ents) {
+                if (kick_ticks <= 0) {
+                    bomb *b = dynamic_cast<bomb *>(*ents);
+                    if (b->kick(this)) {
+                        kicked_bombs.push_back(b);
+                    }
+                } else {
+                    --kick_ticks;
+                }
+            } else {
+                kick_ticks = PLAYER_KICK_TICKS;
+            }
         }
     }
 }

@@ -27,12 +27,13 @@ enum map_zone {
 
 enum special_type {
     SPECIAL_NONE,
-    SPECIAL_TRAMPOLINE
+    SPECIAL_TRAMPOLINE,
+    SPECIAL_BELT,
 };
 
 struct tile {
     tile_type type;
-    uint8_t data;
+    uint16_t data;
 };
 
 class tile_entity {
@@ -57,8 +58,8 @@ public:
     static tile_entity *newTileEntity(tile *t_tile);
 
 protected:
-    uint8_t getData() {
-        return t_tile->data & 0x1f;
+    uint16_t getData() {
+        return t_tile->data & 0x1fff;
     }
 };
 
