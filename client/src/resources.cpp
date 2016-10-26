@@ -15,6 +15,7 @@ SDL_Texture *tileset_1_texture = nullptr;
 SDL_Texture *tileset_2_texture = nullptr;
 SDL_Texture *tileset_3_texture = nullptr;
 SDL_Texture *tileset_4_texture = nullptr;
+SDL_Texture *tileset_5_texture = nullptr;
 SDL_Texture *explosions_texture = nullptr;
 SDL_Texture *items_texture = nullptr;
 SDL_Texture *players_texture = nullptr;
@@ -116,6 +117,7 @@ void loadResources(SDL_Renderer *renderer) {
     tileset_2_texture = loadTexture(renderer, "IDB_TILESET_2");
     tileset_3_texture = loadTexture(renderer, "IDB_TILESET_3");
     tileset_4_texture = loadTexture(renderer, "IDB_TILESET_4");
+    tileset_5_texture = loadTexture(renderer, "IDB_TILESET_5");
     explosions_texture = loadTexture(renderer, "IDB_EXPLOSIONS");
     items_texture = loadTexture(renderer, "IDB_ITEMS");
     players_texture = loadTexture(renderer, "IDB_PLAYERS");
@@ -133,6 +135,7 @@ void clearResources() {
     SDL_DestroyTexture(tileset_2_texture);
     SDL_DestroyTexture(tileset_3_texture);
     SDL_DestroyTexture(tileset_4_texture);
+    SDL_DestroyTexture(tileset_5_texture);
     SDL_DestroyTexture(explosions_texture);
     SDL_DestroyTexture(items_texture);
     SDL_DestroyTexture(players_texture);

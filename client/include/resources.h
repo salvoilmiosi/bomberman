@@ -10,6 +10,7 @@ extern SDL_Texture *tileset_1_texture;
 extern SDL_Texture *tileset_2_texture;
 extern SDL_Texture *tileset_3_texture;
 extern SDL_Texture *tileset_4_texture;
+extern SDL_Texture *tileset_5_texture;
 extern SDL_Texture *explosions_texture;
 extern SDL_Texture *items_texture;
 extern SDL_Texture *players_texture;

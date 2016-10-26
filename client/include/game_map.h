@@ -21,7 +21,8 @@ enum map_zone {
     ZONE_NORMAL,
     ZONE_WESTERN,
     ZONE_BOMB,
-    ZONE_JUMP
+    ZONE_JUMP,
+    ZONE_BELT,
 };
 
 enum special_type {
