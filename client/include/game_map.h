@@ -13,22 +13,24 @@ enum tile_type {
     TILE_SPAWN,
     TILE_WALL,
     TILE_BREAKABLE,
-    TILE_ITEM,
-    TILE_SPECIAL
+    TILE_SPECIAL,
 };
 
 enum map_zone {
+    ZONE_RANDOM,
     ZONE_NORMAL,
     ZONE_WESTERN,
     ZONE_BOMB,
     ZONE_JUMP,
     ZONE_BELT,
+    ZONE_DUEL,
 };
 
 enum special_type {
     SPECIAL_NONE,
     SPECIAL_TRAMPOLINE,
     SPECIAL_BELT,
+    SPECIAL_ITEM_SPAWNER,
 };
 
 struct tile {

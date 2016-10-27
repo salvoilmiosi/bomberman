@@ -201,38 +201,42 @@ void player::handleInput() {
     }
 }
 
-void player::move(float dx, float dy) {
-    uint8_t start_tx = getTileX();
-    uint8_t start_ty = getTileY();
-
-    uint8_t end_tx, end_ty;
-
+bool player::move(float dx, float dy) {
     if (ent_movable::move(dx, dy)) {
-        end_tx = getTileX();
-        end_ty = getTileY();
+        return true;
+    }
+
+    uint8_t to_tx = getTileX();
+    uint8_t to_ty = getTileY();
+    if (dx < 0) {
+        --to_tx;
+    } else if (dx > 0) {
+        ++to_tx;
+    } else if (dy < 0) {
+        --to_ty;
+    } else if (dy > 0) {
+        ++to_ty;
     } else {
         return false;
     }
 
-    if (end_tx != start_tx || end_ty != start_ty) {
-        if (alive && pickups & PICKUP_HAS_KICK) {
-            entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
-            if (*ents) {
-                if (kick_ticks <= 0) {
-                    bomb *b = dynamic_cast<bomb *>(*ents);
-                    if (b->kick(this)) {
-                        kicked_bombs.push_back(b);
-                    }
-                } else {
-                    --kick_ticks;
+    if (alive && pickups & PICKUP_HAS_KICK) {
+        entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
+        if (*ents) {
+            if (kick_ticks <= 0) {
+                bomb *b = dynamic_cast<bomb *>(*ents);
+                if (b->kick(this)) {
+                    kicked_bombs.push_back(b);
                 }
             } else {
-                kick_ticks = PLAYER_KICK_TICKS;
+                --kick_ticks;
             }
+        } else {
+            kick_ticks = PLAYER_KICK_TICKS;
         }
     }
 
-    return true;
+    return false;
 }
 
 void player::explodedBomb(bomb *b) {

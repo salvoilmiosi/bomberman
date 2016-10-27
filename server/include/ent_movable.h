@@ -12,7 +12,7 @@ protected:
 public:
 	ent_movable(game_world *world, entity_type type);
 
-	bool move(float dx, float dy, uint8_t flags = 0);
+	virtual bool move(float dx, float dy, uint8_t flags = 0);
 
     const uint8_t getTileX() {
         return fx / TILE_SIZE + 0.5f;

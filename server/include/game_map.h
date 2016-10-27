@@ -11,22 +11,24 @@ enum tile_type {
     TILE_SPAWN,
     TILE_WALL,
     TILE_BREAKABLE,
-    TILE_ITEM,
-    TILE_SPECIAL
+    TILE_SPECIAL,
 };
 
 enum map_zone {
+    ZONE_RANDOM,
     ZONE_NORMAL,
     ZONE_WESTERN,
     ZONE_BOMB,
     ZONE_JUMP,
     ZONE_BELT,
+    ZONE_DUEL,
 };
 
 enum special_type {
     SPECIAL_NONE,
     SPECIAL_TRAMPOLINE,
     SPECIAL_BELT,
+    SPECIAL_ITEM_SPAWNER,
 };
 
 static const int MAP_WIDTH = 17;
@@ -46,42 +48,36 @@ struct point {
 class tile_entity {
 private:
     const special_type type;
-    uint16_t id;
 
 protected:
     tile *t_tile;
     class game_map *g_map;
 
 public:
-    tile_entity(const special_type type, tile *t_tile, game_map *g_map) : type(type), t_tile(t_tile), g_map(g_map) {
-        // TILE ENTITY DATA:
-        // |type | data          |
-        // | --- | ------------- |
-
-        static uint16_t max_id = 1;
-        id = max_id++;
-    }
+    tile_entity(const special_type type, tile *t_tile, game_map *g_map) : type(type), t_tile(t_tile), g_map(g_map) {}
 
     virtual ~tile_entity() {}
 
 public:
     virtual void tick() = 0;
 
-    uint8_t getType() const {
+    const uint8_t getType() {
         return type;
     }
 
-    virtual bool isWalkable() = 0;
+    virtual bool isWalkable() {
+        return true;
+    }
 
-    virtual bool bombHit() = 0;
+    virtual bool bombHit() {
+        return false;
+    }
 
 protected:
     void setData(uint16_t data) {
+        t_tile->type = TILE_SPECIAL;
         t_tile->data = ((type & 0x7) << 13) | (data & 0x1fff);
     }
-
-private:
-    friend class game_map;
 };
 
 class game_map {
@@ -104,7 +100,7 @@ public:
     virtual ~game_map();
 
 public:
-    void createMap(int w, int h, int num_players, map_zone zone);
+    void createMap(int w, int h, int num_players, map_zone zone = ZONE_RANDOM);
     void clear();
 
     void tick();
@@ -135,6 +131,9 @@ public:
     point getSpawnPt(unsigned int numt);
 
     void writeToPacket(packet_ext &packet);
+
+private:
+    void createDuelMap();
 };
 
 #endif // __GAME_MAP_H__

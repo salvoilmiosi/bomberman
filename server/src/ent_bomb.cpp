@@ -225,6 +225,7 @@ void bomb::tick() {
 
 void bomb::explode() {
     if (exploded) return;
+    if (flying) return;
 
     if (planter) {
         planter->explodedBomb(this);

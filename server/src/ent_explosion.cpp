@@ -40,7 +40,6 @@ explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION)
         case TILE_WALL:
             return;
         case TILE_BREAKABLE:
-        case TILE_ITEM:
             world->addEntity(new broken_wall(world, t));
             t->type = TILE_FLOOR;
             return;
@@ -115,7 +114,6 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
             break;
         }
         switch (t->type) {
-        case TILE_ITEM:
         case TILE_BREAKABLE:
             world->addEntity(new broken_wall(world, t));
             t->type = TILE_FLOOR;

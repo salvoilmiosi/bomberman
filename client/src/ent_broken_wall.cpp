@@ -17,6 +17,7 @@ void broken_wall::render(SDL_Renderer *renderer) {
         {ZONE_BOMB, {TILE(0, 3), TILE(1, 3), TILE(2, 3), TILE(3, 3), TILE(4, 3), TILE(5, 3)}},
         {ZONE_JUMP, {TILE(0, 4), TILE(1, 4), TILE(2, 4), TILE(3, 4), TILE(4, 4), TILE(5, 4)}},
         {ZONE_BELT, {TILE(0, 5), TILE(1, 5), TILE(2, 5), TILE(3, 5), TILE(4, 5), TILE(5, 5)}},
+        {ZONE_DUEL, {TILE(0, 4), TILE(1, 4), TILE(2, 4), TILE(3, 4), TILE(4, 4), TILE(5, 4)}},
     };
 
     int ticks_since_create = SDL_GetTicks() - create_time;
@@ -31,6 +32,7 @@ void broken_wall::render(SDL_Renderer *renderer) {
         {ZONE_BOMB, tileset_3_texture},
         {ZONE_JUMP, tileset_4_texture},
         {ZONE_BELT, tileset_5_texture},
+        {ZONE_DUEL, tileset_6_texture},
     };
 
     auto it = src_rect_per_zone.find(zone);

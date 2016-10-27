@@ -2,7 +2,7 @@
 
 ent_movable::ent_movable(game_world *world, entity_type type) : entity(world, type) {}
 
-bool player::move(float dx, float dy, uint8_t flags) {
+bool ent_movable::move(float dx, float dy, uint8_t flags) {
     do_send_updates = true;
 
     float to_fx = fx;

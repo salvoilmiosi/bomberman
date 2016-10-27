@@ -198,7 +198,7 @@ bool game_world::startRound(int num_u) {
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, static_cast<map_zone>(random_engine() % 5));
+    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users);
 
     int num = 0;
 
@@ -291,7 +291,6 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
     switch(t->type) {
     case TILE_WALL:
     case TILE_BREAKABLE:
-    case TILE_ITEM:
         return false;
     case TILE_SPECIAL:
     {

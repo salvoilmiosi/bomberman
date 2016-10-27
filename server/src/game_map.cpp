@@ -10,6 +10,7 @@
 
 #include "tile_trampoline.h"
 #include "tile_belt.h"
+#include "tile_item_spawner.h"
 
 game_map::game_map(game_world *world) : world(world) {
     tiles = nullptr;
@@ -43,6 +44,10 @@ void game_map::tick() {
 void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     clear();
 
+    if (m_zone == ZONE_RANDOM) {
+        m_zone = static_cast<map_zone>(random_engine() % 6 + 1);
+    }
+
     width = w;
     height = h;
     zone = m_zone;
@@ -53,14 +58,12 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     std::vector<point> spawns;
 
     switch (zone) {
-    case ZONE_NORMAL:
-    case ZONE_BOMB:
-    case ZONE_JUMP:
-    case ZONE_BELT:
-        spawns = {{2, 1}, {width-3,1}, {2,height-2}, {width-3,height-2}};
-        break;
     case ZONE_WESTERN:
+    case ZONE_DUEL:
         spawns = {{6, 5}, {width-7,5}, {6, height-6}, {width -7, height -6}};
+        break;
+    default:
+        spawns = {{2, 1}, {width-3,1}, {2,height-2}, {width-3,height-2}};
         break;
     }
     std::shuffle(spawns.begin(), spawns.end(), random_engine);
@@ -73,10 +76,17 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     }
 
     switch (zone) {
-    case ZONE_NORMAL:
-    case ZONE_BOMB:
-    case ZONE_JUMP:
-    case ZONE_BELT:
+    case ZONE_WESTERN:
+    case ZONE_DUEL:
+        for (int y = 5; y < height-5; ++y) {
+            for (int x = 6; x < width-6; ++x) {
+                tile *t = getTile(x, y);
+                if (!t) continue;
+                t->type = TILE_SPAWN;
+            }
+        }
+        break;
+    default:
         for (const point &pt : spawn_pts) {
             for (int y = pt.y - 1; y <= pt.y + 1; ++y) {
                 for (int x = pt.x - 1; x <= pt.x + 1; ++x) {
@@ -84,15 +94,6 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
                     if (!t) continue;
                     t->type = TILE_SPAWN;
                 }
-            }
-        }
-        break;
-    case ZONE_WESTERN:
-        for (int y = 5; y < height-5; ++y) {
-            for (int x = 6; x < width-6; ++x) {
-                tile *t = getTile(x, y);
-                if (!t) continue;
-                t->type = TILE_SPAWN;
             }
         }
         break;
@@ -105,6 +106,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
             if (x<=1 || x>=width-2 || y==0 || y==height-1) {
                 t->type = TILE_WALL;
                 switch (zone) {
+                case ZONE_RANDOM:
                 case ZONE_NORMAL:
                     if (x == 0 || x == width-1) {
                         t->data = 1;
@@ -223,6 +225,33 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
                         t->data |= 0x80;
                     }
                     break;
+                case ZONE_DUEL:
+                    if (x == 0 || x == width - 1) {
+                        if (y == 0) {
+                            t->data = 8;
+                        } else if (y == height - 1) {
+                            t->data = 3;
+                        } else {
+                            t->data = (y % 2 == 1) ? 6 : 12;
+                        }
+                    } else if (x == 1 || x == width - 2) {
+                        if (y == 0) {
+                            t->data = 1;
+                        } else {
+                            t->data = (y % 2 == 1) ? 7 : 13;
+                        }
+                    } else if (y == 0) {
+                        if (x <= 4 || x >= 11) {
+                            t->data = 2;
+                        } else {
+                            t->data = x + 13;
+                        }
+                    }
+                    if (y == height - 1 && x > 0) {
+                        t->data = (x % 2 == 1) ? 4 : 5;
+                    } else if (x >= width - 2) {
+                        t->data |= 0x80;
+                    }
                 }
             } else if (x % 2 == 1 && y % 2 == 0) {
                 t->type = TILE_WALL;
@@ -234,19 +263,6 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 
     std::shuffle(floor_tiles.begin(), floor_tiles.end(), random_engine);
 
-    if (zone == ZONE_JUMP) {
-        int num_trampolines = 12 + random_engine() % 4;
-        while (num_trampolines>0) {
-            tile *t = floor_tiles.back();
-            t->type = TILE_SPECIAL;
-            tile_trampoline *ent = new tile_trampoline(t, this);
-            specials[t] = ent;
-            floor_tiles.pop_back();
-
-            --num_trampolines;
-        }
-    }
-
     static const std::map<map_zone, int> breakables_per_zone = {
         {ZONE_NORMAL, 80}, {ZONE_WESTERN, 65}, {ZONE_BOMB, 60}, {ZONE_JUMP, 55}, {ZONE_BELT, 55},
     };
@@ -255,9 +271,10 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     auto it = breakables_per_zone.find(zone);
     if (it != breakables_per_zone.end()) {
         for (int i=0; i<it->second; ++i) {
-            tile *t = floor_tiles[i];
+            tile *t = floor_tiles.back();
             t->type = TILE_BREAKABLE;
             breakables.push_back(t);
+            floor_tiles.pop_back();
         }
     }
 
@@ -272,53 +289,114 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     std::shuffle(breakables.begin(), breakables.end(), random_engine);
 
     const auto zone_it = item_numbers_per_zone.find(zone);
-    auto tile_it = breakables.begin();
-    if (zone_it == item_numbers_per_zone.end()) return;
+    if (zone_it == item_numbers_per_zone.end()) goto end_items;
 
     for (auto item_pair : zone_it->second) {
         for (int i=0; i<item_pair.second; ++i) {
-            tile *t = *tile_it;
+            tile *t = breakables.back();
             if (t) {
-                t->type = TILE_ITEM;
                 t->data = item_pair.first;
             }
-            if (++tile_it == breakables.end()) {
+            breakables.pop_back();
+            if (breakables.empty()) {
                 goto end_items;
             }
         }
     }
     end_items:
 
-    if (zone == ZONE_BELT) {
-        int x, y;
-        for (x = 4; x <= width - 6; ++x) {
-            y = 3;
-            tile *t = getTile(x, y);
-            tile_belt *ent = new tile_belt(t, this, BELT_DIR_RIGHT);
-            specials[t] = ent;
-            t->type = TILE_SPECIAL;
+    switch (zone) {
+    case ZONE_JUMP:
+    {
+        int num_trampolines = 12 + random_engine() % 4;
+        for (int i=0; i<num_trampolines; ++i) {
+            tile *t = floor_tiles.back();
+            specials[t] = new tile_trampoline(t, this);
+            floor_tiles.pop_back();
         }
-        for (x = 5; x <= width - 5; ++x) {
-            y = height - 4;
-            tile *t = getTile(x, y);
-            tile_belt *ent = new tile_belt(t, this, BELT_DIR_LEFT);
-            specials[t] = ent;
-            t->type = TILE_SPECIAL;
+        break;
+    }
+    case ZONE_BELT:
+        for (int x = 4; x <= width - 6; ++x) {
+            tile *t = getTile(x, 3);
+            specials[t] = new tile_belt(t, this, BELT_DIR_RIGHT);
         }
-        for (y = 4; y <= height - 4; ++y) {
-            x = 4;
-            tile *t = getTile(x, y);
-            tile_belt *ent = new tile_belt(t, this, BELT_DIR_UP);
-            specials[t] = ent;
-            t->type = TILE_SPECIAL;
+        for (int x = 5; x <= width - 5; ++x) {
+            tile *t = getTile(x, height - 4);
+            specials[t] = new tile_belt(t, this, BELT_DIR_LEFT);
         }
-        for (y = 3; y <= height - 5; ++y) {
-            x = width - 5;
-            tile *t = getTile(x, y);
-            tile_belt *ent = new tile_belt(t, this, BELT_DIR_DOWN);
-            specials[t] = ent;
-            t->type = TILE_SPECIAL;
+        for (int y = 4; y <= height - 4; ++y) {
+            tile *t = getTile(4, y);
+            specials[t] = new tile_belt(t, this, BELT_DIR_UP);
         }
+        for (int y = 3; y <= height - 5; ++y) {
+            tile *t = getTile(width - 5, y);
+            specials[t] = new tile_belt(t, this, BELT_DIR_DOWN);
+        }
+        break;
+    case ZONE_DUEL:
+        createDuelMap();
+        break;
+    default:
+        break;
+    }
+}
+
+void game_map::createDuelMap() {
+    bool corner_breakables[] = {
+        true, false, false,
+        true, false, true, false, true,
+        false, true, true,
+        true, true,
+    };
+    bool *break_it = corner_breakables;
+
+    for (int y = 2; y <= 5; ++y) {
+        for (int x = 4; x <= 8; ++x) {
+            tile *t1 = getTile(x, y);
+            tile *t2 = getTile(width - 1 - x, y);
+            tile *t3 = getTile(x, height - 1 - y);
+            tile *t4 = getTile(width - 1 - x, height - 1 - y);
+            if (t1->type == TILE_FLOOR) {
+                if (*break_it) {
+                    t1->type = TILE_BREAKABLE;
+                    t2->type = TILE_BREAKABLE;
+                    t3->type = TILE_BREAKABLE;
+                    t4->type = TILE_BREAKABLE;
+                }
+                ++break_it;
+            }
+        }
+    }
+
+    static const item_type border_items_h[] = {
+        ITEM_BOMB, ITEM_BOMB, ITEM_ROLLERBLADE, ITEM_FULL_FIRE, ITEM_ROLLERBLADE, ITEM_BOMB, ITEM_BOMB,
+    };
+
+    static const item_type border_items_v[] = {
+        ITEM_BOMB, ITEM_KICK, ITEM_PUNCH, ITEM_BOMB,
+    };
+
+    const item_type *item_it = border_items_h;
+    for (int x = 2; x <= width - 3; x += 2) {
+        tile *t1 = getTile(x, 1);
+        specials[t1] = new tile_item_spawner(t1, this, *item_it);
+
+        tile *t2 = getTile(x, height - 2);
+        specials[t2] = new tile_item_spawner(t2, this, *item_it);
+
+        ++item_it;
+    }
+
+    item_it = border_items_v;
+    for (int y = 3; y <= height - 4; y += 2) {
+        tile *t1 = getTile(2, y);
+        specials[t1] = new tile_item_spawner(t1, this, *item_it);
+
+        tile *t2 = getTile(width - 3, height - y - 1);
+        specials[t2] = new tile_item_spawner(t2, this, *item_it);
+
+        ++item_it;
     }
 }
 
@@ -365,11 +443,7 @@ void game_map::writeToPacket(packet_ext &packet) {
     packet.writeChar(zone);
     for (tile *t = tiles; t - tiles < width * height; ++t) {
         switch (t->type) {
-        case TILE_SPAWN:
-            packet.writeChar(TILE_FLOOR);
-            packet.writeShort(0);
-            break;
-        case TILE_ITEM:
+        case TILE_BREAKABLE:
             packet.writeChar(TILE_BREAKABLE);
             packet.writeShort(0);
             break;

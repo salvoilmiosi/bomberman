@@ -75,11 +75,21 @@ void game_map::render(SDL_Renderer *renderer) {
             tile *t_up = getTile(x, y-1);
             if (!t) continue;
             switch (t->type) {
+            case TILE_SPECIAL:
+            {
+                auto it = specials.find(t);
+                if (it != specials.end() && it->second) {
+                    src_rect = it->second->getSrcRect();
+                    break;
+                }
+                // treat as TILE_FLOOR if tile entity not found
+            }
             case TILE_SPAWN:
             case TILE_FLOOR:
                 switch (zone) {
+                case ZONE_RANDOM:
                 case ZONE_NORMAL:
-                    if (t_up && t_up->type != TILE_FLOOR) {
+                    if (t_up && (t_up->type == TILE_WALL || t_up->type == TILE_BREAKABLE)) {
                         src_rect = TILE(4, 0);
                     } else {
                         src_rect = TILE(3, 0);
@@ -113,10 +123,18 @@ void game_map::render(SDL_Renderer *renderer) {
                         src_rect = TILE(7, 0);
                     }
                     break;
+                case ZONE_DUEL:
+                    if (t_up && t_up->type == TILE_WALL && t_up->data == 0) {
+                        src_rect = TILE(2, 2);
+                    } else {
+                        src_rect = TILE(3, 2);
+                    }
+                    break;
                 }
                 break;
             case TILE_WALL:
                 switch (zone) {
+                case ZONE_RANDOM:
                 case ZONE_NORMAL:
                     src_rect = TILE(t->data == 1 ? 0 : 1, 0);
                     break;
@@ -132,11 +150,14 @@ void game_map::render(SDL_Renderer *renderer) {
                 case ZONE_BELT:
                     src_rect = TILE((t->data & 0x3f) % 3, (t->data & 0x3f) / 3);
                     break;
+                case ZONE_DUEL:
+                    src_rect = TILE((t->data & 0x3f) % 6, (t->data & 0x3f) / 6);
+                    break;
                 }
                 break;
-            case TILE_ITEM:
             case TILE_BREAKABLE:
                 switch (zone) {
+                case ZONE_RANDOM:
                 case ZONE_NORMAL:
                     src_rect = TILE(2, 0);
                     break;
@@ -178,16 +199,11 @@ void game_map::render(SDL_Renderer *renderer) {
                     src_rect = belt_breakables[frame];
                     break;
                 }
+                case ZONE_DUEL:
+                    src_rect = TILE(3, 1);
+                    break;
                 }
                 break;
-            case TILE_SPECIAL:
-            {
-                auto it = specials.find(t);
-                if (it != specials.end() && it->second) {
-                    src_rect = it->second->getSrcRect();
-                }
-                break;
-            }
             }
             dst_rect.x = TILE_SIZE * x + left();
             dst_rect.y = TILE_SIZE * y + top();
@@ -198,6 +214,7 @@ void game_map::render(SDL_Renderer *renderer) {
                 {ZONE_BOMB, tileset_3_texture},
                 {ZONE_JUMP, tileset_4_texture},
                 {ZONE_BELT, tileset_5_texture},
+                {ZONE_DUEL, tileset_6_texture},
             };
 
             SDL_RendererFlip flip = SDL_FLIP_NONE;
@@ -259,8 +276,8 @@ void game_map::readFromByteArray(byte_array &packet) {
                     }
                     if (ent) {
                         ent->used = true;
-                        specials[t] = ent;
                     }
+                    specials[t] = ent;
                 }
             }
         }

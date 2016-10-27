@@ -1,7 +1,6 @@
 #include "tile_belt.h"
 
-#include "ent_bomb.h"
-#include "player.h"
+#include "ent_movable.h"
 
 tile_belt::tile_belt(tile *t_tile, game_map *g_map, uint8_t direction) : tile_entity(SPECIAL_BELT, t_tile, g_map), direction(direction) {
     tx = g_map->getTileX(t_tile);
@@ -11,10 +10,6 @@ tile_belt::tile_belt(tile *t_tile, game_map *g_map, uint8_t direction) : tile_en
 
     switch(t_tile->type) {
     case TILE_BREAKABLE:
-        is_breakable = true;
-        data |= 0x1000;
-        break;
-    case TILE_ITEM:
         is_breakable = true;
         tile_data = t_tile->data & 0xff;
         data |= 0x1000;
@@ -47,22 +42,9 @@ void tile_belt::tick() {
     for (size_t i = 0; i < SEARCH_SIZE; ++i) {
         entity *ent = ents[i];
         if (!ent) break;
-        switch(ent->getType()) {
-        case TYPE_BOMB:
-        {
-            bomb *b = dynamic_cast<bomb *>(ent);
-            b->move(speedx, speedy);
-            break;
-        }
-        case TYPE_PLAYER:
-        {
-            player *p = dynamic_cast<player *>(ent);
-            p->move(speedx, speedy);
-            break;
-        }
-        default:
-            break;
-        }
+        ent_movable *mov = dynamic_cast<ent_movable *>(ent);
+        if (!mov) continue;
+        mov->move(speedx, speedy);
     }
 }
 

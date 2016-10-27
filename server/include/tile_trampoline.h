@@ -28,14 +28,6 @@ public:
         }
         return false;
     }
-
-    bool isWalkable() {
-        return true;
-    }
-
-    bool bombHit() {
-        return false;
-    }
 };
 
 #endif // __TILE_TRAMPOLINE_H__
