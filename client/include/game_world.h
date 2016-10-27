@@ -14,6 +14,13 @@ enum entity_type {
     TYPE_ITEM
 };
 
+enum direction {
+    DIR_UP,
+    DIR_DOWN,
+    DIR_LEFT,
+    DIR_RIGHT,
+};
+
 class entity {
 private:
     const entity_type ent_type;

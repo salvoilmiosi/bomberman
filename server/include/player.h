@@ -62,7 +62,7 @@ private:
     bool jumping;
     bool on_trampoline;
 
-    uint8_t direction;
+    direction player_direction;
 
     uint8_t pickups;
 

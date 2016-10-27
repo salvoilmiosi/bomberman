@@ -27,8 +27,9 @@ private:
     int walk_time;
     int last_walk_frame;
 
+    direction player_direction;
+
     bool moving;
-    uint8_t direction;
     bool punching;
     bool diseased;
     bool jumping;

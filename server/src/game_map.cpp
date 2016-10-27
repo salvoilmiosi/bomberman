@@ -44,8 +44,9 @@ void game_map::tick() {
 void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     clear();
 
+    //m_zone = ZONE_RANDOM;
     if (m_zone == ZONE_RANDOM) {
-        m_zone = ZONE_BELT;//static_cast<map_zone>(random_engine() % 6 + 1);
+        m_zone = static_cast<map_zone>(random_engine() % 6 + 1);
     }
 
     width = w;
@@ -319,19 +320,19 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     case ZONE_BELT:
         for (int x = 4; x <= width - 6; ++x) {
             tile *t = getTile(x, 3);
-            specials[t] = new tile_belt(t, this, BELT_DIR_RIGHT);
+            specials[t] = new tile_belt(t, this, DIR_RIGHT);
         }
         for (int x = 5; x <= width - 5; ++x) {
             tile *t = getTile(x, height - 4);
-            specials[t] = new tile_belt(t, this, BELT_DIR_LEFT);
+            specials[t] = new tile_belt(t, this, DIR_LEFT);
         }
         for (int y = 4; y <= height - 4; ++y) {
             tile *t = getTile(4, y);
-            specials[t] = new tile_belt(t, this, BELT_DIR_UP);
+            specials[t] = new tile_belt(t, this, DIR_UP);
         }
         for (int y = 3; y <= height - 5; ++y) {
             tile *t = getTile(width - 5, y);
-            specials[t] = new tile_belt(t, this, BELT_DIR_DOWN);
+            specials[t] = new tile_belt(t, this, DIR_DOWN);
         }
         break;
     case ZONE_DUEL:

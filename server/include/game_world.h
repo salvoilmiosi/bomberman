@@ -17,6 +17,13 @@ enum entity_type {
     TYPE_ITEM
 };
 
+enum direction {
+    DIR_UP,
+    DIR_DOWN,
+    DIR_LEFT,
+    DIR_RIGHT,
+};
+
 static const size_t SEARCH_SIZE = 8;
 static const int COUNTDOWN_SECONDS = 4;
 

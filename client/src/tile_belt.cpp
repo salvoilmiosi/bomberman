@@ -1,10 +1,14 @@
 #include "tile_belt.h"
 
 #include "resources.h"
+#include "game_world.h"
+
+#include <map>
+#include <vector>
 
 SDL_Rect tile_belt::getSrcRect() {
     uint16_t data = getData();
-    uint8_t direction = (data & 0xc00) >> 10;
+    direction belt_direction = static_cast<direction>((data & 0xc00) >> 10);
     bool is_breakable = (data & 0x1000) != 0;
 
     SDL_Rect src_rect;
@@ -19,13 +23,13 @@ SDL_Rect tile_belt::getSrcRect() {
         src_rect = belt_breakables[frame];
     } else {
         int frame = (SDL_GetTicks() * 4 / 500) % 4;
-        SDL_Rect belt_rects[][4] = {
-            {TILE(0, 3), TILE(1, 3), TILE(2, 3), TILE(3, 3)},
-            {TILE(4, 3), TILE(5, 3), TILE(6, 3), TILE(7, 3)},
-            {TILE(0, 4), TILE(1, 4), TILE(2, 4), TILE(3, 4)},
-            {TILE(4, 4), TILE(5, 4), TILE(6, 4), TILE(7, 4)},
+        static const std::map<direction, std::vector<SDL_Rect> > belt_rects = {
+            {DIR_UP, {TILE(0, 3), TILE(1, 3), TILE(2, 3), TILE(3, 3)}},
+            {DIR_DOWN, {TILE(4, 3), TILE(5, 3), TILE(6, 3), TILE(7, 3)}},
+            {DIR_LEFT, {TILE(0, 4), TILE(1, 4), TILE(2, 4), TILE(3, 4)}},
+            {DIR_RIGHT, {TILE(4, 4), TILE(5, 4), TILE(6, 4), TILE(7, 4)}},
         };
-        src_rect = belt_rects[direction][frame];
+        src_rect = belt_rects.at(belt_direction)[frame];
     }
     return src_rect;
 }

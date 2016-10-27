@@ -89,21 +89,21 @@ void player::render(SDL_Renderer *renderer) {
             spy = 2;
         } else if (punching) {
             spy = 3;
-            switch(direction) {
-            case 0:
+            switch(player_direction) {
+            case DIR_UP:
                 spx = 1;
                 render_y -= 5;
                 break;
-            case 1:
+            case DIR_DOWN:
                 spx = 0;
                 render_y += 7;
                 break;
-            case 2:
+            case DIR_LEFT:
                 spx = 2;
                 flip = SDL_FLIP_HORIZONTAL;
                 render_x -= 10;
                 break;
-            case 3:
+            case DIR_RIGHT:
                 spx = 2;
                 render_x += 10;
                 break;
@@ -117,18 +117,18 @@ void player::render(SDL_Renderer *renderer) {
                 last_walk_frame = frame;
                 spx = walk_frames[frame];
             }
-            switch(direction) {
-            case 0:
+            switch(player_direction) {
+            case DIR_UP:
                 spx += 1;
                 break;
-            case 1:
+            case DIR_DOWN:
                 spx += 4;
                 break;
-            case 2:
+            case DIR_LEFT:
                 spx += 1;
                 spy += 1;
                 break;
-            case 3:
+            case DIR_RIGHT:
                 spx += 4;
                 spy += 1;
                 break;
@@ -212,5 +212,5 @@ void player::readFromByteArray(byte_array &ba) {
     invulnerable = (flags & (1 << 6)) != 0;
     stunned = (flags & (1 << 7)) != 0;
 
-    direction = (flags & 0xc000) >> 14;
+    player_direction = static_cast<direction>((flags & 0xc000) >> 14);
 }

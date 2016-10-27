@@ -37,7 +37,7 @@ void player::respawn(int tx, int ty) {
     num_bombs = 1;
 
     moving = false;
-    direction = 1;
+    player_direction = DIR_DOWN;
 
     punch_ticks = 0;
     invulnerable_ticks = 0;
@@ -78,10 +78,10 @@ void player::handleInput() {
     if (!handler)
         return;
 
-    movement_keys_down[0] = handler->isDown(USR_UP);
-    movement_keys_down[1] = handler->isDown(USR_DOWN);
-    movement_keys_down[2] = handler->isDown(USR_LEFT);
-    movement_keys_down[3] = handler->isDown(USR_RIGHT);
+    movement_keys_down[DIR_UP] = handler->isDown(USR_UP);
+    movement_keys_down[DIR_DOWN] = handler->isDown(USR_DOWN);
+    movement_keys_down[DIR_LEFT] = handler->isDown(USR_LEFT);
+    movement_keys_down[DIR_RIGHT] = handler->isDown(USR_RIGHT);
 
     for (int i=0; i<4; ++i) {
         if (movement_keys_down[i]) {
@@ -127,17 +127,17 @@ void player::handleInput() {
         float bx = fx;
         float by = fy;
 
-        switch(direction) {
-        case 0:
+        switch(player_direction) {
+        case DIR_UP:
             by -= TILE_SIZE;
             break;
-        case 1:
+        case DIR_DOWN:
             by += TILE_SIZE;
             break;
-        case 2:
+        case DIR_LEFT:
             bx -= TILE_SIZE;
             break;
-        case 3:
+        case DIR_RIGHT:
             bx += TILE_SIZE;
             break;
         }
@@ -176,22 +176,23 @@ void player::handleInput() {
     while(! movement_priority.empty()) {
         uint8_t prio = movement_priority.front();
         if (movement_keys_down[prio]) {
-            switch (prio) {
-            case 0:
+            direction new_dir = static_cast<direction>(prio);
+            switch (new_dir) {
+            case DIR_UP:
                 player_move(0, -move_speed);
                 break;
-            case 1:
+            case DIR_DOWN:
                 player_move(0, move_speed);
                 break;
-            case 2:
+            case DIR_LEFT:
                 player_move(-move_speed, 0);
                 break;
-            case 3:
+            case DIR_RIGHT:
                 player_move(move_speed, 0);
                 break;
             }
 
-            direction = prio;
+            player_direction = new_dir;
             moving = true;
             break;
         } else {
@@ -392,7 +393,7 @@ byte_array player::toByteArray() {
     flags |= (1 << 5) * jumping;
     flags |= (1 << 6) * (invulnerable_ticks > 0);
     flags |= (1 << 7) * (stun_ticks > 0);
-    flags |= (direction & 0x3) << 14;
+    flags |= (player_direction & 0x3) << 14;
     ba.writeShort(flags);
 
     return ba;

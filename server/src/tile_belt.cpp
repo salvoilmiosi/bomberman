@@ -2,11 +2,11 @@
 
 #include "ent_movable.h"
 
-tile_belt::tile_belt(tile *t_tile, game_map *g_map, uint8_t direction) : tile_entity(SPECIAL_BELT, t_tile, g_map), direction(direction) {
+tile_belt::tile_belt(tile *t_tile, game_map *g_map, direction belt_direction) : tile_entity(SPECIAL_BELT, t_tile, g_map), belt_direction(belt_direction) {
     tx = g_map->getTileX(t_tile);
     ty = g_map->getTileY(t_tile);
 
-    uint16_t data = (direction & 0x3) << 10;
+    uint16_t data = (belt_direction & 0x3) << 10;
 
     switch(t_tile->type) {
     case TILE_BREAKABLE:
@@ -25,17 +25,17 @@ void tile_belt::tick() {
     entity **ents = g_map->getWorld()->findEntities(tx, ty);
     float speedx = 0;
     float speedy = 0;
-    switch (direction) {
-    case BELT_DIR_UP:
+    switch (belt_direction) {
+    case DIR_UP:
         speedy = -BELT_SPEED / TICKRATE;
         break;
-    case BELT_DIR_DOWN:
+    case DIR_DOWN:
         speedy = BELT_SPEED / TICKRATE;
         break;
-    case BELT_DIR_LEFT:
+    case DIR_LEFT:
         speedx = -BELT_SPEED / TICKRATE;
         break;
-    case BELT_DIR_RIGHT:
+    case DIR_RIGHT:
         speedx = BELT_SPEED / TICKRATE;
         break;
     }
@@ -53,7 +53,7 @@ bool tile_belt::bombHit() {
         game_world *world = g_map->getWorld();
         world->addEntity(new broken_wall(world, t_tile, item));
         is_breakable = false;
-        setData((direction & 0x3) << 10);
+        setData((belt_direction & 0x3) << 10);
         return true;
     } else {
         return false;

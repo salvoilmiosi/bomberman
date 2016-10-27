@@ -113,17 +113,17 @@ bool bomb::punch(player *p) {
     speedx = 0;
     speedy = 0;
 
-    switch (p->direction) {
-    case 0:
+    switch (p->player_direction) {
+    case DIR_UP:
         speedy = -PUNCH_SPEED / TICKRATE;
         break;
-    case 1:
+    case DIR_DOWN:
         speedy = PUNCH_SPEED / TICKRATE;
         break;
-    case 2:
+    case DIR_LEFT:
         speedx = -PUNCH_SPEED / TICKRATE;
         break;
-    case 3:
+    case DIR_RIGHT:
         speedx = PUNCH_SPEED / TICKRATE;
         break;
     default:
