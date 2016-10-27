@@ -11,7 +11,7 @@ tile_belt::tile_belt(tile *t_tile, game_map *g_map, uint8_t direction) : tile_en
     switch(t_tile->type) {
     case TILE_BREAKABLE:
         is_breakable = true;
-        tile_data = t_tile->data & 0xff;
+        item = static_cast<item_type>(t_tile->data & 0xff);
         data |= 0x1000;
         break;
     default:
@@ -51,9 +51,8 @@ void tile_belt::tick() {
 bool tile_belt::bombHit() {
     if (is_breakable) {
         game_world *world = g_map->getWorld();
-        world->addEntity(new broken_wall(world, t_tile, static_cast<item_type>(tile_data)));
+        world->addEntity(new broken_wall(world, t_tile, item));
         is_breakable = false;
-        tile_data = 0;
         setData((direction & 0x3) << 10);
         return true;
     } else {

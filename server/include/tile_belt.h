@@ -9,7 +9,7 @@ static const uint8_t BELT_DIR_DOWN = 1;
 static const uint8_t BELT_DIR_LEFT = 2;
 static const uint8_t BELT_DIR_RIGHT = 3;
 
-static const float BELT_SPEED = 80.f;
+static const float BELT_SPEED = 100.f;
 
 class tile_belt : public tile_entity {
 private:
@@ -19,7 +19,7 @@ private:
     uint8_t direction;
 
     bool is_breakable = false;
-    uint8_t tile_data = 0;
+    item_type item = ITEM_NONE;
 
 public:
     tile_belt(tile *t_tile, game_map *g_map, uint8_t direction);

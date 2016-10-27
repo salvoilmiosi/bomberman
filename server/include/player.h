@@ -129,6 +129,8 @@ public:
     void makeInvulnerable();
 
 private:
+    bool player_move(float dx, float dy);
+
     void explodedBomb(class bomb *b);
     void stoppedKick(class bomb *b);
 

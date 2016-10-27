@@ -69,7 +69,7 @@ bomb::bomb(game_world *world, int tx, int ty) : ent_movable(world, TYPE_BOMB), p
     }
 }
 
-bool bomb::kick(player *p) {
+bool bomb::kick(player *p, float dx, float dy) {
     if (kicked || flying) return false;
 
     speedx = 0;
@@ -81,20 +81,15 @@ bool bomb::kick(player *p) {
     }
     kicker = p;
 
-    switch (p->direction) {
-    case 0:
+    if (dy < 0) {
         speedy = -KICK_SPEED / TICKRATE;
-        break;
-    case 1:
+    } else if (dy > 0) {
         speedy = KICK_SPEED / TICKRATE;
-        break;
-    case 2:
+    } else if (dx < 0) {
         speedx = -KICK_SPEED / TICKRATE;
-        break;
-    case 3:
+    } else if (dx > 0) {
         speedx = KICK_SPEED / TICKRATE;
-        break;
-    default:
+    } else {
         return false;
     }
 
@@ -157,7 +152,7 @@ void bomb::stopKick() {
 }
 
 bool bomb::move(float dx, float dy) {
-    return ent_movable::move(dx, dy, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS);
+    return std_move(dx, dy, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS);
 }
 
 void bomb::tick() {
@@ -195,9 +190,11 @@ void bomb::tick() {
         if (fz <= 0) {
             fz = 0.f;
             world->playWave(WAV_BOUNCE);
-            if (world->isWalkable(getTileX(), getTileY(), WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
-                fx = getTileX() * TILE_SIZE;
-                fy = getTileY() * TILE_SIZE;
+            float to_fx = getTileX() * TILE_SIZE;
+            float to_fy = getTileY() * TILE_SIZE;
+            if (world->isWalkable(to_fx, to_fy, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
+                fx = to_fx;
+                fy = to_fy;
                 flying = false;
             } else {
                 entity **ents = world->findEntities(getTileX(), getTileY(), TYPE_PLAYER);

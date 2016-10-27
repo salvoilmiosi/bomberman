@@ -8,7 +8,9 @@ broken_wall::broken_wall(game_world *world, tile *t, item_type type) : entity(wo
 
     life_ticks = BROKEN_WALL_LIFE;
 
-    item = static_cast<item_type>(t->data);
+    if (t->type == TILE_BREAKABLE) {
+        item = static_cast<item_type>(t->data);
+    }
     if (item == ITEM_NONE) {
         item = type;
     }

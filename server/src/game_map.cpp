@@ -45,7 +45,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     clear();
 
     if (m_zone == ZONE_RANDOM) {
-        m_zone = static_cast<map_zone>(random_engine() % 6 + 1);
+        m_zone = ZONE_BELT;//static_cast<map_zone>(random_engine() % 6 + 1);
     }
 
     width = w;

@@ -45,7 +45,7 @@ public:
 public:
     void tick();
 
-    bool kick(player *kicker);
+    bool kick(player *kicker, float dx, float dy);
     bool punch(player *puncher);
 
     bool move(float dx, float dy);

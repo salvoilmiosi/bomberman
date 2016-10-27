@@ -124,27 +124,27 @@ void player::handleInput() {
         punch_ticks = PLAYER_PUNCH_TICKS;
         moving = false;
 
-        int bx = getTileX();
-        int by = getTileY();
+        float bx = fx;
+        float by = fy;
 
         switch(direction) {
         case 0:
-            --by;
+            by -= TILE_SIZE;
             break;
         case 1:
-            ++by;
+            by += TILE_SIZE;
             break;
         case 2:
-            --bx;
+            bx -= TILE_SIZE;
             break;
         case 3:
-            ++bx;
+            bx += TILE_SIZE;
             break;
         }
 
-        entity **ents = world->findEntities(bx, by, TYPE_BOMB);
+        ent_movable **mov_ents = world->findMovables(bx, by, TYPE_BOMB);
         for (uint8_t i=0; i<SEARCH_SIZE; ++i) {
-            entity *ent = ents[i];
+            ent_movable *ent = mov_ents[i];
             if (!ent) break;
             bomb *b = dynamic_cast<bomb*>(ent);
             b->punch(this);
@@ -178,16 +178,16 @@ void player::handleInput() {
         if (movement_keys_down[prio]) {
             switch (prio) {
             case 0:
-                move(0, -move_speed);
+                player_move(0, -move_speed);
                 break;
             case 1:
-                move(0, move_speed);
+                player_move(0, move_speed);
                 break;
             case 2:
-                move(-move_speed, 0);
+                player_move(-move_speed, 0);
                 break;
             case 3:
-                move(move_speed, 0);
+                player_move(move_speed, 0);
                 break;
             }
 
@@ -202,30 +202,34 @@ void player::handleInput() {
 }
 
 bool player::move(float dx, float dy) {
-    if (ent_movable::move(dx, dy)) {
+    return std_move(dx, dy);
+}
+
+bool player::player_move(float dx, float dy) {
+    if (move(dx, dy)) {
         return true;
     }
 
-    uint8_t to_tx = getTileX();
-    uint8_t to_ty = getTileY();
+    float bx = fx;
+    float by = fy;
     if (dx < 0) {
-        --to_tx;
+        bx -= TILE_SIZE;
     } else if (dx > 0) {
-        ++to_tx;
+        bx += TILE_SIZE;
     } else if (dy < 0) {
-        --to_ty;
+        by -= TILE_SIZE;
     } else if (dy > 0) {
-        ++to_ty;
+        by += TILE_SIZE;
     } else {
         return false;
     }
 
     if (alive && pickups & PICKUP_HAS_KICK) {
-        entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
-        if (*ents) {
+        ent_movable **mov_ents = world->findMovables(bx, by, TYPE_BOMB);
+        if (*mov_ents) {
             if (kick_ticks <= 0) {
-                bomb *b = dynamic_cast<bomb *>(*ents);
-                if (b->kick(this)) {
+                bomb *b = dynamic_cast<bomb *>(*mov_ents);
+                if (b && b->kick(this, dx, dy)) {
                     kicked_bombs.push_back(b);
                 }
             } else {
@@ -348,7 +352,7 @@ void player::spawnItems() {
     std::vector<tile *> tiles;
     for (int ty = 0; ty < MAP_HEIGHT; ++ty) {
         for (int tx = 0; tx < MAP_WIDTH; ++tx) {
-            if (world->isWalkable(tx, ty)) {
+            if (world->isWalkable(tx * TILE_SIZE, ty * TILE_SIZE)) {
                 tiles.push_back(world->getMap().getTile(tx, ty));
             }
         }

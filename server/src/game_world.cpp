@@ -231,13 +231,13 @@ void game_world::countdownEnd() {
     }
 }
 
-entity **game_world::findEntities(int tx, int ty, uint8_t type) {
+entity **game_world::findEntities(int tx, int ty, entity_type type) {
     static entity *ents[SEARCH_SIZE];
     int i = 0;
 
     memset(ents, 0, sizeof(ents));
     for (entity *ent : entities) {
-        if (ent && ent->isNotDestroyed() && (type == 0 ? true : ent->getType() == type) && ent->getTileX() == tx && ent->getTileY() == ty) {
+        if (ent && ent->isNotDestroyed() && (type == TYPE_NONE ? true : ent->getType() == type) && ent->getTileX() == tx && ent->getTileY() == ty) {
             ents[i] = ent;
             ++i;
         }
@@ -246,7 +246,34 @@ entity **game_world::findEntities(int tx, int ty, uint8_t type) {
     return ents;
 }
 
-bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
+template<typename T> const T ABS(T x) {
+    return x > 0 ? x : -x;
+}
+
+ent_movable **game_world::findMovables(float fx, float fy, entity_type type) {
+    static ent_movable *ents[SEARCH_SIZE];
+    int i = 0;
+
+    memset(ents, 0, sizeof(ents));
+    for (entity *ent : entities) {
+        ent_movable *mov = dynamic_cast<ent_movable *>(ent);
+        if (mov && mov->isNotDestroyed() && (type == TYPE_NONE ? true : ent->getType() == type)) {
+            float dx = ABS(mov->getX() - fx);
+            float dy = ABS(mov->getY() - fy);
+            if (dx < TILE_SIZE / 2 && dy < TILE_SIZE / 2) {
+                ents[i] = mov;
+                ++i;
+            }
+        }
+    }
+
+    return ents;
+}
+
+bool game_world::isWalkable(float fx, float fy, uint8_t flags) {
+    int tx = fx / TILE_SIZE + 0.5f;
+    int ty = fy / TILE_SIZE + 0.5f;
+
     tile *t = getMap().getTile(tx, ty);
     if (!t) return false;
 
@@ -255,16 +282,6 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
         entity *ent = ents[i];
         if (!ent) break;
         switch (ent->getType()) {
-        case TYPE_BOMB:
-            if (flags & WALK_IGNORE_BOMBS) {
-                break;
-            } else {
-                bomb *b = dynamic_cast<bomb*>(ent);
-                if (b && b->isFlying()) {
-                    break;
-                }
-            }
-            return false;
         case TYPE_ITEM:
             if (flags & WALK_BLOCK_ITEMS) {
                 game_item *item = dynamic_cast<game_item *>(ent);
@@ -273,16 +290,36 @@ bool game_world::isWalkable(int tx, int ty, uint8_t flags) {
                 }
             }
             break;
+        case TYPE_BROKEN_WALL:
+            return false;
+        default:
+            break;
+        }
+    }
+
+    ent_movable **ents_mov = findMovables(fx, fy);
+    for (size_t i=0; i<SEARCH_SIZE; ++i) {
+        ent_movable *mov = ents_mov[i];
+        if (!mov) break;
+        switch (mov->getType()) {
+        case TYPE_BOMB:
+            if (flags & WALK_IGNORE_BOMBS) {
+                break;
+            } else {
+                bomb *b = dynamic_cast<bomb*>(mov);
+                if (b && !b->isFlying()) {
+                    return false;
+                }
+            }
+            break;
         case TYPE_PLAYER:
             if (flags & WALK_BLOCK_PLAYERS) {
-                player *p = dynamic_cast<player *>(ent);
+                player *p = dynamic_cast<player *>(mov);
                 if (p && p->isAlive() && !p->isFlying()) {
                     return false;
                 }
             }
             break;
-        case TYPE_BROKEN_WALL:
-            return false;
         default:
             break;
         }

@@ -135,9 +135,11 @@ public:
         return g_map;
     }
 
-    entity **findEntities(int tx, int ty, uint8_t type = 0);
+    entity **findEntities(int tx, int ty, entity_type type = TYPE_NONE);
 
-    bool isWalkable(int tx, int ty, uint8_t flags = 0);
+    class ent_movable **findMovables(float fx, float fy, entity_type type = TYPE_BOMB);
+
+    bool isWalkable(float fx, float fy, uint8_t flags = 0);
 
 private:
     void countdownEnd();
