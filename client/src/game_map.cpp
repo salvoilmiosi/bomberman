@@ -7,7 +7,7 @@
 #include "resources.h"
 
 tile_entity::tile_entity(tile *t_tile) : t_tile(t_tile) {
-    type = static_cast<special_type>((t_tile->data & 0xe000) >> 13);
+    type = getSpecialType(t_tile->data);
 }
 
 game_map::game_map() {
@@ -245,7 +245,7 @@ void game_map::readFromByteArray(byte_array &packet) {
                 t->type = static_cast<tile_type>(type);
                 t->data = data;
                 if (t->type == TILE_SPECIAL) {
-                    uint8_t ent_type = (data & 0xe000) >> 13;
+                    uint8_t ent_type = tile_entity::getSpecialType(data);
                     auto it = specials.find(t);
                     tile_entity *ent = nullptr;
                     if (it == specials.end()) {

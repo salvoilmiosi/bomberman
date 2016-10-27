@@ -1,7 +1,7 @@
 #ifndef __ENT_BOMB_H__
 #define __ENT_BOMB_H__
 
-#include "game_world.h"
+#include "ent_movable.h"
 
 static const float BOMB_LIFE = TICKRATE * 3;
 
@@ -13,14 +13,10 @@ static const float PUNCH_SPEED_Z = 600.f;
 static const float PUNCH_SPEED_Z_BOUNCE = 360.f;
 static const float PUNCH_Z_ACCEL = 2880.f;
 
-class bomb : public entity {
+class bomb : public ent_movable {
 private:
     class player *const planter;
     class player *kicker = nullptr;
-
-    float fx;
-    float fy;
-    float fz;
 
     float speedx;
     float speedy;
@@ -60,14 +56,6 @@ public:
 
     bool isFlying() {
         return flying;
-    }
-
-    const uint8_t getTileX() {
-        return (fx / TILE_SIZE) + 0.5f;
-    }
-
-    const uint8_t getTileY() {
-        return (fy / TILE_SIZE) + 0.5f;
     }
 
 private:

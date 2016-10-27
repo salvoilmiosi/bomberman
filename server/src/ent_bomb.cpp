@@ -6,7 +6,7 @@
 #include "main.h"
 #include "game_sound.h"
 
-bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), planter(p) {
+bomb::bomb(game_world *world, player *p) : ent_movable(world, TYPE_BOMB), planter(p) {
     fx = p->getTileX() * TILE_SIZE;
     fy = p->getTileY() * TILE_SIZE;
     fz = 0.f;
@@ -33,7 +33,7 @@ bomb::bomb(game_world *world, player *p) : entity(world, TYPE_BOMB), planter(p) 
     world->playWave(WAV_PLANT);
 }
 
-bomb::bomb(game_world *world, int tx, int ty) : entity(world, TYPE_BOMB), planter(nullptr) {
+bomb::bomb(game_world *world, int tx, int ty) : ent_movable(world, TYPE_BOMB), planter(nullptr) {
     fx = tx * TILE_SIZE;
     fy = ty * TILE_SIZE;
     fz = BOMB_HEIGHT;
@@ -157,35 +157,7 @@ void bomb::stopKick() {
 }
 
 bool bomb::move(float dx, float dy) {
-    do_send_updates = true;
-
-    float to_fx = fx + dx;
-    float to_fy = fy + dy;
-
-    float check_fx = to_fx;
-    float check_fy = to_fy;
-
-    if (dx > 0) {
-        check_fx += TILE_SIZE / 2;
-    } else if (dx < 0) {
-        check_fx -= TILE_SIZE / 2;
-    } else if (dy > 0) {
-        check_fy += TILE_SIZE / 2;
-    } else if (dy < 0) {
-        check_fy -= TILE_SIZE / 2;
-    }
-
-    int to_tx = (check_fx / TILE_SIZE) + 0.5f;
-    int to_ty = (check_fy / TILE_SIZE) + 0.5f;
-
-    if ((to_tx == getTileX() && to_ty == getTileY()) ||
-        world->isWalkable(to_tx, to_ty, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
-        fx = to_fx;
-        fy = to_fy;
-        return true;
-    } else {
-        return false;
-    }
+    return ent_movable::move(dx, dy, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS);
 }
 
 void bomb::tick() {

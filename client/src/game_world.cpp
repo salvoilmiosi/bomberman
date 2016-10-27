@@ -28,7 +28,7 @@ entity *entity::newObjFromByteArray(game_world *world, uint16_t id, entity_type 
 }
 
 tile_entity *tile_entity::newTileEntity(tile *t_tile) {
-    uint8_t type = (t_tile->data & 0xe000) >> 13;
+    special_type type = getSpecialType(t_tile->data);
 
     switch (type) {
     case SPECIAL_TRAMPOLINE:

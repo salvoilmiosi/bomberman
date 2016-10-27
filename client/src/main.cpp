@@ -72,7 +72,14 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    if (!openResourceFile("resource.dat")) {
+	std::string resource_path;
+	if (argc > 0) {
+		resource_path = argv[0];
+		resource_path = resource_path.substr(0, 1 + resource_path.find_last_of("\\/"));
+	}
+	resource_path += "resource.dat";
+
+    if (!openResourceFile(resource_path.c_str())) {
         fprintf(stderr, "Could not open resource file\n");
         return 1;
     }

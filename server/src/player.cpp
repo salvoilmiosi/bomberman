@@ -12,7 +12,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-player::player(game_world *world, input_handler *handler) : entity(world, TYPE_PLAYER), handler(handler) {
+player::player(game_world *world, input_handler *handler) : ent_movable(world, TYPE_PLAYER), handler(handler) {
     memset(player_name, 0, PLAYER_NAME_SIZE);
 
     do_send_updates = false;
@@ -24,6 +24,7 @@ void player::respawn(int tx, int ty) {
     fx = tx * TILE_SIZE;
     fy = ty * TILE_SIZE;
     fz = 0;
+	speedz = 0;
 
     spawned = true;
     alive = true;
@@ -201,71 +202,19 @@ void player::handleInput() {
 }
 
 void player::move(float dx, float dy) {
-    do_send_updates = true;
+    uint8_t start_tx = getTileX();
+    uint8_t start_ty = getTileY();
 
-    float to_fx = fx;
-    float to_fy = fy;
+    uint8_t end_tx, end_ty;
 
-    float check_fx = fx;
-    float check_fy = fy;
-
-    float move_speed = 0;
-    uint8_t dir;
-
-    if (dy < 0) {
-        dir = 0;
-        move_speed = -dy;
-        to_fy += dy;
-        check_fy = to_fy - TILE_SIZE / 2;
-    } else if (dy > 0) {
-        dir = 1;
-        move_speed = dy;
-        to_fy += dy;
-        check_fy = to_fy + TILE_SIZE / 2;
-    } else if (dx < 0) {
-        dir = 2;
-        move_speed = -dx;
-        to_fx += dx;
-        check_fx = to_fx - TILE_SIZE / 2;
-    } else if (dx > 0) {
-        dir = 3;
-        move_speed = dx;
-        to_fx += dx;
-        check_fx = to_fx + TILE_SIZE / 2;
+    if (ent_movable::move(dx, dy)) {
+        end_tx = getTileX();
+        end_ty = getTileY();
     } else {
-        return;
+        return false;
     }
 
-    int to_tx = check_fx / TILE_SIZE + 0.5f;
-    int to_ty = check_fy / TILE_SIZE + 0.5f;
-
-    if ((to_tx == getTileX() && to_ty == getTileY() &&
-         !world->isWalkable(getTileX(), getTileY())) ||
-        world->isWalkable(to_tx, to_ty)) {
-        fx = to_fx;
-        fy = to_fy;
-    }
-
-    switch (dir) {
-    case 0:
-    case 1:
-    {
-        float side_dx = getTileX() * TILE_SIZE - fx;
-        if (side_dx > 0) fx += side_dx > move_speed ? move_speed : side_dx;
-        else if (side_dx < 0) fx += side_dx < -move_speed ? -move_speed : side_dx;
-        break;
-    }
-    case 2:
-    case 3:
-    {
-        float side_dy = getTileY() * TILE_SIZE - fy;
-        if (side_dy > 0) fy += side_dy > move_speed ? move_speed : side_dy;
-        else if (side_dy < 0) fy += side_dy < -move_speed ? -move_speed : side_dy;
-        break;
-    }
-    }
-
-    if (to_tx != getTileX() || to_ty != getTileY()) {
+    if (end_tx != start_tx || end_ty != start_ty) {
         if (alive && pickups & PICKUP_HAS_KICK) {
             entity **ents = world->findEntities(to_tx, to_ty, TYPE_BOMB);
             if (*ents) {
@@ -282,6 +231,8 @@ void player::move(float dx, float dy) {
             }
         }
     }
+
+    return true;
 }
 
 void player::explodedBomb(bomb *b) {

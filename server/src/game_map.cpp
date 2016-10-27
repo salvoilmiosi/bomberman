@@ -291,28 +291,28 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 
     if (zone == ZONE_BELT) {
         int x, y;
-        for (x = 5; x <= width - 5; ++x) {
+        for (x = 4; x <= width - 6; ++x) {
             y = 3;
             tile *t = getTile(x, y);
             tile_belt *ent = new tile_belt(t, this, BELT_DIR_RIGHT);
             specials[t] = ent;
             t->type = TILE_SPECIAL;
         }
-        for (x = 4; x <= width - 6; ++x) {
+        for (x = 5; x <= width - 5; ++x) {
             y = height - 4;
             tile *t = getTile(x, y);
             tile_belt *ent = new tile_belt(t, this, BELT_DIR_LEFT);
             specials[t] = ent;
             t->type = TILE_SPECIAL;
         }
-        for (y = 3; y <= height - 5; ++y) {
+        for (y = 4; y <= height - 4; ++y) {
             x = 4;
             tile *t = getTile(x, y);
             tile_belt *ent = new tile_belt(t, this, BELT_DIR_UP);
             specials[t] = ent;
             t->type = TILE_SPECIAL;
         }
-        for (y = 4; y <= height - 4; ++y) {
+        for (y = 3; y <= height - 5; ++y) {
             x = width - 5;
             tile *t = getTile(x, y);
             tile_belt *ent = new tile_belt(t, this, BELT_DIR_DOWN);

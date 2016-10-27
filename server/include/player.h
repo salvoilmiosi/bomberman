@@ -1,7 +1,7 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
-#include "game_world.h"
+#include "ent_movable.h"
 #include "input_handler.h"
 #include "ent_item.h"
 
@@ -24,7 +24,7 @@ static const int 		PLAYER_STUN_TICKS = TICKRATE;
 static const float 		PLAYER_JUMP_SPEED = 600.f;
 static const float 		PLAYER_Z_ACCEL = 800.f;
 
-class player: public entity {
+class player: public ent_movable {
 private:
     friend class bomb;
     friend class game_item;
@@ -55,10 +55,6 @@ private:
     std::list<class bomb *> planted_bombs;
 
     std::list<class bomb *> kicked_bombs;
-
-    float fx = 0.f;
-    float fy = 0.f;
-    float fz = 0.f;
 
     float speedz = 0.f;
 
@@ -104,15 +100,7 @@ public:
         return jumping;
     }
 
-    void move(float dx, float dy);
-
-    const uint8_t getTileX() {
-        return fx / TILE_SIZE + 0.5f;
-    }
-
-    const uint8_t getTileY() {
-        return fy / TILE_SIZE + 0.5f;
-    }
+    bool move(float dx, float dy);
 
     uint8_t getPlayerNum() {
         return player_num;

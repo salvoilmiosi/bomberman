@@ -57,6 +57,10 @@ public:
 
     static tile_entity *newTileEntity(tile *t_tile);
 
+    static special_type getSpecialType(uint16_t data) {
+        return static_cast<special_type>((data & 0xe000) >> 13);
+    }
+
 protected:
     uint16_t getData() {
         return t_tile->data & 0x1fff;
