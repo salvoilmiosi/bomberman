@@ -17,6 +17,7 @@ static const uint8_t    PICKUP_HAS_PUNCH = 1 << 0;
 static const uint8_t    PICKUP_HAS_KICK = 1 << 1;
 static const uint8_t 	PICKUP_HAS_REDBOMB = 1 << 2;
 static const uint8_t 	PICKUP_HAS_REMOCON = 1 << 3;
+static const uint8_t    PICKUP_HAS_SPEED = 1 << 4;
 
 static const int 		PLAYER_KICK_TICKS = TICKRATE / 20;
 static const int 		PLAYER_STUN_TICKS = TICKRATE;

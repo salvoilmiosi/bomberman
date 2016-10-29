@@ -231,6 +231,13 @@ void game_world::countdownEnd() {
     }
 }
 
+uint8_t game_world::getStartPickups() {
+    switch(g_map.getZone()) {
+    default:
+        return 0;
+    }
+}
+
 entity **game_world::findEntities(int tx, int ty, entity_type type) {
     static entity *ents[SEARCH_SIZE];
     int i = 0;

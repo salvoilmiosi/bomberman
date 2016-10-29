@@ -19,37 +19,37 @@ void vote_handler::reset() {
 
 void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
     if (!u->getPlayer()) {
-        packet_ext packet = server->messagePacket(COLOR_RED, "Spectators can't vote.");
-        server->sendRepeatPacket(packet, u->getAddress());
+        server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "Spectators can't vote.");
         return;
     }
     if (current_vote == 0) {
         if (vote_type == VOTE_YES || vote_type == VOTE_NO) {
-            packet_ext packet = server->messagePacket(COLOR_MAGENTA, "No vote is up right now");
-            server->sendRepeatPacket(packet, u->getAddress());
+            server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "No vote is up right now.");
             return;
         }
-        current_vote = vote_type;
+        
         vote_args = args;
-        vote_start_time = SDL_GetTicks();
         if (votes.find(u) == votes.end()) {
-            votes[u] = VOTE_YES;
-
             switch (vote_type) {
             case VOTE_START:
-                server->messageToAll(COLOR_MAGENTA, "%s votes to start the game", u->getName());
+                if (!server->gameStarted()) {
+                    server->messageToAll(COLOR_MAGENTA, "%s votes to start the game.", u->getName());
+                } else {
+                    server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "Game has already started.");
+                    return;
+                }
                 break;
             case VOTE_STOP:
-                server->messageToAll(COLOR_MAGENTA, "%s votes to stop the server", u->getName());
+                server->messageToAll(COLOR_MAGENTA, "%s votes to stop the server.", u->getName());
                 break;
             case VOTE_RESET:
-                server->messageToAll(COLOR_MAGENTA, "%s votes to reset the game", u->getName());
+                server->messageToAll(COLOR_MAGENTA, "%s votes to reset the game.", u->getName());
                 break;
             case VOTE_ADD_BOT:
-                server->messageToAll(COLOR_MAGENTA, "%s votes to add %d bots", u->getName(), args);
+                server->messageToAll(COLOR_MAGENTA, "%s votes to add %d bots.", u->getName(), args);
                 break;
             case VOTE_REMOVE_BOTS:
-                server->messageToAll(COLOR_MAGENTA, "%s votes to remove bots", u->getName());
+                server->messageToAll(COLOR_MAGENTA, "%s votes to remove all bots.", u->getName());
                 break;
             case VOTE_KICK:
             {
@@ -57,16 +57,20 @@ void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
                 if (kick_user) {
                     server->messageToAll(COLOR_MAGENTA, "%s votes to kick %s", u->getName(), kick_user->getName());
                 } else {
-                    reset();
+                    server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "Invalid user id %d", args);
+                    return;
                 }
                 break;
             }
             default:
-                packet_ext packet = server->messagePacket(COLOR_MAGENTA, "You started an incorrect vote");
-                server->sendRepeatPacket(packet, u->getAddress());
-                reset();
-                break;
+                server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "You started an incorrect vote");
+                return;
             }
+
+
+            current_vote = vote_type;
+            vote_start_time = SDL_GetTicks();
+            votes[u] = VOTE_YES;
         }
     } else if (vote_type == VOTE_YES || vote_type == VOTE_NO) {
         votes[u] = vote_type;

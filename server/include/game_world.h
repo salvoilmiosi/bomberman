@@ -39,8 +39,6 @@ private:
 
     bool destroyed;
 
-    int ticks_to_start;
-
 protected:
     bool do_send_updates;
 
@@ -134,6 +132,10 @@ public:
 
     bool startRound(int num_users);
 
+    bool roundStarted() {
+        return round_started;
+    }
+
     void playWave(uint8_t sound_id) {
         server.sendSoundPacket(sound_id);
     }
@@ -147,6 +149,8 @@ public:
     class ent_movable **findMovables(float fx, float fy, entity_type type = TYPE_NONE);
 
     bool isWalkable(float fx, float fy, uint8_t flags = 0);
+
+    uint8_t getStartPickups();
 
 private:
     void countdownEnd();

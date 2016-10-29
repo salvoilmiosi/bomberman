@@ -30,7 +30,7 @@ void player::respawn(int tx, int ty) {
     alive = true;
     on_trampoline = false;
 
-    pickups = 0;
+    pickups = world->getStartPickups();
 
     speed = 300.f;
     explosion_size = 2;
@@ -127,18 +127,20 @@ void player::handleInput() {
         float bx = fx;
         float by = fy;
 
+        static const float PUNCH_DISTANCE = TILE_SIZE * 2 / 3;
+
         switch(player_direction) {
         case DIR_UP:
-            by -= TILE_SIZE;
+            by -= PUNCH_DISTANCE;
             break;
         case DIR_DOWN:
-            by += TILE_SIZE;
+            by += PUNCH_DISTANCE;
             break;
         case DIR_LEFT:
-            bx -= TILE_SIZE;
+            bx -= PUNCH_DISTANCE;
             break;
         case DIR_RIGHT:
-            bx += TILE_SIZE;
+            bx += PUNCH_DISTANCE;
             break;
         }
 
@@ -166,10 +168,10 @@ void player::handleInput() {
     }
 
     float move_speed = speed;
-    if (skull_effect == SKULL_RAPID_PACE) {
-        move_speed = 1000.f;
-    } else if (skull_effect == SKULL_SLOW_PACE) {
+    if (skull_effect == SKULL_SLOW_PACE) {
         move_speed = 120.f;
+    } else if (skull_effect == SKULL_RAPID_PACE || pickups & PICKUP_HAS_SPEED) {
+        move_speed = 1000.f;
     }
     move_speed /= TICKRATE;
 

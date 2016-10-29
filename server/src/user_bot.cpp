@@ -10,8 +10,6 @@
 #include <vector>
 
 bool user_bot::bot_handler::isDown(usr_input input_cmd) {
-	return false;
-	
 	switch (input_cmd) {
 	case USR_LEFT:
 		return true;

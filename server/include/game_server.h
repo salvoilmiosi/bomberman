@@ -100,6 +100,8 @@ public:
     void startGame();
     void resetGame();
 
+    bool gameStarted();
+
     void addBots(int num_bots);
     void removeBots();
 
@@ -129,6 +131,11 @@ public:
     template<typename ... T> void messageToAll(uint32_t color, const char *format, T ... args) {
         packet_ext packet = messagePacket(color, format, args ...);
         sendToAll(packet, DEFAULT_REPEATS);
+    }
+
+    template<typename ... T> void sendMessageTo(const IPaddress &address, uint32_t color, const char *format, T ... args) {
+        packet_ext packet = messagePacket(color, format, args ...);
+        sendRepeatPacket(packet, address);
     }
 
     user *findUserByID(int id);

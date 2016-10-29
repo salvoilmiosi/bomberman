@@ -348,6 +348,10 @@ void game_server::resetGame() {
     startGame();
 }
 
+bool game_server::gameStarted() {
+    return world->roundStarted();
+}
+
 void game_server::chatCmd(packet_ext &packet) {
     user *u = findUser(packet.getAddress());
     if (!u) {
