@@ -74,6 +74,8 @@ bool game_client::connect(const char *address, uint16_t port) {
         sendJoinCmd();
 
         playMusic(music_battle);
+
+        start_thread();
         return true;
     case SERV_REJECT:
         message = accepter.readString();
@@ -139,30 +141,9 @@ bool game_client::sendMouse(int x, int y) {
 }
 
 void game_client::tick() {
-    static int last_recv_time;
-
     world.tick();
     g_chat.tick();
     g_score.tick();
-
-    if (!socket) return;
-
-    while (true) {
-        packet_ext packet(socket, true);
-        if (packet.receive() <= 0) break;
-
-        last_recv_time = SDL_GetTicks();
-
-        int magic = packet.readInt();
-        if (magic != MAGIC) break;
-
-        handlePacket(packet);
-    }
-
-    if (SDL_GetTicks() - last_recv_time > TIMEOUT) {
-        g_chat.addLine(COLOR_RED, "Timed out from server.");
-        clear();
-    }
 
     auto it = packet_repeat_ids.begin();
     while (it != packet_repeat_ids.end()) {
@@ -172,8 +153,52 @@ void game_client::tick() {
             ++it;
         }
     }
+}
 
-    return;
+int game_thread_func(void *data) {
+    game_client *client = (game_client *) data;
+    if (client) {
+        return client->game_thread_run();
+    }
+    return 1;
+}
+
+void game_client::start_thread() {
+    game_thread = SDL_CreateThread(game_thread_func, "Receiver", this);
+
+    if (!game_thread) {
+        fprintf(stderr, "Error creating game thread: %s\n", SDL_GetError());
+    }
+}
+
+int game_client::game_thread_run() {
+    while (socket && is_open) {
+        packet_ext packet(socket, true);
+
+        int numready = SDLNet_CheckSockets(sock_set, TIMEOUT);
+        if (numready > 0) {
+            int err = packet.receive();
+            if (err < 0) {
+                fprintf(stderr, "Error receiving packed %d: %s\n", err, SDLNet_GetError());
+                continue;
+            }
+        } else if (numready == 0) {
+            g_chat.addLine(COLOR_RED, "Timed out from server.");
+            clear();
+            return 0;
+        } else if (errno) {
+            fprintf(stderr, "Error checking socket %d: %s\n", numready, SDLNet_GetError());
+            clear();
+            return 1;
+        }
+
+        int magic = packet.readInt();
+        if (magic != MAGIC) break;
+
+        handlePacket(packet);
+    }
+    
+    return 0;
 }
 
 void game_client::render(SDL_Renderer *renderer) {

@@ -72,6 +72,13 @@ private:
 
     bool is_open = true;
 
+    SDL_Thread *game_thread = nullptr;
+
+    void start_thread();
+
+    friend int game_thread_func(void *data);
+    int game_thread_run();
+
 public:
     game_client();
 
