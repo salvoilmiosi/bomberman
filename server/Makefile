@@ -24,7 +24,7 @@ LDFLAGS_RELEASE = $(LDGLAGS) -s
 OBJECTS_RELEASE = $(patsubst src/%,$(OBJ_RELEASE)/%,$(SOURCES:.cpp=.o))
 OUT_RELEASE = $(BIN_RELEASE)/$(BIN_NAME)
 
-all: debug release
+all: debug
 
 clean: clean_debug clean_release
 
