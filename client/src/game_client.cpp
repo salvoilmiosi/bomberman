@@ -4,6 +4,7 @@
 #include "player.h"
 #include "bindings.h"
 #include "game_sound.h"
+#include "listenserver.h"
 
 #include <algorithm>
 
@@ -113,6 +114,10 @@ void game_client::clear() {
 
     world.clear();
     g_score.clear();
+
+    if (isListenServerOpen()) {
+        stopListenServer();
+    }
 
     stopMusic();
 }
@@ -265,7 +270,27 @@ void game_client::execCmd(const std::string &message) {
 
     std::string cmd = message.substr(wbegin, wend - wbegin);
     std::transform(cmd.begin(), cmd.end(), cmd.begin(), tolower);
-    if (cmd == "connect") {
+    if (cmd == "listenserver") {
+        uint16_t port = DEFAULT_PORT;
+        wbegin = message.find_first_not_of(SPACE, wend);
+        if (wbegin != std::string::npos) {
+            wend = message.find_first_of(SPACE, wbegin);
+
+            std::string port_str = message.substr(wbegin, wend - wbegin);
+            try {
+                port = std::stoi(port_str);
+            } catch (std::invalid_argument) {
+                g_chat.addLine(COLOR_RED, "%d is not a number", port_str.c_str());
+            }
+        }
+
+        int err = startListenServer(port);
+        if (err) {
+            g_chat.addLine(COLOR_RED, "Could not create listen server: %d", err);
+        } else {
+            connect("localhost", port);
+        }
+    } else if (cmd == "connect") {
         wbegin = message.find_first_not_of(SPACE, wend);
         if (wbegin == std::string::npos) {
             g_chat.addLine(COLOR_ORANGE, "Usage: connect (address) [port]");
