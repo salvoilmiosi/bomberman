@@ -20,10 +20,10 @@ void broken_wall::render(SDL_Renderer *renderer) {
         {ZONE_DUEL, {TILE(0, 4), TILE(1, 4), TILE(2, 4), TILE(3, 4), TILE(4, 4), TILE(5, 4)}},
     }; // TODO create power and speed zone tilesets
 
-    std::vector<SDL_Rect> &rect_vector = src_rect_per_zone[ZONE_NORMAL];
-    try {
-        rect_vector = src_rect_per_zone.at(zone);
-    } catch (std::out_of_range) {}
+    auto rect_vector_it = src_rect_per_zone.find(zone);
+    if (rect_vector_it == src_rect_per_zone.end()) {
+       	rect_vector_it = src_rect_per_zone.find(ZONE_NORMAL);
+    }
 
     int ticks_since_create = SDL_GetTicks() - create_time;
     int frame = ticks_since_create * 6 / 666;
@@ -31,7 +31,7 @@ void broken_wall::render(SDL_Renderer *renderer) {
 
     SDL_Rect dst_rect = world->tileRect(tx, ty);
 
-    SDL_Rect src_rect = rect_vector[frame];
+    SDL_Rect src_rect = rect_vector_it->second[frame];
     SDL_RenderCopy(renderer, game_map::getTileset(zone), &src_rect, &dst_rect);
 }
 

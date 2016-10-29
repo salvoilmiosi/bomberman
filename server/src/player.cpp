@@ -351,23 +351,23 @@ void player::tick() {
             }
         }
 
-        entity **ents = world->findEntities(getTileX(), getTileY());
+        entity **ents = world->findEntities(getTileX(), getTileY(), TYPE_ITEM);
         for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
             entity *ent = ents[i];
             if (!ent) break;
-            if (ent->getType() != TYPE_ITEM) continue;
             game_item *item = dynamic_cast<game_item*>(ent);
             if (item->pickup()) {
                 pickupItem(item->getItemType());
             }
         }
         if (skull_ticks > 0) {
+            ent_movable **mov = world->findMovables(fx, fy, TYPE_PLAYER);
             for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
-                entity *ent = ents[i];
+                ent_movable *ent = mov[i];
                 if (!ent) break;
-                if (ent->getType() != TYPE_PLAYER) continue;
                 player *p = dynamic_cast<player*>(ent);
                 if (p == this) continue;
+                if (!p->isAlive()) continue;
                 if (p->skull_ticks > 0) continue;
                 p->skull_ticks = SKULL_LIFE;
                 p->skull_effect = skull_effect;
