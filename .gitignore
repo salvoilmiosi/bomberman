@@ -10,6 +10,8 @@
 *.ogg
 *.spc
 *.dat
+*.sublime-project
+*.sublime-workspace
 client/bin/*
 client/utils/resource_pack
 client/utils/resource_unpack

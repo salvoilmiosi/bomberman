@@ -269,7 +269,7 @@ void game_map::readFromByteArray(byte_array &packet) {
                         ent = tile_entity::newTileEntity(t);
                     } else {
                         ent = it->second;
-                        if (ent->type != ent_type) {
+                        if (!ent || ent->type != ent_type) {
                             delete ent;
                             ent = tile_entity::newTileEntity(t);
                         }

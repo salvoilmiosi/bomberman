@@ -197,11 +197,10 @@ void bomb::tick() {
                 fy = to_fy;
                 flying = false;
             } else {
-                entity **ents = world->findEntities(getTileX(), getTileY(), TYPE_PLAYER);
+                ent_movable **ents = world->findMovables(fx, fy, TYPE_PLAYER);
                 for (uint8_t i = 0; i < SEARCH_SIZE; ++i) {
                     if (!ents[i]) break;
-                    player *p = dynamic_cast<player *>(ents[i]);
-                    p->stun();
+                    dynamic_cast<player *>(ents[i])->stun();
                 }
                 if (speedx > 0) speedx = PUNCH_SPEED_BOUNCE / TICKRATE;
                 else if (speedx < 0) speedx = -PUNCH_SPEED_BOUNCE / TICKRATE;

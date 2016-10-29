@@ -61,10 +61,10 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     switch (zone) {
     case ZONE_WESTERN:
     case ZONE_DUEL:
-        spawns = {{6, 5}, {width-7,5}, {6, height-6}, {width -7, height -6}};
+        spawns = {{6, 5}, {width - 7, 5}, {6, height - 6}, {width - 7, height - 6}};
         break;
     default:
-        spawns = {{2, 1}, {width-3,1}, {2,height-2}, {width-3,height-2}};
+        spawns = {{2, 1}, {width - 3, 1}, {2, height - 2}, {width - 3, height - 2}};
         break;
     }
     std::shuffle(spawns.begin(), spawns.end(), random_engine);
