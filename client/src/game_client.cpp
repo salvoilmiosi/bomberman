@@ -172,33 +172,38 @@ void game_client::start_thread() {
 }
 
 int game_client::game_thread_run() {
-    while (socket && is_open) {
-        packet_ext packet(socket, true);
+    int err_ret = 0;
 
+    while (true) {
         int numready = SDLNet_CheckSockets(sock_set, TIMEOUT);
+        if (!socket) break;
+
         if (numready > 0) {
+            packet_ext packet(socket, true);
             int err = packet.receive();
             if (err < 0) {
-                fprintf(stderr, "Error receiving packed %d: %s\n", err, SDLNet_GetError());
-                continue;
+                fprintf(stderr, "Error receiving packet %d: %s\n", err, SDLNet_GetError());
+            } else {
+                int magic = packet.readInt();
+                if (magic == MAGIC) {
+                    handlePacket(packet);
+                }    
             }
         } else if (numready == 0) {
             g_chat.addLine(COLOR_RED, "Timed out from server.");
             clear();
-            return 0;
+            break;
         } else if (errno) {
             fprintf(stderr, "Error checking socket %d: %s\n", numready, SDLNet_GetError());
             clear();
-            return 1;
+            err_ret = errno;
+            break;
         }
-
-        int magic = packet.readInt();
-        if (magic != MAGIC) break;
-
-        handlePacket(packet);
     }
-    
-    return 0;
+
+    printf("Receiver thread stopped.\n");
+
+    return err_ret;
 }
 
 void game_client::render(SDL_Renderer *renderer) {
