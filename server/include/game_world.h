@@ -17,6 +17,28 @@ enum entity_type {
     TYPE_ITEM
 };
 
+enum item_type {
+    ITEM_NONE,
+    ITEM_BOMB,
+    ITEM_FIRE,
+    ITEM_ROLLERBLADE,
+    ITEM_KICK,
+    ITEM_PUNCH,
+    ITEM_SKULL,
+    ITEM_FULL_FIRE,
+    ITEM_REDBOMB,
+    ITEM_REMOCON
+};
+
+enum disease_effect {
+    SKULL_NONE,
+    SKULL_RAPID_PACE,
+    SKULL_SLOW_PACE,
+    SKULL_DIARRHEA,
+    SKULL_LOW_POWER,
+    SKULL_CONSTIPATION
+};
+
 enum direction {
     DIR_UP,
     DIR_DOWN,
@@ -151,6 +173,7 @@ public:
     bool isWalkable(float fx, float fy, uint8_t flags = 0);
 
     uint8_t getStartPickups();
+    std::map<item_type, uint8_t> getStartItems();
 
 private:
     void countdownEnd();

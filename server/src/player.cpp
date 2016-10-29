@@ -8,13 +8,10 @@
 #include "game_sound.h"
 
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
 #include <algorithm>
 
 player::player(game_world *world, input_handler *handler) : ent_movable(world, TYPE_PLAYER), handler(handler) {
-    memset(player_name, 0, PLAYER_NAME_SIZE);
-
     do_send_updates = false;
 
     victories = 0;
@@ -50,6 +47,13 @@ void player::respawn(int tx, int ty) {
     planted_bombs.clear();
     kicked_bombs.clear();
 
+    auto start_items = world->getStartItems();
+    for (auto item : start_items) {
+        for (int i=0; i<item.second; ++i) {
+            pickupItem(item.first);
+        }
+    }
+
     do_send_updates = true;
 }
 
@@ -68,10 +72,6 @@ void player::kill(player *killer) {
 
 void player::makeInvulnerable() {
     invulnerable_ticks = PLAYER_INVULNERABLE_TICKS;
-}
-
-void player::setName(const char *name) {
-    strncpy(player_name, name, PLAYER_NAME_SIZE);
 }
 
 void player::handleInput() {
@@ -248,6 +248,7 @@ bool player::player_move(float dx, float dy) {
 
 void player::explodedBomb(bomb *b) {
     ++num_bombs;
+
     auto it = std::find(planted_bombs.begin(), planted_bombs.end(), b);
     if (it != planted_bombs.end()) {
         planted_bombs.erase(it);
@@ -272,6 +273,48 @@ void player::stun() {
     stun_ticks = PLAYER_STUN_TICKS;
 }
 
+void player::pickupItem(item_type type) {
+    switch (type) {
+    case ITEM_NONE:
+        break;
+    case ITEM_BOMB:
+        ++num_bombs;
+        if (num_bombs > 10) {
+            num_bombs = 10;
+        }
+        break;
+    case ITEM_FIRE:
+        ++explosion_size;
+        if (explosion_size > 10) {
+            explosion_size = 10;
+        }
+        break;
+    case ITEM_ROLLERBLADE:
+        speed += 80.f;
+        break;
+    case ITEM_KICK:
+        pickups |= PICKUP_HAS_KICK;
+        break;
+    case ITEM_PUNCH:
+        pickups |= PICKUP_HAS_PUNCH;
+        break;
+    case ITEM_SKULL:
+        skull_ticks = SKULL_LIFE;
+        skull_effect = random_engine() % 5 + 1;
+        break;
+    case ITEM_FULL_FIRE:
+        explosion_size = 10;
+        break;
+    case ITEM_REDBOMB:
+        pickups |= PICKUP_HAS_REDBOMB;
+        break;
+    case ITEM_REMOCON:
+        pickups |= PICKUP_HAS_REMOCON;
+        break;
+    }
+
+    item_pickups.push_back(type);
+}
 void player::checkTrampoline() {
     if (jumping) return;
 
@@ -314,8 +357,9 @@ void player::tick() {
             if (!ent) break;
             if (ent->getType() != TYPE_ITEM) continue;
             game_item *item = dynamic_cast<game_item*>(ent);
-            item_pickups.push_back(item->getItemType());
-            item->pickup(this);
+            if (item->pickup()) {
+                pickupItem(item->getItemType());
+            }
         }
         if (skull_ticks > 0) {
             for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
@@ -383,7 +427,7 @@ byte_array player::toByteArray() {
     ba.writeInt(fy);
     ba.writeInt(fz);
 
-    ba.writeString(player_name, PLAYER_NAME_SIZE);
+    ba.writeString(player_name.c_str(), MAX_NAME_SIZE);
     ba.writeChar(player_num);
 
     uint16_t flags = 0;

@@ -48,10 +48,9 @@ void stopMusic() {
 }
 
 void playWave(wave_id id, int channel) {
-    auto it = wave_map.find(id);
-    if (it == wave_map.end()) return;
-
-    Mix_PlayChannel(-1, it->second, 0);
+    try {
+        Mix_PlayChannel(-1, wave_map.at(id), 0);
+    } catch (std::out_of_range) {}
 }
 
 void setVolume(int volume) {

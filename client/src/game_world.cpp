@@ -84,10 +84,9 @@ void game_world::tick() {
 }
 
 entity *game_world::findID(uint16_t id) {
-    auto it = entities.find(id);
-    if (it != entities.end()) {
-        return it->second;
-    } else {
+    try {
+        return entities.at(id);
+    } catch (std::out_of_range) {
         return nullptr;
     }
 }

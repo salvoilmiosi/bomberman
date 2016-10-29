@@ -23,7 +23,7 @@ private:
 	};
 
 	class game_server *server;
-	char username[USER_NAME_SIZE];
+	std::string username;
 
 	class player *ent = nullptr;
 
@@ -37,10 +37,10 @@ public:
 	void createPlayer(class game_world *world);
 
 	const char *getName() {
-		return username;
+		return username.c_str();
 	}
 
-	void setName(const char *name);
+	void setName(const std::string &name);
 
 	class player *getPlayer() {
 		return ent;

@@ -147,7 +147,7 @@ private:
     int receive(packet_ext &packet);
     void handlePacket(packet_ext &packet);
 
-    char *findNewName(const char *username);
+    std::string findNewName(std::string username);
 
     user *findUser(const IPaddress &address);
 

@@ -76,19 +76,21 @@ void game_map::render(SDL_Renderer *renderer) {
             if (!t) continue;
             switch (t->type) {
             case TILE_SPECIAL:
-            {
-                auto it = specials.find(t);
-                if (it != specials.end() && it->second) {
-                    src_rect = it->second->getSrcRect();
-                    break;
-                }
+                try {
+                    auto it = specials.at(t);
+                    if (it) {
+                        src_rect = it->getSrcRect();
+                        break;
+                    }
+                } catch (std::out_of_range) {}
                 // treat as TILE_FLOOR if tile entity not found
-            }
             case TILE_SPAWN:
             case TILE_FLOOR:
                 switch (zone) {
                 case ZONE_RANDOM:
                 case ZONE_NORMAL:
+                case ZONE_POWER: // TODO create power zone tileset
+                case ZONE_SPEED: // TODO create speed zone tileset
                     if (t_up && (t_up->type == TILE_WALL || t_up->type == TILE_BREAKABLE)) {
                         src_rect = TILE(4, 0);
                     } else {
@@ -136,6 +138,8 @@ void game_map::render(SDL_Renderer *renderer) {
                 switch (zone) {
                 case ZONE_RANDOM:
                 case ZONE_NORMAL:
+                case ZONE_POWER: // TODO create power zone tileset
+                case ZONE_SPEED: // TODO create speed zone tileset
                     src_rect = TILE(t->data == 1 ? 0 : 1, 0);
                     break;
                 case ZONE_WESTERN:
@@ -159,6 +163,8 @@ void game_map::render(SDL_Renderer *renderer) {
                 switch (zone) {
                 case ZONE_RANDOM:
                 case ZONE_NORMAL:
+                case ZONE_POWER: // TODO create power zone tileset
+                case ZONE_SPEED: // TODO create speed zone tileset
                     src_rect = TILE(2, 0);
                     break;
                 case ZONE_WESTERN:
@@ -208,15 +214,6 @@ void game_map::render(SDL_Renderer *renderer) {
             dst_rect.x = TILE_SIZE * x + left();
             dst_rect.y = TILE_SIZE * y + top();
 
-            static std::map<map_zone, SDL_Texture *> tilesets = {
-                {ZONE_NORMAL, tileset_1_texture},
-                {ZONE_WESTERN, tileset_2_texture},
-                {ZONE_BOMB, tileset_3_texture},
-                {ZONE_JUMP, tileset_4_texture},
-                {ZONE_BELT, tileset_5_texture},
-                {ZONE_DUEL, tileset_6_texture},
-            };
-
             SDL_RendererFlip flip = SDL_FLIP_NONE;
             if (t->data & 0x80) {
                 flip = (SDL_RendererFlip) (flip | SDL_FLIP_HORIZONTAL);
@@ -225,8 +222,25 @@ void game_map::render(SDL_Renderer *renderer) {
                 flip = (SDL_RendererFlip) (flip | SDL_FLIP_VERTICAL);
             }
 
-            SDL_RenderCopyEx(renderer, tilesets[zone], &src_rect, &dst_rect, 0, 0, flip);
+            SDL_RenderCopyEx(renderer, getTileset(zone), &src_rect, &dst_rect, 0, 0, flip);
         }
+    }
+}
+
+SDL_Texture *game_map::getTileset(map_zone zone) {
+    static std::map<map_zone, SDL_Texture *> tilesets = {
+        {ZONE_NORMAL, tileset_1_texture},
+        {ZONE_WESTERN, tileset_2_texture},
+        {ZONE_BOMB, tileset_3_texture},
+        {ZONE_JUMP, tileset_4_texture},
+        {ZONE_BELT, tileset_5_texture},
+        {ZONE_DUEL, tileset_6_texture},
+    };
+    
+    try {
+        return tilesets.at(zone);
+    } catch (std::out_of_range) {
+        return tilesets.at(ZONE_NORMAL);
     }
 }
 

@@ -596,8 +596,7 @@ void game_client::resetCmd(byte_array &packet) {
 void game_client::repeatCmd(byte_array &packet) {
     int packet_id = packet.readInt();
 
-    auto it = packet_repeat_ids.find(packet_id);
-    if (it == packet_repeat_ids.end()) {
+    if (packet_repeat_ids.find(packet_id) == packet_repeat_ids.end()) {
         byte_array ba = packet.readByteArray();
         int magic = ba.readInt();
         if (magic == MAGIC) {

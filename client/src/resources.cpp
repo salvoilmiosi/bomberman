@@ -83,10 +83,8 @@ bool openResourceFile(const char *filename) {
 }
 
 SDL_RWops *getResourceRW(const char *RES_ID) {
-	auto it = resFiles.find(RES_ID);
-
-	if (it != resFiles.end()) {
-		resource &res = it->second;
+	try {
+		resource &res = resFiles.at(RES_ID);
 		char *data = new char[res.size];
 
 		ifstream ifs(res.filename, ios::binary);
@@ -94,8 +92,9 @@ SDL_RWops *getResourceRW(const char *RES_ID) {
 		ifs.read(data, res.size);
 
 		return SDL_RWFromConstMem(data, res.size);
+	} catch (std::out_of_range) {
+		return nullptr;
 	}
-	return nullptr;
 }
 
 static SDL_Surface *loadImageFromResource(const char *RES_ID) {

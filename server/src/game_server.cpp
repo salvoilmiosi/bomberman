@@ -51,11 +51,11 @@ void game_server::closeServer() {
 }
 
 user *game_server::findUser(const IPaddress &address) {
-    auto it = users.find(addrLong(address));
-    if (it == users.end()) {
+    try {
+        return users.at(addrLong(address));
+    } catch (std::out_of_range) {
         return nullptr;
     }
-    return it->second;
 }
 
 user *game_server::findUserByID(int id) {
@@ -218,16 +218,14 @@ void game_server::sendSoundPacket(uint8_t sound_id) {
     sendToAll(packet);
 }
 
-char *game_server::findNewName(const char *username) {
-    static char newName[USER_NAME_SIZE];
-    strncpy(newName, username, USER_NAME_SIZE);
+std::string game_server::findNewName(std::string username) {
     for (auto it : users) {
         user *u = it.second;
-        if (strncmp(newName, u->getName(), USER_NAME_SIZE) == 0) {
-            strcat(newName, "'");
+        if (username == u->getName()) {
+            username += '\'';
         }
     }
-    return newName;
+    return username;
 }
 
 void game_server::addBots(int num_bots) {
@@ -266,7 +264,7 @@ void game_server::connectCmd(packet_ext &from) {
         packet.sendTo(from.getAddress());
         return;
     }
-    char *username = findNewName(from.readString());
+    std::string username = findNewName(from.readString());
 
     user *u = new user(this, from.getAddress(), username);
     users[addrLong(from.getAddress())] = u;
@@ -371,9 +369,9 @@ void game_server::nameCmd(packet_ext &packet) {
         return;
     }
 
-    char *newName = findNewName(packet.readString());
+    std::string newName = findNewName(packet.readString());
 
-    messageToAll(COLOR_YELLOW, "%s changed name to %s", u->getName(), newName);
+    messageToAll(COLOR_YELLOW, "%s changed name to %s", u->getName(), newName.c_str());
 
     u->setName(newName);
 }

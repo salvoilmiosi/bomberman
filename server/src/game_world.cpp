@@ -233,8 +233,19 @@ void game_world::countdownEnd() {
 
 uint8_t game_world::getStartPickups() {
     switch(g_map.getZone()) {
+    case ZONE_SPEED:
+        return PICKUP_HAS_SPEED;
     default:
         return 0;
+    }
+}
+
+std::map<item_type, uint8_t> game_world::getStartItems() {
+    switch(g_map.getZone()) {
+    case ZONE_POWER:
+        return {{ITEM_BOMB, 5}, {ITEM_FIRE, 9}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 1}, {ITEM_PUNCH, 1}};
+    default:
+        return {};
     }
 }
 

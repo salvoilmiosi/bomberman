@@ -8,7 +8,8 @@
 #include <deque>
 #include <list>
 
-static const size_t     PLAYER_NAME_SIZE = 32;
+static const uint16_t MAX_NAME_SIZE = 32;
+
 static const int        PLAYER_DEATH_TICKS = TICKRATE / 3;
 static const int        PLAYER_PUNCH_TICKS = TICKRATE / 4;
 static const int        PLAYER_INVULNERABLE_TICKS = TICKRATE * 10;
@@ -28,11 +29,10 @@ static const float 		PLAYER_Z_ACCEL = 800.f;
 class player: public ent_movable {
 private:
     friend class bomb;
-    friend class game_item;
-
+    
     input_handler *handler = nullptr;
 
-    char player_name[PLAYER_NAME_SIZE];
+    std::string player_name;
 
     uint8_t player_num = 0xff;
 
@@ -87,10 +87,12 @@ public:
         handler = handle;
     }
 
-    void setName(const char *name);
+    void setName(const std::string &name) {
+        player_name = name;
+    }
 
     const char *getName() {
-        return player_name;
+        return player_name.c_str();
     }
 
     bool isAlive() {
@@ -128,6 +130,8 @@ public:
     void kill(player *killer);
     void stun();
     void makeInvulnerable();
+
+    void pickupItem(item_type item);
 
 private:
     bool player_move(float dx, float dy);

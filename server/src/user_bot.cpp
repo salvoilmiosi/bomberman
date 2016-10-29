@@ -35,8 +35,7 @@ int user_bot::bot_handler::getMouseY() {
 user_bot::user_bot(game_server *server) : server(server), handler(this) {
 	static const std::vector<const char *> NAMES = {"Bud", "Milan", "Rolland", "Don", "Milford", "Gayle", "Alberto", "Alec", "Bennett", "Eloy", "Marcel", "Mathew", "Wilbert", "Charlie", "Mikel", "Olen", "Lincoln", "Hai", "Sam", "Angelo", "Elmer", "Lance", "Leandro", "Alexander", "Carlo", "Heath", "Boyd", "Cameron", "Sang", "Julius", "Robt", "Damien", "Eduardo", "Wilford", "Graig", "Jonas", "Rusty", "Norbert", "Billy", "Abe", "David", "Orval", "Joesph", "Anibal", "Josue", "Leonel", "Jefferson", "Robby", "Sydney", "Darren"};
 
-	strcpy(username, "BOT ");
-	strcat(username, NAMES[random_engine() % NAMES.size()]);
+	username = std::string("BOT ") + NAMES[random_engine() % NAMES.size()];
 }
 
 user_bot::~user_bot() {
@@ -48,8 +47,11 @@ void user_bot::createPlayer(game_world *world) {
 	ent->setName(username);
 }
 
-void user_bot::setName(const char *name) {
-	strncpy(username, name, USER_NAME_SIZE);
+void user_bot::setName(const std::string &name) {
+	username = name;
+	if (ent) {
+		ent->setName(name);
+	}
 }
 
 void user_bot::tick() {

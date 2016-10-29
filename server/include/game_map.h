@@ -22,6 +22,8 @@ enum map_zone {
     ZONE_JUMP,
     ZONE_BELT,
     ZONE_DUEL,
+    ZONE_POWER,
+    ZONE_SPEED,
 };
 
 enum special_type {

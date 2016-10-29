@@ -46,7 +46,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 
     //m_zone = ZONE_RANDOM;
     if (m_zone == ZONE_RANDOM) {
-        m_zone = static_cast<map_zone>(random_engine() % 6 + 1);
+        m_zone = static_cast<map_zone>(random_engine() % 8 + 1);
     }
 
     width = w;
@@ -109,6 +109,8 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
                 switch (zone) {
                 case ZONE_RANDOM:
                 case ZONE_NORMAL:
+                case ZONE_POWER: // TODO create power zone tileset
+                case ZONE_SPEED: // TODO create speed zone tileset
                     if (x == 0 || x == width-1) {
                         t->data = 1;
                     } else {
@@ -265,19 +267,20 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     std::shuffle(floor_tiles.begin(), floor_tiles.end(), random_engine);
 
     static const std::map<map_zone, int> breakables_per_zone = {
-        {ZONE_NORMAL, 80}, {ZONE_WESTERN, 65}, {ZONE_BOMB, 60}, {ZONE_JUMP, 55}, {ZONE_BELT, 55},
+        {ZONE_NORMAL, 80}, {ZONE_WESTERN, 65}, {ZONE_BOMB, 60}, {ZONE_JUMP, 55}, {ZONE_BELT, 55}, {ZONE_SPEED, 80}
     };
 
     std::vector<tile *> breakables;
-    auto it = breakables_per_zone.find(zone);
-    if (it != breakables_per_zone.end()) {
-        for (int i=0; i<it->second; ++i) {
+    try {
+        const auto num_breakables = breakables_per_zone.at(zone);
+        
+        for (int i=0; i<num_breakables; ++i) {
             tile *t = floor_tiles.back();
             t->type = TILE_BREAKABLE;
             breakables.push_back(t);
             floor_tiles.pop_back();
         }
-    }
+    } catch (std::out_of_range) {}
 
     static const std::map<map_zone, std::map<item_type, int> > item_numbers_per_zone = {
         {ZONE_NORMAL, {{ITEM_BOMB, 7}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2}}},
@@ -285,25 +288,27 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
         {ZONE_BOMB, {{ITEM_BOMB, 3}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2}}},
         {ZONE_JUMP, {{ITEM_BOMB, 4}, {ITEM_FIRE, 4}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2}}},
         {ZONE_BELT, {{ITEM_BOMB, 5}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}}},
+        {ZONE_SPEED, {{ITEM_BOMB, 6}, {ITEM_FIRE, 6}, {ITEM_FULL_FIRE, 2}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_REMOCON, 2}, {ITEM_SKULL, 1}}},
     };
 
     std::shuffle(breakables.begin(), breakables.end(), random_engine);
 
-    const auto zone_it = item_numbers_per_zone.find(zone);
-    if (zone_it == item_numbers_per_zone.end()) goto end_items;
+    try {
+        const auto num_items = item_numbers_per_zone.at(zone);
 
-    for (auto item_pair : zone_it->second) {
-        for (int i=0; i<item_pair.second; ++i) {
-            tile *t = breakables.back();
-            if (t) {
-                t->data = item_pair.first;
-            }
-            breakables.pop_back();
-            if (breakables.empty()) {
-                goto end_items;
+        for (auto item_pair : num_items) {
+            for (int i=0; i<item_pair.second; ++i) {
+                tile *t = breakables.back();
+                if (t) {
+                    t->data = item_pair.first;
+                }
+                breakables.pop_back();
+                if (breakables.empty()) {
+                    goto end_items;
+                }
             }
         }
-    }
+    } catch (std::out_of_range) {}
     end_items:
 
     switch (zone) {
@@ -424,11 +429,11 @@ int game_map::getTileY(tile *t) const {
 tile_entity *game_map::getSpecial(tile *t) const {
     if (t->type != TILE_SPECIAL) return nullptr;
 
-    auto it = specials.find(t);
-    if (it != specials.end()) {
-        return it->second;
+    try {
+        return specials.at(t);
+    } catch (std::out_of_range) {
+        return nullptr;
     }
-    return nullptr;
 }
 
 point game_map::getSpawnPt(unsigned int num) {

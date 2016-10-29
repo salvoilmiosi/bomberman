@@ -24,6 +24,8 @@ enum map_zone {
     ZONE_JUMP,
     ZONE_BELT,
     ZONE_DUEL,
+    ZONE_POWER,
+    ZONE_SPEED,
 };
 
 enum special_type {
@@ -95,6 +97,8 @@ public:
     void tick();
 
     void render(SDL_Renderer *renderer);
+
+    static SDL_Texture *getTileset(map_zone zone);
 
     void readFromByteArray(byte_array &packet);
 

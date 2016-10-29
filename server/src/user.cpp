@@ -6,13 +6,11 @@
 
 uint16_t user::maxuserid = 0;
 
-user::user(game_server *server, const IPaddress &address, const char *name) : server(server), address(address) {
+user::user(game_server *server, const IPaddress &address, const std::string &name) : server(server), address(address), username(name) {
     userid = ++maxuserid;
     has_pinged = false;
     ping_msecs = -1;
     attempts = 0;
-
-    setName(name);
 }
 
 user::~user() {
@@ -41,8 +39,8 @@ void user::sendPing(bool force) {
     }
 }
 
-void user::setName(const char *name) {
-    strncpy(username, name, USER_NAME_SIZE);
+void user::setName(const std::string &name) {
+    username = name;
     if (ent) {
         ent->setName(name);
     }
@@ -78,7 +76,7 @@ void user::createPlayer(game_world *world) {
 
 void user::setPlayer(player *p) {
     ent = p;
-    strncpy(username, p->getName(), USER_NAME_SIZE);
+    username = p->getName();
 }
 
 void user::destroyPlayer() {

@@ -2,11 +2,10 @@
 #define __USER_H__
 
 #include <SDL2/SDL_net.h>
-#include <cstring>
+#include <string>
 
 #include "input_net.h"
 
-static const size_t USER_NAME_SIZE = 32;
 static const int MAX_PING_ATTEMPTS = 5;
 
 class user {
@@ -14,7 +13,7 @@ private:
     class game_server *server;
 
     const IPaddress address;
-    char username[USER_NAME_SIZE];
+    std::string username;
 
     uint16_t userid;
 
@@ -30,7 +29,7 @@ private:
     class player *ent = nullptr;
 
 public:
-    user(class game_server *server, const IPaddress &address, const char *name);
+    user(class game_server *server, const IPaddress &address, const std::string &name);
 
     virtual ~user();
 
@@ -38,10 +37,10 @@ public:
     void createPlayer(class game_world *world);
 
     const char *getName() {
-        return username;
+        return username.c_str();
     }
 
-    void setName(const char *name);
+    void setName(const std::string &name);
 
     const IPaddress &getAddress() {
         return address;
