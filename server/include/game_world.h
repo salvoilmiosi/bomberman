@@ -124,6 +124,8 @@ private:
 
     int num_users;
 
+    map_zone selected_map_zone = ZONE_RANDOM;
+
 public:
     game_world();
     virtual ~game_world();
@@ -164,6 +166,10 @@ public:
 
     const game_map &getMap() {
         return g_map;
+    }
+
+    void setZone(map_zone zone) {
+        selected_map_zone = zone;
     }
 
     entity **findEntities(int tx, int ty, entity_type type = TYPE_NONE);

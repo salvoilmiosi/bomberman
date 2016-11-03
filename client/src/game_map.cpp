@@ -223,6 +223,14 @@ void game_map::render(SDL_Renderer *renderer) {
     }
 }
 
+int game_map::getZoneByName(const std::string &name) {
+    try {
+        return zone_by_name.at(name);
+    } catch (std::out_of_range) {
+        return -1;
+    }
+}
+
 SDL_Texture *game_map::getTileset(map_zone zone) {
     static std::map<map_zone, SDL_Texture *> tilesets = {
         {ZONE_NORMAL, tileset_1_texture},

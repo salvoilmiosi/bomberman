@@ -323,10 +323,12 @@ int game_server::countUsers(bool include_bots) {
     return include_bots ? num_players + bots.size() : num_players;
 }
 
+void game_server::setZone(map_zone zone) {
+    world->setZone(zone);
+}
+
 void game_server::startGame() {
-    if (world->startRound(countUsers())) {
-        //createBotPlayers();
-    }
+    world->startRound(countUsers());
 }
 
 void game_server::resetGame() {

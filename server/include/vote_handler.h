@@ -15,6 +15,7 @@ static const uint32_t VOTE_RESET       = str2int("RESE");
 static const uint32_t VOTE_ADD_BOT     = str2int("BOT+");
 static const uint32_t VOTE_REMOVE_BOTS = str2int("BOT-");
 static const uint32_t VOTE_KICK        = str2int("KICK");
+static const uint32_t VOTE_ZONE        = str2int("ZONE");
 
 class vote_handler {
 private:
@@ -23,7 +24,7 @@ private:
     uint32_t current_vote = 0;
     uint32_t vote_args;
 
-    std::map<user *, uint32_t> votes;
+    std::map<uint16_t, uint32_t> votes;
 
     int vote_start_time = 0;
 

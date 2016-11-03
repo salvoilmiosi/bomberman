@@ -26,6 +26,18 @@ enum map_zone {
     ZONE_SPEED,
 };
 
+static const std::map<map_zone, const char *> zone_by_id = {
+    {ZONE_RANDOM, "random"},
+    {ZONE_NORMAL, "normal"},
+    {ZONE_WESTERN, "western"},
+    {ZONE_BOMB, "bomb"},
+    {ZONE_JUMP, "jump"},
+    {ZONE_BELT, "belt"},
+    {ZONE_DUEL, "duel"},
+    {ZONE_POWER, "power"},
+    {ZONE_SPEED, "speed"},
+};
+
 enum special_type {
     SPECIAL_NONE,
     SPECIAL_TRAMPOLINE,
@@ -102,6 +114,8 @@ public:
     virtual ~game_map();
 
 public:
+    static const char *getZoneName(map_zone zone);
+
     void createMap(int w, int h, int num_players, map_zone zone = ZONE_RANDOM);
     void clear();
 

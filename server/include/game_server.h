@@ -13,6 +13,7 @@
 #include "user_bot.h"
 #include "packet_repeater.h"
 #include "vote_handler.h"
+#include "game_map.h"
 
 static const int TIMEOUT = 1000;
 
@@ -139,6 +140,8 @@ public:
     }
 
     user *findUserByID(int id);
+
+    void setZone(map_zone zone);
 
 private:
     friend int game_thread_func(void *data);

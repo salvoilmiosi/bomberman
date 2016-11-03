@@ -8,7 +8,7 @@ static const int EXPLOSION_CHAIN_DELAY = TICKRATE / 5;
 
 class explosion : public entity {
 private:
-    class bomb *self_bomb;
+    class player *planter;
 
     uint8_t tx;
     uint8_t ty;

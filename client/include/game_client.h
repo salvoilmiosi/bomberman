@@ -51,6 +51,7 @@ static const uint32_t VOTE_RESET       = str2int("RESE");
 static const uint32_t VOTE_ADD_BOT     = str2int("BOT+");
 static const uint32_t VOTE_REMOVE_BOTS = str2int("BOT-");
 static const uint32_t VOTE_KICK        = str2int("KICK");
+static const uint32_t VOTE_ZONE        = str2int("ZONE");
 
 class game_client {
 private:

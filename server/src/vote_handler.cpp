@@ -27,9 +27,9 @@ void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
             server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "No vote is up right now.");
             return;
         }
-        
+
         vote_args = args;
-        if (votes.find(u) == votes.end()) {
+        if (votes.find(u->getID()) == votes.end()) {
             switch (vote_type) {
             case VOTE_START:
                 if (!server->gameStarted()) {
@@ -55,31 +55,33 @@ void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
             {
                 user *kick_user = server->findUserByID(args);
                 if (kick_user) {
-                    server->messageToAll(COLOR_MAGENTA, "%s votes to kick %s", u->getName(), kick_user->getName());
+                    server->messageToAll(COLOR_MAGENTA, "%s votes to kick %s.", u->getName(), kick_user->getName());
                 } else {
-                    server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "Invalid user id %d", args);
+                    server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "Invalid user id %d.", args);
                     return;
                 }
                 break;
             }
+            case VOTE_ZONE:
+                server->messageToAll(COLOR_MAGENTA, "%s votes to change the zone to %s.", u->getName(), game_map::getZoneName(static_cast<map_zone>(args)));
+                break;
             default:
-                server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "You started an incorrect vote");
+                server->sendMessageTo(u->getAddress(), COLOR_MAGENTA, "You started an incorrect vote.");
                 return;
             }
 
-
             current_vote = vote_type;
             vote_start_time = SDL_GetTicks();
-            votes[u] = VOTE_YES;
+            votes[u->getID()] = VOTE_YES;
         }
     } else if (vote_type == VOTE_YES || vote_type == VOTE_NO) {
-        votes[u] = vote_type;
-        server->messageToAll(COLOR_MAGENTA, "%s voted %s", u->getName(), vote_type == VOTE_YES ? "yes" : "no");
+        votes[u->getID()] = vote_type;
+        server->messageToAll(COLOR_MAGENTA, "%s voted %s.", u->getName(), vote_type == VOTE_YES ? "yes" : "no");
     } else if (vote_type == current_vote) {
-        votes[u] = VOTE_YES;
-        server->messageToAll(COLOR_MAGENTA, "%s voted yes", u->getName());
+        votes[u->getID()] = VOTE_YES;
+        server->messageToAll(COLOR_MAGENTA, "%s voted yes.", u->getName());
     } else if (current_vote != vote_type) {
-        packet_ext packet = server->messagePacket(COLOR_MAGENTA, "Another vote is up right now");
+        packet_ext packet = server->messagePacket(COLOR_MAGENTA, "Another vote is up right now.");
         server->sendRepeatPacket(packet, u->getAddress());
         return;
     }
@@ -114,6 +116,9 @@ void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
             break;
         case VOTE_KICK:
             server->kickUser(server->findUserByID(vote_args), "You have been voted off.");
+            break;
+        case VOTE_ZONE:
+            server->setZone(static_cast<map_zone>(args));
             break;
         }
         reset();

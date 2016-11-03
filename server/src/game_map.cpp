@@ -22,6 +22,14 @@ game_map::~game_map() {
     clear();
 }
 
+const char *game_map::getZoneName(map_zone zone) {
+    try {
+        return zone_by_id.at(zone);
+    } catch (std::out_of_range) {
+        return "unknown";
+    }
+}
+
 void game_map::clear() {
     if (!tiles) {
         delete[] tiles;
@@ -273,7 +281,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
     std::vector<tile *> breakables;
     try {
         const auto num_breakables = breakables_per_zone.at(zone);
-        
+
         for (int i=0; i<num_breakables; ++i) {
             tile *t = floor_tiles.back();
             t->type = TILE_BREAKABLE;

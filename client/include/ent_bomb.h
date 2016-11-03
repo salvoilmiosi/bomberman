@@ -7,7 +7,6 @@
 class explosion: public entity {
 private:
     uint8_t x, y;
-    uint16_t bomb_id;
 
     int explode_time;
 

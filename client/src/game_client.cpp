@@ -192,7 +192,7 @@ int game_client::game_thread_run() {
                 int magic = packet.readInt();
                 if (magic == MAGIC) {
                     handlePacket(packet);
-                }    
+                }
             }
         } else if (numready == 0) {
             g_chat.addLine(COLOR_RED, "Timed out from server.");
@@ -395,7 +395,7 @@ void game_client::execCmd(const std::string &message) {
             } else try {
                 sendVoteCmd(VOTE_ADD_BOT, std::stoi(args));
             } catch (std::invalid_argument) {
-                g_chat.addLine(COLOR_RED, "%s is not a number", args.c_str());
+                g_chat.addLine(COLOR_ORANGE, "%s is not a number", args.c_str());
             }
         } else if (vote_type == "bot_remove") {
             sendVoteCmd(VOTE_REMOVE_BOTS, 0);
@@ -408,7 +408,19 @@ void game_client::execCmd(const std::string &message) {
             if (user_id > 0) {
                 sendVoteCmd(VOTE_KICK, user_id);
             } else {
-                g_chat.addLine(COLOR_RED, "%s is not a user", args.c_str());
+                g_chat.addLine(COLOR_ORANGE, "%s is not a user", args.c_str());
+            }
+        } else if (vote_type == "zone") {
+            if (args.empty()) {
+                g_chat.addLine(COLOR_ORANGE, "Usage: vote zone (zone_name)");
+                return;
+            }
+            std::transform(args.begin(), args.end(), args.begin(), tolower);
+            int zone_id = game_map::getZoneByName(args);
+            if (zone_id >= 0) {
+                sendVoteCmd(VOTE_ZONE, zone_id);
+            } else {
+                g_chat.addLine(COLOR_ORANGE, "%s is not a valid zone name", args.c_str());
             }
         } else if (vote_type == "yes") {
             sendVoteCmd(VOTE_YES, 0);

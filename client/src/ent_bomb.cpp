@@ -37,7 +37,7 @@ void bomb::render(SDL_Renderer *renderer) {
     fx = (pos.ix / 100.f) * TILE_SIZE;
     fy = (pos.iy / 100.f) * TILE_SIZE;
     fz = pos.iz;
-    
+
     static const SDL_Rect src_rects_blue[] = {
         TILE(1, 0), TILE(2, 0), TILE(1, 0), TILE(0, 0)
     };
@@ -135,5 +135,4 @@ void explosion::readFromByteArray(byte_array &ba) {
     trunc_t = (trunc & (1 << 1)) != 0;
     trunc_r = (trunc & (1 << 2)) != 0;
     trunc_b = (trunc & (1 << 3)) != 0;
-    bomb_id = ba.readShort();
 }
