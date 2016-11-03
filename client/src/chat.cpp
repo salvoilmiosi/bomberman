@@ -14,7 +14,7 @@ chat::~chat() {
 }
 
 void chat::addLine(uint32_t color, const char *line) {
-    chat_line l = {std::string(line), color, SDL_GetTicks(), nullptr, 0};
+    chat_line l = {std::string(line), color, LINE_LIFE, nullptr, 0};
     lines.push_back(l);
     if (lines.size() > MAX_LINES) {
         lines.pop_front();
@@ -25,10 +25,14 @@ void chat::addLine(uint32_t color, const char *line) {
 void chat::tick() {
     if (lines.empty()) return;
 
-    chat_line &line = lines.front();
-    if (SDL_GetTicks() - line.time > LINE_LIFE) {
-        if (line.texture) {
-            SDL_DestroyTexture(line.texture);
+    for (chat_line &line : lines) {
+        --line.uptime;
+    }
+
+    chat_line &lfront = lines.front();
+    if (lfront.uptime <= 0) {
+        if (lfront.texture) {
+            SDL_DestroyTexture(lfront.texture);
         }
         lines.pop_front();
     }
@@ -65,7 +69,7 @@ void chat::render(SDL_Renderer *renderer) {
 
     for (auto it = lines.rbegin(); it != lines.rend(); ++it) {
         chat_line &l = *it;
-        uint8_t alpha = 255.f * (1.f - float(SDL_GetTicks() - l.time) / LINE_LIFE);
+        uint8_t alpha = (l.uptime <= 0) ? 0 : (255.f * l.uptime / (float)LINE_LIFE);
         l.color = (l.color & 0xffffff00) | alpha;
 
 #ifdef _SDL_TTF_H

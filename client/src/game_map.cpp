@@ -49,17 +49,13 @@ int game_map::getTileY(tile *t) {
     return (t - tiles) / width;
 }
 
+int game_map::getTileID(tile *t) {
+    return t - tiles;
+}
+
 void game_map::tick() {
-    auto it = specials.begin();
-    while (it != specials.end()) {
-        tile_entity *ent = it->second;
-        if (ent && ent->used) {
-            ent->tick();
-            ++it;
-        } else {
-            it = specials.erase(it);
-            delete ent;
-        }
+    for (auto it : specials) {
+        if (it.second) it.second->tick();
     }
 }
 
@@ -77,7 +73,7 @@ void game_map::render(SDL_Renderer *renderer) {
             switch (t->type) {
             case TILE_SPECIAL:
                 try {
-                    auto it = specials.at(t);
+                    auto it = specials.at(getTileID(t));
                     if (it) {
                         src_rect = it->getSrcRect();
                         break;
@@ -236,7 +232,7 @@ SDL_Texture *game_map::getTileset(map_zone zone) {
         {ZONE_BELT, tileset_5_texture},
         {ZONE_DUEL, tileset_6_texture},
     };
-    
+
     try {
         return tilesets.at(zone);
     } catch (std::out_of_range) {
@@ -277,23 +273,38 @@ void game_map::readFromByteArray(byte_array &packet) {
                 t->data = data;
                 if (t->type == TILE_SPECIAL) {
                     uint8_t ent_type = tile_entity::getSpecialType(data);
-                    auto it = specials.find(t);
+                    auto it = specials.find(getTileID(t));
                     tile_entity *ent = nullptr;
                     if (it == specials.end()) {
                         ent = tile_entity::newTileEntity(t);
+                        if (ent) {
+                            ent->used = true;
+                            specials.insert({getTileID(t), ent});
+                        }
                     } else {
                         ent = it->second;
                         if (!ent || ent->type != ent_type) {
                             delete ent;
                             ent = tile_entity::newTileEntity(t);
                         }
+                        if (ent) {
+                            ent->used = true;
+                            it->second = ent;
+                        }
                     }
-                    if (ent) {
-                        ent->used = true;
-                    }
-                    specials[t] = ent;
                 }
             }
+        }
+    }
+
+    auto it = specials.begin();
+    while (it != specials.end()) {
+        tile_entity *ent = it->second;
+        if (ent && ent->used) {
+            ++it;
+        } else {
+            it = specials.erase(it);
+            delete ent;
         }
     }
 }

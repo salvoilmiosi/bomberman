@@ -1,5 +1,7 @@
 #include "listenserver.h"
 
+#if false
+
 #include <unistd.h>
 #include <signal.h>
 
@@ -38,3 +40,19 @@ int stopListenServer() {
 	listen_open = false;
 	return kill(child_pid, SIGKILL);
 }
+
+#else
+
+bool isListenServerOpen() {
+	return false;
+}
+
+int startListenServer(uint16_t port) {
+	return 1;
+}
+
+int stopListenServer() {
+	return 0;
+}
+
+#endif

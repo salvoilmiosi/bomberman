@@ -7,6 +7,8 @@
 #include <deque>
 #include <string>
 
+#include "main.h"
+
 static const size_t MAX_LINES = 10;
 
 static const int CHAT_XOFFSET = 20;
@@ -15,7 +17,7 @@ static const int CHAT_LINE_SPACE = 2;
 
 static const int CHAT_TYPING_SIZE = 128;
 
-static const int LINE_LIFE = 10000;
+static const int LINE_LIFE = 10 * TICKRATE;
 
 #ifdef _SDL_TTF_H
 static const int CHAR_H = 16;
@@ -41,7 +43,7 @@ public:
     struct chat_line {
         std::string message;
         uint32_t color;
-        uint32_t time;
+        int uptime;
         SDL_Texture *texture;
         SDL_Rect clip_rect;
     };

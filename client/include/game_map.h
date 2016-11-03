@@ -80,7 +80,7 @@ private:
 
     map_zone zone;
 
-    std::map<tile *, tile_entity *> specials;
+    std::map<int, tile_entity *> specials;
 
 public:
     game_map();
@@ -93,6 +93,8 @@ public:
 
     int getTileX(tile *t);
     int getTileY(tile *t);
+
+    int getTileID(tile *t);
 
     void tick();
 
