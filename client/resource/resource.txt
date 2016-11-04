@@ -5,6 +5,8 @@ IDB_TILESET_3 "tileset_3.png"
 IDB_TILESET_4 "tileset_4.png"
 IDB_TILESET_5 "tileset_5.png"
 IDB_TILESET_6 "tileset_6.png"
+IDB_TILESET_7 "tileset_7.png"
+
 IDB_EXPLOSIONS "explosions.png"
 IDB_ITEMS "items.png"
 IDB_PLAYERS "players.png"

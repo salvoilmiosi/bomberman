@@ -217,7 +217,7 @@ void game_world::countdownEnd() {
                         p->respawn(spawn_pt.x, spawn_pt.y);
 
                         ++num;
-                    } catch (int n) {
+                    } catch (std::out_of_range) {
                         p->setPlayerNum(0xff);
                         // Could not spawn that player
                     }
