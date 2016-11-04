@@ -1,0 +1,59 @@
+CXX = i686-w64-mingw32-g++
+LD = i686-w64-mingw32-g++
+WINDRES = i686-w64-mingw32-windres
+
+CFLAGS = -Wall --std=c++11
+
+RESPACK = utils/resource_pack
+
+LDFLAGS = -O2
+LIBS = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+
+INCLUDE = include
+BIN_DIR = bin/Win32
+OBJ_DIR = obj/Win32
+
+OUT_BIN = bomberman.exe
+
+ifeq ($(OS),Windows_NT)
+	LDFLAGS += -mwindows -lmingw32 -lSDL2main
+	RESPACK := $(RESPACK).exe
+	WINDRES := windres
+endif
+
+$(shell mkdir -p $(BIN_DIR) >/dev/null)
+$(shell mkdir -p $(OBJ_DIR) >/dev/null)
+$(shell mkdir -p $(OBJ_DIR) >/dev/null)
+
+DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJ_DIR)/$*.Td
+
+SOURCES = $(wildcard src/*.cpp)
+OBJECTS = $(patsubst src/%,$(OBJ_DIR)/%.o,$(basename $(SOURCES))) $(OBJ_DIR)/icon_rc.o
+
+all: $(BIN_DIR)/$(OUT_BIN) $(BIN_DIR)/resource.dat
+
+clean:
+	rm -rf $(BIN_DIR)
+	rm -rf $(OBJ_DIR)
+
+$(BIN_DIR)/resource.dat: $(RESPACK) resource/resource.txt
+	$(RESPACK) resource/resource.txt $(BIN_DIR)/resource.dat
+
+$(RESPACK): utils/resource_pack.cpp
+	$(CXX) $(CFLAGS) -o $(RESPACK) utils/resource_pack.cpp
+
+$(BIN_DIR)/$(OUT_BIN): $(OBJECTS)
+	$(LD) -o $(BIN_DIR)/$(OUT_BIN) $(OBJECTS) $(LDFLAGS) $(LIBS)
+
+$(OBJ_DIR)/icon_rc.o: resource/icon.rc
+	$(WINDRES) -i resource/icon.rc -o $(OBJ_DIR)/icon_rc.o
+
+$(OBJ_DIR)/%.o : src/%.cpp
+$(OBJ_DIR)/%.o : src/%.cpp $(OBJ_DIR)/%.d
+	$(CXX) $(DEPFLAGS) $(CFLAGS) -c -I $(INCLUDE) -o $@ $<
+	@mv -f $(OBJ_DIR)/$*.Td $(OBJ_DIR)/$*.d
+
+$(OBJ_DIR)/%.d: ;
+.PRECIOUS: $(OBJ_DIR)/%.d
+
+-include $(patsubst src/%,$(OBJ_DIR)/%.d,$(basename $(SOURCES)))
