@@ -6,6 +6,10 @@ LIBS = -lSDL2 -lSDL2_net
 INCLUDE = include
 BIN_NAME = bomberman_server
 
+ifeq ($(OS),Windows_NT)
+	LDFLAGS := -lmingw32 -lSDL2main
+endif
+
 SOURCES = $(wildcard src/*.cpp)
 
 CFLAGS_DEBUG = $(CFLAGS) -g

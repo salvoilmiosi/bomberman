@@ -6,6 +6,10 @@ LIBS = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 INCLUDE = include
 BIN_NAME = bomberman
 
+ifeq ($(OS),Windows_NT)
+	LDFLAGS := -mwindows -lmingw32 -lSDL2main
+endif
+
 SOURCES = $(wildcard src/*.cpp)
 
 CFLAGS_DEBUG = $(CFLAGS) -g
