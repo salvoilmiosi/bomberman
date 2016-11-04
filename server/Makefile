@@ -18,7 +18,6 @@ endif
 
 $(shell mkdir -p $(BIN_DIR) >/dev/null)
 $(shell mkdir -p $(OBJ_DIR) >/dev/null)
-$(shell mkdir -p $(OBJ_DIR) >/dev/null)
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJ_DIR)/$*.Td
 

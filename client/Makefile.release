@@ -21,7 +21,6 @@ endif
 
 $(shell mkdir -p $(BIN_DIR) >/dev/null)
 $(shell mkdir -p $(OBJ_DIR) >/dev/null)
-$(shell mkdir -p $(OBJ_DIR) >/dev/null)
 
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJ_DIR)/$*.Td
 
@@ -35,10 +34,10 @@ clean:
 	rm -rf $(OBJ_DIR)
 
 $(BIN_DIR)/resource.dat: $(RESPACK) resource/resource.txt
-	$(RESPACK) resource/resource.txt $(BIN_DIR)/resource.dat
+	utils/resource_pack resource/resource.txt $(BIN_DIR)/resource.dat
 
 $(RESPACK): utils/resource_pack.cpp
-	$(CXX) $(CFLAGS) -o $(RESPACK) utils/resource_pack.cpp
+	g++ -g -Wall --std=c++11 -o $(RESPACK) utils/resource_pack.cpp
 
 $(BIN_DIR)/$(OUT_BIN): $(OBJECTS)
 	$(LD) -o $(BIN_DIR)/$(OUT_BIN) $(OBJECTS) $(LDFLAGS) $(LIBS)
