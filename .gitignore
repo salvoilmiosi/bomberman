@@ -12,6 +12,7 @@
 *.dat
 *.sublime-project
 *.sublime-workspace
+*.d
 client/bin/*
 client/utils/resource_pack
 client/utils/resource_unpack
