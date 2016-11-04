@@ -7,6 +7,7 @@
 #include <map>
 
 static const int TILE_SIZE = 48;
+static const float SERVER_TILE_SIZE = 100.f;
 
 enum tile_type {
     TILE_FLOOR,

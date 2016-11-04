@@ -69,8 +69,8 @@ void player::render(SDL_Renderer *renderer) {
 
     position ip = interp.interpolate();
 
-    x = (ip.ix / 100.f + 0.5f) * TILE_SIZE;
-    y = (ip.iy / 100.f + 0.5f) * TILE_SIZE;
+    x = (ip.ix / SERVER_TILE_SIZE + 0.5f) * TILE_SIZE;
+    y = (ip.iy / SERVER_TILE_SIZE + 0.5f) * TILE_SIZE;
     z = ip.iz;
 
     int spx = 0;

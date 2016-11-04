@@ -131,7 +131,7 @@ public:
     void stun();
     void makeInvulnerable();
 
-    void pickupItem(item_type item);
+    void pickupItem(item_type item, bool add_to_pickups = true);
 
 private:
     bool player_move(float dx, float dy);

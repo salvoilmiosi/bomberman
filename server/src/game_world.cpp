@@ -278,7 +278,7 @@ ent_movable **game_world::findMovables(float fx, float fy, entity_type type) {
         if (mov && mov->isNotDestroyed() && (type == TYPE_NONE ? true : ent->getType() == type)) {
             float dx = ABS(mov->getX() - fx);
             float dy = ABS(mov->getY() - fy);
-            if (dx < TILE_SIZE / 2 && dy < TILE_SIZE / 2) {
+            if (dx <= TILE_SIZE / 2 && dy <= TILE_SIZE / 2) {
                 ents[i] = mov;
                 ++i;
             }

@@ -34,8 +34,8 @@ void bomb::tick() {
 void bomb::render(SDL_Renderer *renderer) {
     position pos = interp.interpolate();
 
-    fx = (pos.ix / 100.f) * TILE_SIZE;
-    fy = (pos.iy / 100.f) * TILE_SIZE;
+    fx = (pos.ix / SERVER_TILE_SIZE) * TILE_SIZE;
+    fy = (pos.iy / SERVER_TILE_SIZE) * TILE_SIZE;
     fz = pos.iz;
 
     static const SDL_Rect src_rects_blue[] = {
