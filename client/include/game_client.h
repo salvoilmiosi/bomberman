@@ -4,6 +4,7 @@
 #include <SDL2/SDL_net.h>
 #include <string>
 #include <map>
+#include <thread>
 
 #include "packet_io.h"
 #include "game_world.h"
@@ -73,12 +74,9 @@ private:
 
     bool is_open = true;
 
-    SDL_Thread *game_thread = nullptr;
+    std::thread receiver_thread;
 
-    void start_thread();
-
-    friend int game_thread_func(void *data);
-    int game_thread_run();
+    int receiver_run();
 
 public:
     game_client();

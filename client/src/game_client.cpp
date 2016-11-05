@@ -22,6 +22,10 @@ game_client::~game_client() {
         SDLNet_UDP_Close(socket);
         socket = nullptr;
     }
+
+    if (receiver_thread.joinable()) {
+        receiver_thread.join();
+    }
 }
 
 bool game_client::connect(const char *address, uint16_t port) {
@@ -76,7 +80,10 @@ bool game_client::connect(const char *address, uint16_t port) {
 
         playMusic(music_battle);
 
-        start_thread();
+        receiver_thread = std::thread([this]{
+            receiver_run();
+        });
+
         return true;
     case SERV_REJECT:
         message = accepter.readString();
@@ -111,6 +118,10 @@ void game_client::clear() {
     SDLNet_UDP_DelSocket(sock_set, socket);
     SDLNet_UDP_Close(socket);
     socket = nullptr;
+
+    if (receiver_thread.joinable()) {
+        receiver_thread.join();
+    }
 
     world.clear();
     g_score.clear();
@@ -160,23 +171,7 @@ void game_client::tick() {
     }
 }
 
-int game_thread_func(void *data) {
-    game_client *client = (game_client *) data;
-    if (client) {
-        return client->game_thread_run();
-    }
-    return 1;
-}
-
-void game_client::start_thread() {
-    game_thread = SDL_CreateThread(game_thread_func, "Receiver", this);
-
-    if (!game_thread) {
-        fprintf(stderr, "Error creating game thread: %s\n", SDL_GetError());
-    }
-}
-
-int game_client::game_thread_run() {
+int game_client::receiver_run() {
     int err_ret = 0;
 
     while (true) {
@@ -206,7 +201,7 @@ int game_client::game_thread_run() {
         }
     }
 
-    printf("Receiver thread stopped.\n");
+    g_chat.addLine(COLOR_YELLOW, "Receiver thread stopped.");
 
     return err_ret;
 }

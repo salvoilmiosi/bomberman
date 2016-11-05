@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <map>
 #include <vector>
+#include <thread>
 
 #include "packet_io.h"
 #include "user.h"
@@ -78,8 +79,6 @@ private:
     SDLNet_SocketSet sock_set;
     UDPsocket socket_serv;
 
-    SDL_Thread *game_thread;
-
     packet_repeater repeater;
 
     vote_handler voter;
@@ -144,7 +143,7 @@ public:
     void setZone(map_zone zone);
 
 private:
-    friend int game_thread_func(void *data);
+    std::thread game_thread;
     int game_thread_run();
 
     int receive(packet_ext &packet);

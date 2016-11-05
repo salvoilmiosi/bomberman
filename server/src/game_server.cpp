@@ -97,15 +97,6 @@ packet_ext game_server::mapPacket() {
     return packet;
 }
 
-int game_thread_func(void *data) {
-    game_server *server = (game_server *)data;
-
-    if (server) {
-        return server->game_thread_run();
-    }
-    return 1;
-}
-
 int game_server::game_thread_run() {
     int tick_count = 0;
     while(open) {
@@ -154,12 +145,9 @@ int game_server::receive(packet_ext &packet) {
 }
 
 int game_server::run() {
-    game_thread = SDL_CreateThread(game_thread_func, "GameLoop", this);
-
-    if (!game_thread) {
-        fprintf(stderr, "Error creating game thread: %s\n", SDL_GetError());
-        return 1;
-    }
+    game_thread = std::thread([this]{
+        game_thread_run();
+    });
 
     while (open) {
         packet_ext packet(socket_serv, true);
