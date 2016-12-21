@@ -1,11 +1,11 @@
 CC = g++
 AR = ar
-CFLAGS = -g -Wall --std=c++11
-LDFLAGS = 
+CFLAGS = -Wall --std=c++11
+LDFLAGS = -O2
 INCLUDE = include
 
-BIN_DIR = bin/Debug
-OBJ_DIR = obj/Debug
+BIN_DIR = bin/Release
+OBJ_DIR = obj/Release
 
 PACK_BIN = $(BIN_DIR)/resource_pack
 UNPACK_BIN = $(BIN_DIR)/resource_unpack

@@ -4,8 +4,8 @@ MAKE = make
 CFLAGS = -g -Wall --std=c++11
 
 RESPACK_DIR = resource_pack
-RESPACK = resource_pack/bin/resource_pack
-RESLOAD = resource_pack/bin/libresource_load.a
+RESPACK = resource_pack/bin/Debug/resource_pack
+RESLOAD = resource_pack/bin/Debug/libresource_load.a
 
 LDFLAGS =
 LIBS = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
