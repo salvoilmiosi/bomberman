@@ -3,6 +3,10 @@
 
 #include <SDL2/SDL.h>
 
+#include <string>
+
+#include "../resource_pack/include/resource_load.h"
+
 extern SDL_Surface *icon_surface;
 
 extern SDL_Texture *font_texture;
@@ -22,11 +26,7 @@ extern SDL_Texture *player_icons_texture;
 
 #define TILE(x, y) {(x)*16, (y)*16, 16, 16}
 
-bool openResourceFile(const char *filename);
-
-SDL_RWops *getResourceRW(const char *RES_ID);
-
-void loadResources(SDL_Renderer *renderer);
+bool loadResources(SDL_Renderer *renderer);
 
 void clearResources();
 

@@ -13,8 +13,8 @@
 *.sublime-project
 *.sublime-workspace
 *.d
+*.a
+client/resource_pack/bin/*
 client/bin/*
-client/utils/resource_pack
-client/utils/resource_unpack
 server/bin/*
 
