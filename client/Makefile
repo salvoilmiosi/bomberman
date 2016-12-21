@@ -1,8 +1,11 @@
 CXX = g++
 LD = g++
+MAKE = make
 CFLAGS = -g -Wall --std=c++11
 
-RESPACK = utils/resource_pack
+RESPACK_DIR = resource_pack
+RESPACK = resource_pack/bin/resource_pack
+RESLOAD = resource_pack/bin/libresource_load.a
 
 LDFLAGS =
 LIBS = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
@@ -17,6 +20,7 @@ ifeq ($(OS),Windows_NT)
 	LDFLAGS += -mwindows -lmingw32 -lSDL2main
 	OUT_BIN := $(OUT_BIN).exe
 	RESPACK := $(RESPACK).exe
+	MAKE := mingw32-make
 endif
 
 $(shell mkdir -p $(BIN_DIR) >/dev/null)
@@ -25,19 +29,21 @@ $(shell mkdir -p $(OBJ_DIR) >/dev/null)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(OBJ_DIR)/$*.Td
 
 SOURCES = $(wildcard src/*.cpp)
-OBJECTS = $(patsubst src/%,$(OBJ_DIR)/%.o,$(basename $(SOURCES)))
+OBJECTS = $(patsubst src/%,$(OBJ_DIR)/%.o,$(basename $(SOURCES))) $(RESLOAD)
 
 all: $(BIN_DIR)/$(OUT_BIN) $(BIN_DIR)/resource.dat
 
 clean:
 	rm -rf $(BIN_DIR)
 	rm -rf $(OBJ_DIR)
+	$(MAKE) -C $(RESPACK_DIR) clean
 
 $(BIN_DIR)/resource.dat: $(RESPACK) resource/resource.txt
-	utils/resource_pack resource/resource.txt $(BIN_DIR)/resource.dat
+	$(RESPACK) resource/resource.txt $(BIN_DIR)/resource.dat
 
-$(RESPACK): utils/resource_pack.cpp
-	g++ -g -Wall --std=c++11 -o $(RESPACK) utils/resource_pack.cpp
+$(RESLOAD): $(RESPACK)
+$(RESPACK):
+	$(MAKE) -C $(RESPACK_DIR)
 
 $(BIN_DIR)/$(OUT_BIN): $(OBJECTS)
 	$(LD) -o $(BIN_DIR)/$(OUT_BIN) $(OBJECTS) $(LDFLAGS) $(LIBS)
