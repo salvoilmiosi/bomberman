@@ -34,3 +34,5 @@ IDW_BOUNCE "sound/bounce.wav"
 IDW_JUMP "sound/jump.wav"
 IDW_WALK "sound/walk.wav"
 IDW_SELECT "sound/select.wav"
+
+LOCALE_ENGLISH "english.txt"

@@ -1,0 +1,9 @@
+ERROR_COULD_NOT_INIT_SDL 			Could not init SDL
+ERROR_COULD_NOT_INIT_SDLnet 		Could not init SDL_net
+ERROR_COULD_NOT_INIT_SDLimage 		Could not init SDL_image
+ERROR_COULD_NOT_INIT_SDLmixer		Could not init SDL_mixer
+ERROR_COULD_NOT_OPEN_CHANNEL		Could not open audio channel
+ERROR_COULD_NOT_INIT_SDLttf			Could not init SDL_ttf
+ERROR_COULD_NOT_CREATE_WINDOW		Could not create window
+ERROR_COULD_NOT_CREATE_RENDERER		Could not create renderer
+ERROR_COULD_NOT_CREATE_RESOURCES	Could not open resource file

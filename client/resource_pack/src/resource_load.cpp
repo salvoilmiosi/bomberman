@@ -74,3 +74,38 @@ SDL_RWops *getResourceRW(const char *RES_ID) {
 		return nullptr;
 	}
 }
+
+std::string loadStringFromResource(const char *RES_ID) {
+	try {
+		resource &res = resFiles.at(RES_ID);
+
+	} catch (std::out_of_range) {
+		return "";
+	}
+}
+/*
+	SDL_RWops *rw = getResourceRW(RES_ID);
+	if (!rw) {
+		return "";
+	}
+
+	Sint64 res_size = SDL_RWsize(rw);
+	char *res = (char*)malloc(res_size + 1);
+	memset(res, 0, res_size + 1);
+
+	Sint64 nb_read_total = 0, nb_read = 1;
+	char* buf = res;
+	while (nb_read_total < res_size && nb_read != 0) {
+		nb_read = SDL_RWread(rw, buf, 1, (res_size - nb_read_total));
+		nb_read_total += nb_read;
+		buf += nb_read;
+	}
+	SDL_RWclose(rw);
+	if (nb_read_total != res_size) {
+		free(res);
+		return "";
+	}
+
+	res[nb_read_total] = '\0';
+	return std::string(res, res_size);
+}*/
