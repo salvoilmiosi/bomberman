@@ -1,8 +1,10 @@
 #ifndef __STRINGS_H__
 #define __STRINGS_H__
 
+#include <string>
+
 const char *STRING(const char *ID);
 
-int load_locale(const char *locale);
+bool load_locale(const std::string &locale);
 
 #endif // __STRINGS_H__

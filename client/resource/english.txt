@@ -1,9 +1,46 @@
-ERROR_COULD_NOT_INIT_SDL 			Could not init SDL
-ERROR_COULD_NOT_INIT_SDLnet 		Could not init SDL_net
-ERROR_COULD_NOT_INIT_SDLimage 		Could not init SDL_image
-ERROR_COULD_NOT_INIT_SDLmixer		Could not init SDL_mixer
-ERROR_COULD_NOT_OPEN_CHANNEL		Could not open audio channel
-ERROR_COULD_NOT_INIT_SDLttf			Could not init SDL_ttf
-ERROR_COULD_NOT_CREATE_WINDOW		Could not create window
-ERROR_COULD_NOT_CREATE_RENDERER		Could not create renderer
-ERROR_COULD_NOT_CREATE_RESOURCES	Could not open resource file
+ERROR_COULD_NOT_INIT_SDL 			Could not init SDL.
+ERROR_COULD_NOT_INIT_SDLnet 		Could not init SDL_net.
+ERROR_COULD_NOT_INIT_SDLimage 		Could not init SDL_image.
+ERROR_COULD_NOT_INIT_SDLmixer		Could not init SDL_mixer.
+ERROR_COULD_NOT_OPEN_CHANNEL		Could not open audio channel.
+ERROR_COULD_NOT_INIT_SDLttf			Could not init SDL_ttf.
+ERROR_COULD_NOT_CREATE_WINDOW		Could not create window.
+ERROR_COULD_NOT_CREATE_RENDERER		Could not create renderer.
+ERROR_COULD_NOT_OPEN_RESOURCES		Could not open resource file.
+
+ERROR_CREATING_SOCKET				Error creating socket
+SERVER_TIMED_OUT					Server timed out
+SERVER_DOES_NOT_RESPOND				Server does not respond
+ERROR_COULD_NOT_CONNECT				Error: Failed to connect to server
+
+SERVER_ACCEPTED						Server accepted
+SERVER_CONNECTED					Connected to
+SERVER_REJECTED						Server rejected
+SERVER_DISCONNECTED					Disconnected
+
+ERROR_RECEIVING_PACKET				Error receiving packet
+ERROR_CHECKING_SOCKET				Error checking socket
+
+CLIENT_TIMED_OUT					Timed out from the server.
+CLIENT_KICKED						You were kicked from the server
+
+ERROR_CREATING_LISTENSERVER			Could not create listen server
+
+NOT_A_NUMBER						Not a number
+
+VOLUME_SET_MUSIC					Set music volume
+VOLUME_SET_MAIN						Set sounds volume
+NAME_SET							Set name
+
+USAGE_connect						Usage: connect (address) [port]
+USAGE_name							Usage: name (new_name)
+USAGE_volume						Usage: volume (0-100) [music]
+USAGE_vote							Usage: vote (start | stop | reset | bot_add | bot_remove)
+USAGE_vote_kick						Usage: vote kick (user)
+USAGE_vote_zone						Usage: vote zone (zone_name)
+
+INVALID_ZONE_NAME					Not a valid zone name
+INVALID_VOTE						Not a valid vote command
+INVALID_COMMAND						Not a valid command
+
+NOT_CONNECTED						You are not connected to a server.
