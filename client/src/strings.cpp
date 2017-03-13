@@ -7,6 +7,7 @@
 #include <cctype>
 #include <locale>
 #include <map>
+#include <vector>
 
 static std::map<std::string, std::vector<std::string> > locales;
 
