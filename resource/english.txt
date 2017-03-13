@@ -69,7 +69,6 @@ VOTE_ADD_BOT						{0} votes to add {1} bots.
 VOTE_REMOVE_BOTS					{0} votes to remove all bots.
 VOTE_KICK 							{0} votes to kick {1}.
 VOTE_ZONE 							{0} votes to change the zone to {1}.
-VOTE_GENERIC						{0} voted {1}
 VOTE_YES							{0} voted yes.
 VOTE_NO 							{0} voted no.
 
@@ -82,7 +81,7 @@ KICKED_VOTED_OFF					You have been voted off.
 ROUND_START							Round {0}, fight!
 ROUND_START							Round {0} begins now!
 
-ROUND_BEGIN_TIME					Round {0} begins in {1} seconds.
+ROUND_BEGIN_TIME					Round {0} --- {1}.
 ROUND_VICTORY						{0} won round {1}!
 
 ROUND_DRAW							Round draw!

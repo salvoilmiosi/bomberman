@@ -47,12 +47,12 @@ VOLUME_SET_MUSIC					Impostato volume musica: {0}
 VOLUME_SET_MAIN						Impostato volume suoni: {0}
 NAME_SET							Impostato nome: {0}
 
-USAGE_connect						Utilizzo: connect (address) [port]
-USAGE_name							Utilizzo: name (new_name)
+USAGE_connect						Utilizzo: connect (indirizzo) [porta]
+USAGE_name							Utilizzo: name (nome_nuovo)
 USAGE_volume						Utilizzo: volume (0-100) [music]
 USAGE_vote							Utilizzo: vote (start | stop | reset | bot_add | bot_remove)
-USAGE_vote_kick						Utilizzo: vote kick (user)
-USAGE_vote_zone						Utilizzo: vote zone (zone_name)
+USAGE_vote_kick						Utilizzo: vote kick (utente)
+USAGE_vote_zone						Utilizzo: vote zone (nome_zona)
 
 INVALID_IP							"{0}" non è un IP valido.
 INVALID_ZONE_NAME					"{0}" non è un nome di zona valido.
@@ -69,7 +69,6 @@ VOTE_ADD_BOT						{0} vota di aggiungere {1} bot.
 VOTE_REMOVE_BOTS					{0} vota di rimuovere tutti i bot.
 VOTE_KICK 							{0} vota per cacciare {1}.
 VOTE_ZONE 							{0} vota per cambiare zona a {1}.
-VOTE_GENERIC						{0} vota {1}
 VOTE_YES							{0} vota sì.
 VOTE_NO 							{0} vota no.
 
@@ -82,8 +81,10 @@ KICKED_VOTED_OFF					Sei stato votato via dal server.
 ROUND_START							Round {0}, Combatti!
 ROUND_START							Il round {0} inizia ora!
 
-ROUND_BEGIN_TIME					Il round {0} inizia fra {1} secondi.
+ROUND_BEGIN_TIME					Round {0} --- {1}.
+
 ROUND_VICTORY						{0} ha vinto il round {1}!
+ROUND_VICTORY						Complimenti a {0}, vince il round {1}!
 
 ROUND_DRAW							Pareggio!
 ROUND_DRAW							Pareggio! Tutti perdono!
@@ -96,7 +97,7 @@ SUICIDE_MSG							{0} ha premuto il grande pulsante rosso.
 SUICIDE_MSG							{0} disse addio al mondo crudele.
 SUICIDE_MSG							{0} si spaventa troppo delle esplosioni.
 SUICIDE_MSG							{0} ha tagliato il cavo sbagliato.
-SUICIDE_MSG							{0} non ha mai imparato di non giocare col fuoco.
+SUICIDE_MSG							{0} non ha mai imparato a non giocare col fuoco.
 
 WORLD_DEATH_MSG						La vita non è giusta per {0}.
 WORLD_DEATH_MSG						{0} è stato ucciso dal mondo.

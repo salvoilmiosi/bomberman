@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	load_locale(loadStringFromResource("LOCALE_ITALIAN"));
+	load_locale(loadStringFromResource("LOCALE_ENGLISH"));
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
 		std::cerr << STRING("ERROR_COULD_NOT_INIT_SDL") << std::endl;

@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    load_locale(loadStringFromResource("LOCALE_ITALIAN"));
+    load_locale(loadStringFromResource("LOCALE_ENGLISH"));
 
     srand(time(0));
     random_engine.seed(rand());

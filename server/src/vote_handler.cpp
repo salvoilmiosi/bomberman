@@ -77,7 +77,7 @@ void vote_handler::sendVote(user *u, uint32_t vote_type, uint32_t args) {
         }
     } else if (vote_type == VOTE_YES || vote_type == VOTE_NO) {
         votes[u->getID()] = vote_type;
-        server->messageToAll(COLOR_MAGENTA, STRING("VOTE_GENERIC", u->getName(), vote_type == VOTE_YES ? "yes" : "no"));
+        server->messageToAll(COLOR_MAGENTA, STRING(vote_type == VOTE_YES ? "VOTE_YES" : "VOTE_NO", u->getName()));
     } else if (vote_type == current_vote) {
         votes[u->getID()] = VOTE_YES;
         server->messageToAll(COLOR_MAGENTA, STRING("VOTE_YES", u->getName()));
