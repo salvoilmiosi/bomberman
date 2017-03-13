@@ -36,3 +36,4 @@ IDW_WALK "sound/walk.wav"
 IDW_SELECT "sound/select.wav"
 
 LOCALE_ENGLISH "english.txt"
+LOCALE_ITALIAN "italian.txt"

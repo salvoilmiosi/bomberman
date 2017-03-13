@@ -8,12 +8,11 @@ ERROR_COULD_NOT_CREATE_WINDOW		Could not create window.
 ERROR_COULD_NOT_CREATE_RENDERER		Could not create renderer.
 ERROR_COULD_NOT_OPEN_RESOURCES		Could not open resource file.
 
-ERROR_CREATING_SOCKET				Error creating socket
+ERROR_CREATING_SOCKET				Error creating socket: {0}
 ERROR_CREATING_SERVER_SOCKET		Error creating server socket: {0}
 CONNECTION_TIMED_OUT				{0}:{1} - Connection timed out.
-SERVER_TIMED_OUT					Server timed out
 SERVER_DOES_NOT_RESPOND				{0}:{1} - Server does not respond: {2}
-ERROR_COULD_NOT_CONNECT				Error: Failed to connect to server.
+ERROR_COULD_NOT_CONNECT				Error: failed to connect to server.
 
 SERVER_LISTENING					Server listening on port {0}.
 SERVER_ACCEPTED						Server accepted: {0}
@@ -55,10 +54,10 @@ USAGE_vote							Usage: vote (start | stop | reset | bot_add | bot_remove)
 USAGE_vote_kick						Usage: vote kick (user)
 USAGE_vote_zone						Usage: vote zone (zone_name)
 
-INVALID_IP							"{0}" is not a valid ip
-INVALID_ZONE_NAME					"{0}" is not a valid zone name
-INVALID_VOTE						"{0}" is not a valid vote command
-INVALID_COMMAND						"{0}" is not a valid command
+INVALID_IP							"{0}" is not a valid IP.
+INVALID_ZONE_NAME					"{0}" is not a valid zone name.
+INVALID_VOTE						"{0}" is not a valid vote command.
+INVALID_COMMAND						"{0}" is not a valid command.
 INVALID_USER						"{0}" is not a user.
 
 NOT_CONNECTED						You are not connected to a server.
@@ -81,8 +80,13 @@ VOTE_RECAP_FAIL						Yes: {0}, No: {1} - Vote failed.
 KICKED_VOTED_OFF					You have been voted off.
 
 ROUND_START							Round {0}, fight!
+ROUND_START							Round {0} begins now!
+
 ROUND_BEGIN_TIME					Round {0} begins in {1} seconds.
 ROUND_VICTORY						{0} won round {1}!
+
+ROUND_DRAW							Round draw!
+ROUND_DRAW							Round draw! Everyone loses!
 
 SUICIDE_MSG							{0} couldn't handle it and killed himself.
 SUICIDE_MSG							{0} forgot that his own bombs hurt.
@@ -94,7 +98,7 @@ SUICIDE_MSG							{0} fears explosions too much.
 SUICIDE_MSG							{0} cut the wrong wire.
 SUICIDE_MSG							{0} never learned not to play with fire.
 
-WORLD_DEATH_MSG						Life just isn't fair for {0}
+WORLD_DEATH_MSG						Life just isn't fair for {0}.
 WORLD_DEATH_MSG						{0} was killed by the world.
 WORLD_DEATH_MSG						{0} was killed by the world. What a pity.
 WORLD_DEATH_MSG						{0} had it coming for him.
@@ -109,4 +113,3 @@ MURDER_MSG							{0} didn't pay enough attention to {1}.
 MURDER_MSG							{0} died at the sight of {1}.
 MURDER_MSG							{0} just wanted an hug from {1}.
 MURDER_MSG							{0} thinks that {1} is cheating.
-MURDER_MSG							{1} wondered what {1}'s bomb might be.

@@ -526,7 +526,7 @@ packet_ext game_server::messagePacket(uint32_t color, const std::string &message
 	packet.writeString(message.c_str());
 	packet.writeInt(color);
 
-	std::cout << message;
+	std::cout << message << std::endl;
 
 	return packet;
 }

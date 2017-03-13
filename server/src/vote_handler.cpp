@@ -1,6 +1,7 @@
 #include "vote_handler.h"
 
 #include "game_server.h"
+#include "strings.h"
 
 vote_handler::vote_handler(game_server *server) : server(server) {}
 

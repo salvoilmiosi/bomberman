@@ -8,27 +8,22 @@
 #include <locale>
 #include <map>
 #include <vector>
+#include <cstdlib>
 
 static std::map<std::string, std::vector<std::string> > locales;
 
 std::string STRING(const char *ID) {
-	return STRING_NO(ID, 0);
-}
-
-std::string STRING(const char *ID, std::initializer_list<std::string> args) {
-	return STRING_NO(ID, 0, args);
-}
-
-std::string STRING_NO(const char *ID, int num) {
 	try {
-		return locales.at(ID).at(num);
+		auto &strs = locales.at(ID);
+		size_t num = rand() % strs.size();
+		return strs.at(num);
 	} catch (std::out_of_range) {
 		return ID;
 	}
 }
 
-std::string STRING_NO(const char *ID, int num, std::initializer_list<std::string> args) {
-	std::string str = STRING_NO(ID, num);
+std::string STRING(const char *ID, const std::initializer_list<std::string> &args) {
+	std::string str = STRING(ID);
 	if (str.empty()) return str;
 
 	int i=0;
@@ -46,14 +41,6 @@ std::string STRING_NO(const char *ID, int num, std::initializer_list<std::string
 	}
 
 	return str;
-}
-
-int STRING_COUNT(const char *ID) {
-	try {
-		return locales.at(ID).size();
-	} catch (std::out_of_range) {
-		return 0;
-	}
 }
 
 static void trim(std::string &s) {

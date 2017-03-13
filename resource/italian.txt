@@ -1,0 +1,115 @@
+ERROR_COULD_NOT_INIT_SDL 			Impossibile inizializzare SDL.
+ERROR_COULD_NOT_INIT_SDLnet 		Impossibile inizializzare SDL_net.
+ERROR_COULD_NOT_INIT_SDLimage 		Impossibile inizializzare SDL_image.
+ERROR_COULD_NOT_INIT_SDLmixer		Impossibile inizializzare SDL_mixer.
+ERROR_COULD_NOT_OPEN_CHANNEL		Impossibile aprire canale audio.
+ERROR_COULD_NOT_INIT_SDLttf			Impossibile inizializzare SDL_ttf
+ERROR_COULD_NOT_CREATE_WINDOW		Impossibile creare finestra.
+ERROR_COULD_NOT_CREATE_RENDERER		Impossibile creare renderer.
+ERROR_COULD_NOT_OPEN_RESOURCES		Impossibile aprire file di risorse.
+
+ERROR_CREATING_SOCKET				Errore nella creazione del socket: {0}
+ERROR_CREATING_SERVER_SOCKET		Errore nella creazione del socket server: {0}
+CONNECTION_TIMED_OUT				{0}:{1} - Connessione scaduta.
+SERVER_DOES_NOT_RESPOND				{0}:{1} - Il server non risponde: {2}
+ERROR_COULD_NOT_CONNECT				Errore: impossibile connettersi al server.
+
+SERVER_LISTENING					Server in ascolto sulla porta {0}.
+SERVER_ACCEPTED						Connessione accettata: {0}
+SERVER_CONNECTED					Connesso a {0}:{1}
+SERVER_REJECTED						Connessione rifiutata: {0}
+SERVER_DISCONNECTED					Disconnesso.
+SERVER_CLOSED						Server chiuso.
+SERVER_FULL							Server pieno.
+SERVER_WELCOME						Benvenuto al server.
+SERVER_END  						Server chiuso, codice di ritorno {0}
+
+ERROR_RECEIVING_PACKET				Errore nella ricezione del pacchetto ({0}): {1}
+ERROR_CHECKING_SOCKET				Errore nel controllo del socket ({0}): {1}
+
+CLIENT_TIMED_OUT					{0} ha perso connessione dal server.
+CLIENT_KICKED						Sei stato cacciato dal server: {0}
+CLIENT_CONNECTED 					{0} si è connesso.
+CLIENT_DISCONNECTED					{0} si è disconnesso.
+CLIENT_JOINED						{0} si è unito alla partita.
+CLIENT_SPECTATING					{0} sta guardando.
+CLIENT_WAS_KICKED					{0} è stato cacciato dal server.
+CLIENT_ALREADY_CONNECTED			{0} è già connesso.
+
+CLIENT_MESSAGE						{0} : {1}
+CLIENT_CHANGED_NAME					{0} ha cambiato nome in {1}.
+
+ERROR_CREATING_LISTENSERVER			Impossibile creare listenserver: {0}
+
+NOT_A_NUMBER						"{0}" non è un numero.
+
+VOLUME_SET_MUSIC					Impostato volume musica: {0}
+VOLUME_SET_MAIN						Impostato volume suoni: {0}
+NAME_SET							Impostato nome: {0}
+
+USAGE_connect						Utilizzo: connect (address) [port]
+USAGE_name							Utilizzo: name (new_name)
+USAGE_volume						Utilizzo: volume (0-100) [music]
+USAGE_vote							Utilizzo: vote (start | stop | reset | bot_add | bot_remove)
+USAGE_vote_kick						Utilizzo: vote kick (user)
+USAGE_vote_zone						Utilizzo: vote zone (zone_name)
+
+INVALID_IP							"{0}" non è un IP valido.
+INVALID_ZONE_NAME					"{0}" non è un nome di zona valido.
+INVALID_VOTE						"{0}" non è un comando di voto valido.
+INVALID_COMMAND						"{0}" non è un comando valido.
+INVALID_USER						"{0}" non è un utente.
+
+NOT_CONNECTED						Non sei connesso a un server.
+
+VOTE_START							{0} vota per avviare il server.
+VOTE_STOP							{0} vota per fermare il server.
+VOTE_RESET							{0} vota per riavviare il gioco.
+VOTE_ADD_BOT						{0} vota di aggiungere {1} bot.
+VOTE_REMOVE_BOTS					{0} vota di rimuovere tutti i bot.
+VOTE_KICK 							{0} vota per cacciare {1}.
+VOTE_ZONE 							{0} vota per cambiare zona a {1}.
+VOTE_GENERIC						{0} vota {1}
+VOTE_YES							{0} vota sì.
+VOTE_NO 							{0} vota no.
+
+GAME_ALREADY_STARTED				Il gioco è già iniziato.
+VOTE_IS_UP							Un altro voto è in corso.
+VOTE_RECAP_SUCCEED					Sì: {0}, No: {1} - Voto passato.
+VOTE_RECAP_FAIL						Sì: {0}, No: {1} - Vote fallito.
+KICKED_VOTED_OFF					Sei stato votato via dal server.
+
+ROUND_START							Round {0}, Combatti!
+ROUND_START							Il round {0} inizia ora!
+
+ROUND_BEGIN_TIME					Il round {0} inizia fra {1} secondi.
+ROUND_VICTORY						{0} ha vinto il round {1}!
+
+ROUND_DRAW							Pareggio!
+ROUND_DRAW							Pareggio! Tutti perdono!
+
+SUICIDE_MSG							{0} non ce la faceva più e si è ucciso.
+SUICIDE_MSG							{0} si è dimenticato che le sue bombe fanno male.
+SUICIDE_MSG							{0} ha una personalità esplosiva.
+SUICIDE_MSG							{0} ovviamente non è a prova di fuoco.
+SUICIDE_MSG							{0} ha premuto il grande pulsante rosso.
+SUICIDE_MSG							{0} disse addio al mondo crudele.
+SUICIDE_MSG							{0} si spaventa troppo delle esplosioni.
+SUICIDE_MSG							{0} ha tagliato il cavo sbagliato.
+SUICIDE_MSG							{0} non ha mai imparato di non giocare col fuoco.
+
+WORLD_DEATH_MSG						La vita non è giusta per {0}.
+WORLD_DEATH_MSG						{0} è stato ucciso dal mondo.
+WORLD_DEATH_MSG						{0} è stato ucciso dal mondo. Che peccato.
+WORLD_DEATH_MSG						{0} se lo meritava.
+WORLD_DEATH_MSG						{0} è stato colpito da una bomba a caso.
+WORLD_DEATH_MSG						{0} sta avendo una giornataccia.
+WORLD_DEATH_MSG						Sappi, {0}, che quella è una bomba.
+
+MURDER_MSG							{0} è stato esploso da {1}.
+MURDER_MSG							{1} ha mandato i pezzettini di {0} da tutte le parti.
+MURDER_MSG							{0} è stato ucciso a morte da {1}.
+MURDER_MSG							{0} non ha prestato attenzione a {1}.
+MURDER_MSG							{0} morì alla vista di {1}.
+MURDER_MSG							{0} voleva solo un abbraccio da {1}.
+MURDER_MSG							{0} pensa che {1} stia barando.

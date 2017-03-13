@@ -8,6 +8,7 @@
 #include "ent_bomb.h"
 #include "ent_item.h"
 #include "main.h"
+#include "strings.h"
 
 game_world::game_world(): server(this), g_map(this) {}
 
@@ -103,7 +104,7 @@ void game_world::tick() {
     bool round_end = alive_players <= (num_users == 1 ? 0 : 1);
     if (ticks_to_start < 0 && round_started && round_end) {
         if (alive_players == 0) {
-            server.messageToAll(COLOR_RED, "DRAW!");
+            server.messageToAll(COLOR_RED, STRING("ROUND_DRAW"));
         }
         for (entity *ent : entities) {
             if (ent && ent->isNotDestroyed() && ent->getType() == TYPE_PLAYER) {
@@ -137,11 +138,11 @@ void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
 
 void game_world::sendKillMessage(player *killer, player *p) {
     if (p == killer) {
-        server.messageToAll(COLOR_WHITE, STRING_NO("SUICIDE_MSG", random_engine() % STRING_COUNT("SUICIDE_MSG"), p->getName()));
+        server.messageToAll(COLOR_WHITE, STRING("SUICIDE_MSG", p->getName()));
     } else if (killer == nullptr) {
-        server.messageToAll(COLOR_WHITE, STRING_NO("WORLD_DEATH_MSG", random_engine() % STRING_COUNT("WORLD_DEATH_MSG"), p->getName()));
+        server.messageToAll(COLOR_WHITE, STRING("WORLD_DEATH_MSG", p->getName()));
     } else {
-        server.messageToAll(COLOR_WHITE, STRING_NO("MURDER_MSG", random_engine() % STRING_COUNT("MURDER_MSG"), p->getName(), killer->getName()));
+        server.messageToAll(COLOR_WHITE, STRING("MURDER_MSG", p->getName(), killer->getName()));
     }
 }
 

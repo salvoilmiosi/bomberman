@@ -7,6 +7,7 @@
 #include "game_world.h"
 #include "main.h"
 #include "resource_load.h"
+#include "strings.h"
 
 std::default_random_engine random_engine;
 
@@ -25,7 +26,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    load_locale(loadStringFromResource("LOCALE_ENGLISH"));
+    load_locale(loadStringFromResource("LOCALE_ITALIAN"));
 
     srand(time(0));
     random_engine.seed(rand());
