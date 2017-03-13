@@ -158,10 +158,10 @@ int packet_ext::receive() {
 #include "main.h"
 
 int packet_ext::sendTo(const IPaddress &addr) {
-    if ((random_engine() % 1000) > 1000) {
+    /*if ((random_engine() % 1000) > 1000) {
         fprintf(stderr, "Lost a packet\n");
         return 0;
-    }
+    }*/
     packet.len = data_len;
     packet.address = addr;
     return SDLNet_UDP_Send(socket, packet.channel, &packet);

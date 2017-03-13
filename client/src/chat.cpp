@@ -13,8 +13,8 @@ chat::~chat() {
     lines.clear();
 }
 
-void chat::addLine(uint32_t color, const char *line) {
-    chat_line l = {std::string(line), color, LINE_LIFE, nullptr, 0};
+void chat::addLine(uint32_t color, const std::string &line) {
+    chat_line l = {line, color, LINE_LIFE, nullptr, 0};
     lines.push_back(l);
     if (lines.size() > MAX_LINES) {
         lines.pop_front();

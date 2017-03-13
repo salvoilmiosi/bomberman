@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "../resource_pack/include/resource_load.h"
+#include "resource_load.h"
 
 extern SDL_Surface *icon_surface;
 

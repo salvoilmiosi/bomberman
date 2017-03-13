@@ -4,8 +4,8 @@ CFLAGS = -g -Wall --std=c++11
 LDFLAGS = 
 INCLUDE = include
 
-BIN_DIR = bin/Debug
-OBJ_DIR = obj/Debug
+BIN_DIR = bin
+OBJ_DIR = obj
 
 PACK_BIN = $(BIN_DIR)/resource_pack
 UNPACK_BIN = $(BIN_DIR)/resource_unpack

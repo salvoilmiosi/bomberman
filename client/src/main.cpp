@@ -4,6 +4,7 @@
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <iostream>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -40,34 +41,34 @@ int main(int argc, char **argv) {
 	resource_path += "resource.dat";
 
 	if (!openResourceFile(resource_path.c_str())) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_OPEN_RESOURCES"));
+		std::cerr << STRING("ERROR_COULD_NOT_OPEN_RESOURCES") << std::endl;
 		return 1;
 	}
 
 	load_locale(loadStringFromResource("LOCALE_ENGLISH"));
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_INIT_SDL"));
+		std::cerr << STRING("ERROR_COULD_NOT_INIT_SDL") << std::endl;
 		return 1;
 	}
 	if (SDLNet_Init() < 0) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_INIT_SDLnet"));
+		std::cerr << STRING("ERROR_COULD_NOT_INIT_SDLnet") << std::endl;
 		return 1;
 	}
 	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_INIT_SDLimage"));
+		std::cerr << STRING("ERROR_COULD_NOT_INIT_SDLimage") << std::endl;
 		return 1;
 	}
 	if (Mix_Init(MIX_INIT_OGG) != MIX_INIT_OGG) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_INIT_SDLmixer"));
+		std::cerr << STRING("ERROR_COULD_NOT_INIT_SDLmixer") << std::endl;
 		return 1;
 	}
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) != 0) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_OPEN_CHANNEL"));
+		std::cerr << STRING("ERROR_COULD_NOT_OPEN_CHANNEL") << std::endl;
 		return 1;
 	}
 	if (TTF_Init() < 0) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_INIT_SDLttf"));
+		std::cerr << STRING("ERROR_COULD_NOT_INIT_SDLttf") << std::endl;
 		return 1;
 	}
 
@@ -75,7 +76,7 @@ int main(int argc, char **argv) {
 
 	window = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_CREATE_WINDOW"));
+		std::cerr << STRING("ERROR_COULD_NOT_CREATE_WINDOW") << std::endl;
 		return 1;
 	}
 
@@ -83,7 +84,7 @@ int main(int argc, char **argv) {
 
 	renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
-		fprintf(stderr, "%s\n", STRING("ERROR_COULD_NOT_CREATE_RENDERER"));
+		std::cerr << STRING("ERROR_COULD_NOT_CREATE_RENDERER") << std::endl;
 		return 1;
 	}
 

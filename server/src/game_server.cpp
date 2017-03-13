@@ -2,527 +2,531 @@
 
 #include "player.h"
 
+#include "strings.h"
+
+#include <iostream>
+
 game_server::game_server(game_world *world) : world(world), voter(this) {
-    open = false;
+	open = false;
 }
 
 game_server::~game_server() {
-    closeServer();
+	closeServer();
 }
 
 bool game_server::openServer(uint16_t port) {
-    if (open)
-        return false;
+	if (open)
+		return false;
 
-    sock_set = SDLNet_AllocSocketSet(1);
-    socket_serv = SDLNet_UDP_Open(port);
+	sock_set = SDLNet_AllocSocketSet(1);
+	socket_serv = SDLNet_UDP_Open(port);
 
-    repeater.setSocket(socket_serv);
+	repeater.setSocket(socket_serv);
 
-    if (socket_serv) {
-        SDLNet_UDP_AddSocket(sock_set, socket_serv);
-        open = true;
-        return true;
-    }
-    fprintf(stderr, "Error creating server socket: %s\n", SDLNet_GetError());
+	if (socket_serv) {
+		SDLNet_UDP_AddSocket(sock_set, socket_serv);
+		open = true;
+		return true;
+	}
+	std::cerr << STRING("ERROR_CREATING_SERVER_SOCKET", SDLNet_GetError()) << std::endl;
 
-    return false;
+	return false;
 }
 
 void game_server::closeServer() {
-    if (!open)
-        return;
+	if (!open)
+		return;
 
-    while(!users.empty()) {
-        auto it = users.begin();
-        if (it->second) {
-            kickUser(it->second, "Server closed.");
-        } else {
-            users.erase(it);
-        }
-    }
+	while(!users.empty()) {
+		auto it = users.begin();
+		if (it->second) {
+			kickUser(it->second, STRING("SERVER_CLOSED"));
+		} else {
+			users.erase(it);
+		}
+	}
 
-    repeater.clear();
+	repeater.clear();
 
-    removeBots();
+	removeBots();
 
-    SDLNet_UDP_Close(socket_serv);
-    open = false;
+	SDLNet_UDP_Close(socket_serv);
+	open = false;
 }
 
 user *game_server::findUser(const IPaddress &address) {
-    try {
-        return users.at(addrLong(address));
-    } catch (std::out_of_range) {
-        return nullptr;
-    }
+	try {
+		return users.at(addrLong(address));
+	} catch (std::out_of_range) {
+		return nullptr;
+	}
 }
 
 user *game_server::findUserByID(int id) {
-    for (auto it : users) {
-        user *u = it.second;
-        if (u && u->getID() == id) {
-            return u;
-        }
-    }
-    return nullptr;
+	for (auto it : users) {
+		user *u = it.second;
+		if (u && u->getID() == id) {
+			return u;
+		}
+	}
+	return nullptr;
 }
 
 void game_server::sendRepeatPacket(packet_ext &packet, const IPaddress &address, int repeats) {
-    if (repeats > 1) {
-        repeater.addPacket(packet, address, repeats);
-    } else {
-        packet.sendTo(address);
-    }
+	if (repeats > 1) {
+		repeater.addPacket(packet, address, repeats);
+	} else {
+		packet.sendTo(address);
+	}
 }
 
 void game_server::sendToAll(packet_ext &packet, int repeats) {
-    for (auto it : users) {
-        user *u = it.second;
-        sendRepeatPacket(packet, u->getAddress(), repeats);
-    }
+	for (auto it : users) {
+		user *u = it.second;
+		sendRepeatPacket(packet, u->getAddress(), repeats);
+	}
 }
 
 packet_ext game_server::snapshotPacket(bool is_add) {
-    packet_ext packet(socket_serv);
-    packet.writeInt(is_add ? SERV_ADD_ENT : SERV_SNAPSHOT);
-    world->writeEntitiesToPacket(packet, is_add);
-    return packet;
+	packet_ext packet(socket_serv);
+	packet.writeInt(is_add ? SERV_ADD_ENT : SERV_SNAPSHOT);
+	world->writeEntitiesToPacket(packet, is_add);
+	return packet;
 }
 
 packet_ext game_server::mapPacket() {
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_MAP);
-    world->writeMapToPacket(packet);
-    return packet;
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_MAP);
+	world->writeMapToPacket(packet);
+	return packet;
 }
 
 int game_server::game_thread_run() {
-    int tick_count = 0;
-    while(open) {
-        auto it = users.begin();
-        while(it != users.end()) {
-            user *u = it->second;
-            if (u->tick()) {
-                ++it;
-            } else {
-                messageToAll(COLOR_YELLOW, "%s timed out.", u->getName());
-                u->destroyPlayer();
-                it = users.erase(it);
-                delete u;
-            }
-        }
+	int tick_count = 0;
+	while(open) {
+		auto it = users.begin();
+		while(it != users.end()) {
+			user *u = it->second;
+			if (u->tick()) {
+				++it;
+			} else {
+				messageToAll(COLOR_YELLOW, STRING("CLIENT_TIMED_OUT", u->getName()));
+				u->destroyPlayer();
+				it = users.erase(it);
+				delete u;
+			}
+		}
 
-        packet_ext snapshot = snapshotPacket();
-        sendToAll(snapshot);
-        packet_ext m_packet = mapPacket();
-        sendToAll(m_packet);
+		packet_ext snapshot = snapshotPacket();
+		sendToAll(snapshot);
+		packet_ext m_packet = mapPacket();
+		sendToAll(m_packet);
 
-        world->tick();
-        voter.tick();
+		world->tick();
+		voter.tick();
 
-        SDL_Delay(1000 / TICKRATE);
+		SDL_Delay(1000 / TICKRATE);
 
-        ++tick_count;
-    }
-    return 0;
+		++tick_count;
+	}
+	return 0;
 }
 
 void game_server::sendPingPacket(const IPaddress &address) {
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_PING);
-    packet.sendTo(address);
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_PING);
+	packet.sendTo(address);
 }
 
 int game_server::receive(packet_ext &packet) {
-    int numready = SDLNet_CheckSockets(sock_set, TIMEOUT);
-    if (numready > 0) {
-        return packet.receive();
-    } else if (numready < 0 && errno) {
-        fprintf(stderr, "Error checking socket %d: %s\n", numready, SDLNet_GetError());
-    }
-    return 0;
+	int numready = SDLNet_CheckSockets(sock_set, TIMEOUT);
+	if (numready > 0) {
+		return packet.receive();
+	} else if (numready < 0 && errno) {
+		std::cerr << STRING("ERROR_CHECKING_SOCKET", numready, SDLNet_GetError()) << std::endl;
+	}
+	return 0;
 }
 
 int game_server::run() {
-    game_thread = std::thread([this]{
-        game_thread_run();
-    });
+	game_thread = std::thread([this]{
+		game_thread_run();
+	});
 
-    while (open) {
-        packet_ext packet(socket_serv, true);
-        repeater.sendPackets();
-        int err = receive(packet);
-        if (err > 0) {
-            //printf("%s sent %d bytes\n", ipString(packet->address), packet->len);
-            handlePacket(packet);
-        } else if (err < 0) {
-            fprintf(stderr, "Error receiving packet %d: %s\n", err, SDLNet_GetError());
-        }
-    }
+	while (open) {
+		packet_ext packet(socket_serv, true);
+		repeater.sendPackets();
+		int err = receive(packet);
+		if (err > 0) {
+			//printf("%s sent %d bytes\n", ipString(packet->address), packet->len);
+			handlePacket(packet);
+		} else if (err < 0) {
+			std::cerr << STRING("ERROR_RECEIVING_PACKET", err, SDLNet_GetError()) << std::endl;
+		}
+	}
 
-    return 0;
+	return 0;
 }
 
 void game_server::sendAddPacket(entity *ent) {
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_ADD_ENT);
-    ent->writeToPacket(packet);
-    sendToAll(packet, 5);
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_ADD_ENT);
+	ent->writeToPacket(packet);
+	sendToAll(packet, 5);
 }
 
 void game_server::sendRemovePacket(entity *ent) {
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_REM_ENT);
-    packet.writeShort(ent->getID());
-    sendToAll(packet, 5);
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_REM_ENT);
+	packet.writeShort(ent->getID());
+	sendToAll(packet, 5);
 }
 
 void game_server::sendResetPacket() {
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_RESET);
-    sendToAll(packet, 5);
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_RESET);
+	sendToAll(packet, 5);
 }
 
-void game_server::kickUser(user *u, const char *message) {
-    if (!u) return;
+void game_server::kickUser(user *u, const std::string &message) {
+	if (!u) return;
 
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_KICK);
-    packet.writeString(message);
-    sendRepeatPacket(packet, u->getAddress());
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_KICK);
+	packet.writeString(message.c_str());
+	sendRepeatPacket(packet, u->getAddress());
 
-    messageToAll(COLOR_YELLOW, "%s was kicked from the server.", u->getName());
+	messageToAll(COLOR_YELLOW, STRING("CLIENT_WAS_KICKED", u->getName()));
 
-    u->destroyPlayer();
-    users.erase(addrLong(u->getAddress()));
-    delete u;
+	u->destroyPlayer();
+	users.erase(addrLong(u->getAddress()));
+	delete u;
 }
 
 void game_server::sendSoundPacket(uint8_t sound_id) {
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_SOUND);
-    packet.writeChar(sound_id);
-    sendToAll(packet);
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_SOUND);
+	packet.writeChar(sound_id);
+	sendToAll(packet);
 }
 
 std::string game_server::findNewName(std::string username) {
-    for (auto it : users) {
-        user *u = it.second;
-        if (username == u->getName()) {
-            username += '\'';
-        }
-    }
-    return username;
+	for (auto it : users) {
+		user *u = it.second;
+		if (username == u->getName()) {
+			username += '\'';
+		}
+	}
+	return username;
 }
 
 void game_server::addBots(int num_bots) {
-    for (;num_bots>0; --num_bots) {
-        if (countUsers(true) >= MAX_PLAYERS) {
-            break;
-        }
-        user_bot* b = new user_bot(this);
-        bots.push_back(b);
+	for (;num_bots>0; --num_bots) {
+		if (countUsers(true) >= MAX_PLAYERS) {
+			break;
+		}
+		user_bot* b = new user_bot(this);
+		bots.push_back(b);
 
-        b->createPlayer(world);
-        world->addEntity(b->getPlayer());
-    }
+		b->createPlayer(world);
+		world->addEntity(b->getPlayer());
+	}
 }
 
 void game_server::removeBots() {
-    for (auto it : bots) {
-        if (it) {
-            it->destroyPlayer();
-            delete it;
-        }
-    }
-    bots.clear();
+	for (auto it : bots) {
+		if (it) {
+			it->destroyPlayer();
+			delete it;
+		}
+	}
+	bots.clear();
 }
 
 void game_server::connectCmd(packet_ext &from) {
-    if (findUser(from.getAddress())) {
-        fprintf(stderr, "%s is already connected\n", ipString(from.getAddress()));
-        return;
-    }
+	if (findUser(from.getAddress())) {
+		std::cerr << STRING("CLIENT_ALREADY_CONNECTED", ipString(from.getAddress())) << std::endl;
+		return;
+	}
 
-    if (users.size() > MAX_USERS) {
-        packet_ext packet(socket_serv);
-        packet.writeInt(SERV_REJECT);
-        packet.writeString("Server is full");
-        packet.sendTo(from.getAddress());
-        return;
-    }
-    std::string username = findNewName(from.readString());
+	if (users.size() > MAX_USERS) {
+		packet_ext packet(socket_serv);
+		packet.writeInt(SERV_REJECT);
+		packet.writeString(STRING("SERVER_FULL").c_str());
+		packet.sendTo(from.getAddress());
+		return;
+	}
+	std::string username = findNewName(from.readString());
 
-    user *u = new user(this, from.getAddress(), username);
-    users[addrLong(from.getAddress())] = u;
+	user *u = new user(this, from.getAddress(), username);
+	users[addrLong(from.getAddress())] = u;
 
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_ACCEPT);
-    packet.writeString("Welcome to the server");
-    packet.sendTo(from.getAddress());
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_ACCEPT);
+	packet.writeString(STRING("SERVER_WELCOME").c_str());
+	packet.sendTo(from.getAddress());
 
-    snapshotPacket(true).sendTo(from.getAddress());
+	snapshotPacket(true).sendTo(from.getAddress());
 
-    messageToAll(COLOR_YELLOW, "%s connected", u->getName());
+	messageToAll(COLOR_YELLOW, STRING("CLIENT_CONNECTED", u->getName()).c_str());
 }
 
 void game_server::joinCmd(packet_ext &from) {
-    user *u = findUser(from.getAddress());
-    if (!u) return;
-    if (u->getPlayer()) return;
+	user *u = findUser(from.getAddress());
+	if (!u) return;
+	if (u->getPlayer()) return;
 
-    uint16_t player_id = 0;
+	uint16_t player_id = 0;
 
-    if (countUsers() < MAX_PLAYERS) {
-        u->createPlayer(world);
-        world->addEntity(u->getPlayer());
-        player_id = u->getPlayer()->getID();
+	if (countUsers() < MAX_PLAYERS) {
+		u->createPlayer(world);
+		world->addEntity(u->getPlayer());
+		player_id = u->getPlayer()->getID();
 
-        messageToAll(COLOR_YELLOW, "%s joined the game.", u->getName());
-    } else {
-        messageToAll(COLOR_YELLOW, "%s is spectating.", u->getName());
-    }
+		messageToAll(COLOR_YELLOW, STRING("CLIENT_JOINED", u->getName()));
+	} else {
+		messageToAll(COLOR_YELLOW, STRING("CLIENT_SPECTATING", u->getName()));
+	}
 
-    packet_ext packet_self(socket_serv);
-    packet_self.writeInt(SERV_SELF);
-    packet_self.writeShort(player_id);
-    packet_self.writeShort(u->getID());
-    sendRepeatPacket(packet_self, from.getAddress());
+	packet_ext packet_self(socket_serv);
+	packet_self.writeInt(SERV_SELF);
+	packet_self.writeShort(player_id);
+	packet_self.writeShort(u->getID());
+	sendRepeatPacket(packet_self, from.getAddress());
 }
 
 void game_server::leaveCmd(packet_ext &from) {
-    user *u = findUser(from.getAddress());
-    if (!u) return;
-    if (!u->getPlayer()) return;
+	user *u = findUser(from.getAddress());
+	if (!u) return;
+	if (!u->getPlayer()) return;
 
-    messageToAll(COLOR_YELLOW, "%s is spectating.", u->getName());
-    u->destroyPlayer();
+	messageToAll(COLOR_YELLOW, STRING("CLIENT_SPECTATING", u->getName()));
+	u->destroyPlayer();
 }
 
 int game_server::countUsers(bool include_bots) {
-    int num_players = 0;
-    for (auto it : users) {
-        if (it.second->getPlayer()) {
-            ++num_players;
-        }
-    }
+	int num_players = 0;
+	for (auto it : users) {
+		if (it.second->getPlayer()) {
+			++num_players;
+		}
+	}
 
-    return include_bots ? num_players + bots.size() : num_players;
+	return include_bots ? num_players + bots.size() : num_players;
 }
 
 void game_server::setZone(map_zone zone) {
-    world->setZone(zone);
+	world->setZone(zone);
 }
 
 void game_server::startGame() {
-    world->startRound(countUsers());
+	world->startRound(countUsers());
 }
 
 void game_server::resetGame() {
-    for (auto it : users) {
-        if (it.second) {
-            player *p = it.second->getPlayer();
-            if (p) p->resetScore();
-        }
-    }
-    for (user_bot* b : bots) {
-        if (b) {
-            player *p = b->getPlayer();
-            if (p) p->resetScore();
-        }
-    }
-    world->restartGame();
-    startGame();
+	for (auto it : users) {
+		if (it.second) {
+			player *p = it.second->getPlayer();
+			if (p) p->resetScore();
+		}
+	}
+	for (user_bot* b : bots) {
+		if (b) {
+			player *p = b->getPlayer();
+			if (p) p->resetScore();
+		}
+	}
+	world->restartGame();
+	startGame();
 }
 
 bool game_server::gameStarted() {
-    return world->roundStarted();
+	return world->roundStarted();
 }
 
 void game_server::chatCmd(packet_ext &packet) {
-    user *u = findUser(packet.getAddress());
-    if (!u) {
-        fprintf(stderr, "Invalid user ip %s\n", ipString(packet.getAddress()));
-        return;
-    }
+	user *u = findUser(packet.getAddress());
+	if (!u) {
+		std::cerr << STRING("INVALID_IP", ipString(packet.getAddress())) << std::endl;
+		return;
+	}
 
-    char *message = packet.readString();
+	char *message = packet.readString();
 
-    messageToAll(COLOR_WHITE, "%s : %s", u->getName(), message);
+	messageToAll(COLOR_WHITE, STRING("CLIENT_MESSAGE", u->getName(), message));
 }
 
 void game_server::nameCmd(packet_ext &packet) {
-    user *u = findUser(packet.getAddress());
-    if (!u) {
-        fprintf(stderr, "Invalid user ip %s\n", ipString(packet.getAddress()));
-        return;
-    }
+	user *u = findUser(packet.getAddress());
+	if (!u) {
+		std::cerr << STRING("INVALID_IP", ipString(packet.getAddress())) << std::endl;
+		return;
+	}
 
-    std::string newName = findNewName(packet.readString());
+	std::string newName = findNewName(packet.readString());
 
-    messageToAll(COLOR_YELLOW, "%s changed name to %s", u->getName(), newName.c_str());
+	messageToAll(COLOR_YELLOW, STRING("CLIENT_CHANGED_NAME", u->getName(), newName.c_str()));
 
-    u->setName(newName);
+	u->setName(newName);
 }
 
 void game_server::disconnectCmd(packet_ext &packet) {
-    user *u = findUser(packet.getAddress());
-    if (!u) {
-        fprintf(stderr, "Invalid user ip %s\n", ipString(packet.getAddress()));
-        return;
-    }
+	user *u = findUser(packet.getAddress());
+	if (!u) {
+		std::cerr << STRING("INVALID_IP", ipString(packet.getAddress())) << std::endl;
+		return;
+	}
 
-    messageToAll(COLOR_YELLOW, "%s disconnected", u->getName());
+	messageToAll(COLOR_YELLOW, STRING("CLIENT_DISCONNECTED", u->getName()));
 
-    u->destroyPlayer();
-    users.erase(addrLong(packet.getAddress()));
-    delete u;
+	u->destroyPlayer();
+	users.erase(addrLong(packet.getAddress()));
+	delete u;
 }
 
 void game_server::pongCmd(packet_ext &from) {
-    user *u = findUser(from.getAddress());
-    if (!u) {
-        fprintf(stderr, "Invalid user ip %s\n", ipString(from.getAddress()));
-        return;
-    }
+	user *u = findUser(from.getAddress());
+	if (!u) {
+		std::cerr << STRING("INVALID_IP", ipString(from.getAddress())) << std::endl;
+		return;
+	}
 
-    u->pongCmd();
+	u->pongCmd();
 
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_PING_MSECS);
-    packet.writeShort(u->getPing());
-    packet.sendTo(u->getAddress());
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_PING_MSECS);
+	packet.writeShort(u->getPing());
+	packet.sendTo(u->getAddress());
 
-    //printf("(%s) %s pings %d msecs\n", ipString(address), u->getName(), u->getPing());
+	//printf("(%s) %s pings %d msecs\n", ipString(address), u->getName(), u->getPing());
 }
 
 packet_ext game_server::scorePacket() {
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_SCORE);
-    for (auto it : users) {
-        user *u = it.second;
-        packet.writeString(u->getName());
-        packet.writeShort(u->getPing());
-        if (u->getPlayer()) {
-            packet.writeChar(SCORE_PLAYER);
-            packet.writeShort(u->getID());
-            packet.writeChar(u->getPlayer()->getPlayerNum());
-            packet.writeShort(u->getPlayer()->getVictories());
-            packet.writeChar(u->getPlayer()->isAlive() ? 1 : 0);
-        } else {
-            packet.writeChar(SCORE_SPECTATOR);
-            packet.writeShort(u->getID());
-        }
-    }
-    for (user_bot *b : bots) {
-        if (b->getPlayer()) {
-            packet.writeString(b->getName());
-            packet.writeShort(0);
-            packet.writeChar(SCORE_BOT);
-            packet.writeShort(0);
-            packet.writeChar(b->getPlayer()->getPlayerNum());
-            packet.writeShort(b->getPlayer()->getVictories());
-            packet.writeChar(b->getPlayer()->isAlive() ? 1 : 0);
-        }
-    }
-    return packet;
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_SCORE);
+	for (auto it : users) {
+		user *u = it.second;
+		packet.writeString(u->getName());
+		packet.writeShort(u->getPing());
+		if (u->getPlayer()) {
+			packet.writeChar(SCORE_PLAYER);
+			packet.writeShort(u->getID());
+			packet.writeChar(u->getPlayer()->getPlayerNum());
+			packet.writeShort(u->getPlayer()->getVictories());
+			packet.writeChar(u->getPlayer()->isAlive() ? 1 : 0);
+		} else {
+			packet.writeChar(SCORE_SPECTATOR);
+			packet.writeShort(u->getID());
+		}
+	}
+	for (user_bot *b : bots) {
+		if (b->getPlayer()) {
+			packet.writeString(b->getName());
+			packet.writeShort(0);
+			packet.writeChar(SCORE_BOT);
+			packet.writeShort(0);
+			packet.writeChar(b->getPlayer()->getPlayerNum());
+			packet.writeShort(b->getPlayer()->getVictories());
+			packet.writeChar(b->getPlayer()->isAlive() ? 1 : 0);
+		}
+	}
+	return packet;
 }
 
 void game_server::scoreCmd(packet_ext &from) {
-    scorePacket().sendTo(from.getAddress());
+	scorePacket().sendTo(from.getAddress());
 }
 
 void game_server::inputCmd(packet_ext &packet) {
-    user *u = findUser(packet.getAddress());
-    if (!u) {
-        fprintf(stderr, "Invalid user ip %s\n", ipString(packet.getAddress()));
-        return;
-    }
+	user *u = findUser(packet.getAddress());
+	if (!u) {
+		std::cerr << STRING("INVALID_IP", ipString(packet.getAddress())) << std::endl;
+		return;
+	}
 
-    u->handleInputPacket(packet);
+	u->handleInputPacket(packet);
 }
 
 void game_server::voteCmd(packet_ext &packet) {
-    user *u = findUser(packet.getAddress());
-    if (!u) {
-        fprintf(stderr, "Invalid user ip %s\n", ipString(packet.getAddress()));
-        return;
-    }
+	user *u = findUser(packet.getAddress());
+	if (!u) {
+		std::cerr << STRING("INVALID_IP", ipString(packet.getAddress())) << std::endl;
+		return;
+	}
 
-    uint32_t vote_type = packet.readInt();
+	uint32_t vote_type = packet.readInt();
 
-    uint32_t args = packet.readInt();
+	uint32_t args = packet.readInt();
 
-    voter.sendVote(u, vote_type, args);
+	voter.sendVote(u, vote_type, args);
 }
 
 void game_server::killCmd(packet_ext &packet) {
-    user *u = findUser(packet.getAddress());
-    if (!u) {
-        fprintf(stderr, "Invalid user ip %s\n", ipString(packet.getAddress()));
-        return;
-    }
+	user *u = findUser(packet.getAddress());
+	if (!u) {
+		std::cerr << STRING("INVALID_IP", ipString(packet.getAddress())) << std::endl;
+		return;
+	}
 
-    player *p = u->getPlayer();
-    if (p) p->kill(nullptr);
+	player *p = u->getPlayer();
+	if (p) p->kill(nullptr);
 }
 
 void game_server::handlePacket(packet_ext &packet) {
-    uint32_t magic = packet.readInt();
-    if (magic != MAGIC) {
-        //fprintf(stderr, "%s: Invalid magic # %0#8x\n", ipString(packet.getAddress()), magic);
-        return;
-    }
+	uint32_t magic = packet.readInt();
+	if (magic != MAGIC) {
+		//fprintf(stderr, "%s: Invalid magic # %0#8x\n", ipString(packet.getAddress()), magic);
+		return;
+	}
 
-    uint32_t command = packet.readInt();
-    switch(command) {
-    case CMD_CONNECT:
-        connectCmd(packet);
-        break;
-    case CMD_CHAT:
-        chatCmd(packet);
-        break;
-    case CMD_NAME:
-        nameCmd(packet);
-        break;
-    case CMD_DISCONNECT:
-        disconnectCmd(packet);
-        break;
-    case CMD_PONG:
-        pongCmd(packet);
-        break;
-    case CMD_SCORE:
-        scoreCmd(packet);
-        break;
-    case CMD_INPUT:
-        inputCmd(packet);
-        break;
-    case CMD_JOIN:
-        joinCmd(packet);
-        break;
-    case CMD_LEAVE:
-        leaveCmd(packet);
-        break;
-    case CMD_VOTE:
-        voteCmd(packet);
-        break;
-    case CMD_KILL:
-        killCmd(packet);
-        break;
-    default:
-        fprintf(stderr, "%s: Invalid command %0#8x\n", ipString(packet.getAddress()), command);
-        break;
-    }
+	uint32_t command = packet.readInt();
+	switch(command) {
+	case CMD_CONNECT:
+		connectCmd(packet);
+		break;
+	case CMD_CHAT:
+		chatCmd(packet);
+		break;
+	case CMD_NAME:
+		nameCmd(packet);
+		break;
+	case CMD_DISCONNECT:
+		disconnectCmd(packet);
+		break;
+	case CMD_PONG:
+		pongCmd(packet);
+		break;
+	case CMD_SCORE:
+		scoreCmd(packet);
+		break;
+	case CMD_INPUT:
+		inputCmd(packet);
+		break;
+	case CMD_JOIN:
+		joinCmd(packet);
+		break;
+	case CMD_LEAVE:
+		leaveCmd(packet);
+		break;
+	case CMD_VOTE:
+		voteCmd(packet);
+		break;
+	case CMD_KILL:
+		killCmd(packet);
+		break;
+	default:
+		fprintf(stderr, "%s: Invalid command %0#8x\n", ipString(packet.getAddress()), command);
+		break;
+	}
 }
 
-packet_ext game_server::messagePacket(uint32_t color, const char *message) {
-    packet_ext packet(socket_serv);
-    packet.writeInt(SERV_MESSAGE);
-    packet.writeString(message);
-    packet.writeInt(color);
+packet_ext game_server::messagePacket(uint32_t color, const std::string &message) {
+	packet_ext packet(socket_serv);
+	packet.writeInt(SERV_MESSAGE);
+	packet.writeString(message.c_str());
+	packet.writeInt(color);
 
-    printf("%s\n", message);
+	std::cout << message;
 
-    return packet;
+	return packet;
 }

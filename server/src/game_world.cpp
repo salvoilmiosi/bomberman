@@ -3,6 +3,7 @@
 #include "player.h"
 
 #include <cstring>
+#include <iostream>
 
 #include "ent_bomb.h"
 #include "ent_item.h"
@@ -26,9 +27,9 @@ int game_world::startServer(uint16_t port) {
     server.openServer(port);
 
     if (server.isOpen()) {
-        printf("Server listening on port %d\n", port);
+        std::cout << STRING("SERVER_LISTENING", port) << std::endl;
     } else {
-        fprintf(stderr, "Could not open server socket: %s\n", SDLNet_GetError());
+        std::cerr << STRING("ERROR_CREATING_SERVER_SOCKET", SDLNet_GetError()) << std::endl;
         return 1;
     }
 
@@ -57,11 +58,11 @@ void game_world::tick() {
     --ticks_to_start;
 
     if (ticks_to_start == 0) {
-        server.messageToAll(COLOR_RED, "Round %d, fight!", round_num);
+        server.messageToAll(COLOR_RED, STRING("ROUND_START", round_num));
         countdownEnd();
     } else if (ticks_to_start > 0 && ticks_to_start % TICKRATE == 0) {
         int seconds = ticks_to_start / TICKRATE;
-        server.messageToAll(COLOR_GREEN, "Round %d begins in %d seconds", round_num, seconds);
+        server.messageToAll(COLOR_GREEN, STRING("ROUND_BEGIN_TIME", round_num, seconds));
     }
 
     if (ticks_to_start < 0 && g_map.getZone() == ZONE_BOMB) {
@@ -108,7 +109,7 @@ void game_world::tick() {
             if (ent && ent->isNotDestroyed() && ent->getType() == TYPE_PLAYER) {
                 player *p = dynamic_cast<player*>(ent);
                 if (p->isAlive()) {
-                    server.messageToAll(COLOR_RED, "%s won round %d!", p->getName(), round_num);
+                    server.messageToAll(COLOR_RED, STRING("ROUND_VICTORY", p->getName(), round_num));
                     p->addVictory();
                     break;
                 }
@@ -135,45 +136,12 @@ void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
 }
 
 void game_world::sendKillMessage(player *killer, player *p) {
-    static const std::vector<const char *> SUICIDE_MSG = {
-        "%s couldn't handle it and killed himself.",
-        "%s forgot that his own bombs hurt.",
-        "%s has an explosive personality.",
-        "%s obviously is not fireproof.",
-        "%s clicked the big red button.",
-        "%s bid farewell, cruel world!",
-        "%s fears explosions too much.",
-        "%s cut the wrong wire.",
-        "%s never learned not to play with fire.",
-    };
-
-    static const std::vector<const char *> WORLD_DEATH_MSG = {
-        "Life just isn't fair for %s.",
-        "%s was killed by the world.",
-        "%s was killed by the world. What a pity.",
-        "%s had it coming for him.",
-        "%s got hit by a stray bomb.",
-        "%s is having a really bad day.",
-        "That, right there, is a bomb, %s.",
-    };
-
-    static const std::vector<const char *> MURDER_MSG = {
-        "%s was exploded by %s.",
-        "%s's bits were sent everywhere by %s.",
-        "%s was killed to death by %s.",
-        "%s didn't pay enough attention to %s.",
-        "%s died at the sight of %s.",
-        "%s just wanted an hug from %s.",
-        "%s thinks that %s is cheating.",
-        "%s wondered what %s's bomb might be.",
-    };
-
     if (p == killer) {
-        server.messageToAll(COLOR_WHITE, SUICIDE_MSG[random_engine() % SUICIDE_MSG.size()], p->getName());
+        server.messageToAll(COLOR_WHITE, STRING_NO("SUICIDE_MSG", random_engine() % STRING_COUNT("SUICIDE_MSG"), p->getName()));
     } else if (killer == nullptr) {
-        server.messageToAll(COLOR_WHITE, WORLD_DEATH_MSG[random_engine() % WORLD_DEATH_MSG.size()], p->getName());
+        server.messageToAll(COLOR_WHITE, STRING_NO("WORLD_DEATH_MSG", random_engine() % STRING_COUNT("WORLD_DEATH_MSG"), p->getName()));
     } else {
-        server.messageToAll(COLOR_WHITE, MURDER_MSG[random_engine() % MURDER_MSG.size()], p->getName(), killer->getName());
+        server.messageToAll(COLOR_WHITE, STRING_NO("MURDER_MSG", random_engine() % STRING_COUNT("MURDER_MSG"), p->getName(), killer->getName()));
     }
 }
 

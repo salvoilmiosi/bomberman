@@ -60,116 +60,109 @@ static const uint32_t COLOR_BLACK      = 0x000000ff;
 static const uint32_t COLOR_WHITE      = 0xffffffff;
 
 enum score_user_type {
-    SCORE_SPECTATOR,
-    SCORE_PLAYER,
-    SCORE_BOT
+	SCORE_SPECTATOR,
+	SCORE_PLAYER,
+	SCORE_BOT
 };
 
 static const int MAX_PLAYERS = 4;
 
 class game_server {
 private:
-    bool open;
+	bool open;
 
-    class game_world *world;
+	class game_world *world;
 
-    std::map<uint64_t, user *> users;
-    std::vector<user_bot *> bots;
+	std::map<uint64_t, user *> users;
+	std::vector<user_bot *> bots;
 
-    SDLNet_SocketSet sock_set;
-    UDPsocket socket_serv;
+	SDLNet_SocketSet sock_set;
+	UDPsocket socket_serv;
 
-    packet_repeater repeater;
+	packet_repeater repeater;
 
-    vote_handler voter;
-
-public:
-    game_server(class game_world *world);
-    virtual ~game_server();
+	vote_handler voter;
 
 public:
-    bool openServer(uint16_t port);
-    void closeServer();
-
-    int run();
-
-    bool isOpen() {
-        return open;
-    }
-
-    void startGame();
-    void resetGame();
-
-    bool gameStarted();
-
-    void addBots(int num_bots);
-    void removeBots();
-
-    void sendAddPacket(class entity *ent);
-    void sendRemovePacket(class entity *ent);
-    void sendResetPacket();
-    void sendSoundPacket(uint8_t sound_id);
-    void sendPingPacket(const IPaddress &address);
-
-    void kickUser(user *u, const char *message);
-
-    int countUsers(bool include_bots = true);
+	game_server(class game_world *world);
+	virtual ~game_server();
 
 public:
-    void sendRepeatPacket(packet_ext &packet, const IPaddress &addresss, int repeats = DEFAULT_REPEATS);
-    void sendToAll(packet_ext &packet, int repeats = 1);
+	bool openServer(uint16_t port);
+	void closeServer();
 
-    packet_ext messagePacket(uint32_t color, const char *message);
+	int run();
 
-    template<typename ... T> packet_ext messagePacket(uint32_t color, const char *format, T ... args) {
-        char message[128];
-        snprintf(message, 128, format, args ...);
+	bool isOpen() {
+		return open;
+	}
 
-        return messagePacket(color, message);
-    }
+	void startGame();
+	void resetGame();
 
-    template<typename ... T> void messageToAll(uint32_t color, const char *format, T ... args) {
-        packet_ext packet = messagePacket(color, format, args ...);
-        sendToAll(packet, DEFAULT_REPEATS);
-    }
+	bool gameStarted();
 
-    template<typename ... T> void sendMessageTo(const IPaddress &address, uint32_t color, const char *format, T ... args) {
-        packet_ext packet = messagePacket(color, format, args ...);
-        sendRepeatPacket(packet, address);
-    }
+	void addBots(int num_bots);
+	void removeBots();
 
-    user *findUserByID(int id);
+	void sendAddPacket(class entity *ent);
+	void sendRemovePacket(class entity *ent);
+	void sendResetPacket();
+	void sendSoundPacket(uint8_t sound_id);
+	void sendPingPacket(const IPaddress &address);
 
-    void setZone(map_zone zone);
+	void kickUser(user *u, const std::string &message);
+
+	int countUsers(bool include_bots = true);
+
+public:
+	void sendRepeatPacket(packet_ext &packet, const IPaddress &addresss, int repeats = DEFAULT_REPEATS);
+	void sendToAll(packet_ext &packet, int repeats = 1);
+
+	packet_ext messagePacket(uint32_t color, const std::string &message);
+
+	void messageToAll(uint32_t color, const std::string &message) {
+		packet_ext packet = messagePacket(color, message);
+		sendToAll(packet, DEFAULT_REPEATS);
+	}
+
+	void sendMessageTo(const IPaddress &address, uint32_t color, const std::string &message) {
+		packet_ext packet = messagePacket(color, message);
+		sendRepeatPacket(packet, address);
+	}
+
+	user *findUserByID(int id);
+
+	void setZone(map_zone zone);
 
 private:
-    std::thread game_thread;
-    int game_thread_run();
+	std::thread game_thread;
+	int game_thread_run();
 
-    int receive(packet_ext &packet);
-    void handlePacket(packet_ext &packet);
+	int receive(packet_ext &packet);
+	void handlePacket(packet_ext &packet);
 
-    std::string findNewName(std::string username);
+	std::string findNewName(std::string username);
 
-    user *findUser(const IPaddress &address);
+	user *findUser(const IPaddress &address);
 
-    packet_ext snapshotPacket(bool is_add = false);
-    packet_ext scorePacket();
-    packet_ext mapPacket();
+	packet_ext snapshotPacket(bool is_add = false);
+	packet_ext scorePacket();
+	packet_ext mapPacket();
 
 private:
-    void connectCmd(packet_ext&);
-    void joinCmd(packet_ext&);
-    void leaveCmd(packet_ext&);
-    void chatCmd(packet_ext&);
-    void nameCmd(packet_ext&);
-    void disconnectCmd(packet_ext&);
-    void pongCmd(packet_ext&);
-    void scoreCmd(packet_ext&);
-    void quitCmd(packet_ext&);
-    void inputCmd(packet_ext&);
-    void voteCmd(packet_ext&);
-    void killCmd(packet_ext&);
+	void connectCmd(packet_ext&);
+	void joinCmd(packet_ext&);
+	void leaveCmd(packet_ext&);
+	void chatCmd(packet_ext&);
+	void nameCmd(packet_ext&);
+	void disconnectCmd(packet_ext&);
+	void pongCmd(packet_ext&);
+	void scoreCmd(packet_ext&);
+	void quitCmd(packet_ext&);
+	void inputCmd(packet_ext&);
+	void voteCmd(packet_ext&);
+	void killCmd(packet_ext&);
 };
 
 #endif // __SERVER_H__

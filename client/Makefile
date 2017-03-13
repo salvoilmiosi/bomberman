@@ -3,16 +3,16 @@ LD = g++
 MAKE = make
 CFLAGS = -g -Wall --std=c++11
 
-RESPACK_DIR = resource_pack
-RESPACK = resource_pack/bin/Debug/resource_pack
-RESLOAD = resource_pack/bin/Debug/libresource_load.a
+RESPACK_DIR = ../resource_pack
+RESPACK = $(RESPACK_DIR)/bin/resource_pack
+RESLOAD = $(RESPACK_DIR)/bin/libresource_load.a
 
 LDFLAGS =
-LIBS = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
+LIBS = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf -pthread
 
-INCLUDE = include
-BIN_DIR = bin/Debug
-OBJ_DIR = obj/Debug
+INCLUDE = -Iinclude -I$(RESPACK_DIR)/include
+BIN_DIR = ../bin
+OBJ_DIR = obj
 
 OUT_BIN = bomberman
 
@@ -38,8 +38,8 @@ clean:
 	rm -rf $(OBJ_DIR)
 	$(MAKE) -C $(RESPACK_DIR) clean
 
-$(BIN_DIR)/resource.dat: $(RESPACK) resource/resource.txt
-	$(RESPACK) resource/resource.txt $(BIN_DIR)/resource.dat
+$(BIN_DIR)/resource.dat: $(RESPACK) ../resource/resource.txt
+	$(RESPACK) ../resource/resource.txt $(BIN_DIR)/resource.dat
 
 $(RESLOAD): $(RESPACK)
 $(RESPACK):
@@ -50,7 +50,7 @@ $(BIN_DIR)/$(OUT_BIN): $(OBJECTS)
 
 $(OBJ_DIR)/%.o : src/%.cpp
 $(OBJ_DIR)/%.o : src/%.cpp $(OBJ_DIR)/%.d
-	$(CXX) $(DEPFLAGS) $(CFLAGS) -c -I $(INCLUDE) -o $@ $<
+	$(CXX) $(DEPFLAGS) $(CFLAGS) -c $(INCLUDE) -o $@ $<
 	@mv -f $(OBJ_DIR)/$*.Td $(OBJ_DIR)/$*.d
 
 $(OBJ_DIR)/%.d: ;

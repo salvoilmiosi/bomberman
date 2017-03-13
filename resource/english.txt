@@ -1,0 +1,112 @@
+ERROR_COULD_NOT_INIT_SDL 			Could not init SDL.
+ERROR_COULD_NOT_INIT_SDLnet 		Could not init SDL_net.
+ERROR_COULD_NOT_INIT_SDLimage 		Could not init SDL_image.
+ERROR_COULD_NOT_INIT_SDLmixer		Could not init SDL_mixer.
+ERROR_COULD_NOT_OPEN_CHANNEL		Could not open audio channel.
+ERROR_COULD_NOT_INIT_SDLttf			Could not init SDL_ttf.
+ERROR_COULD_NOT_CREATE_WINDOW		Could not create window.
+ERROR_COULD_NOT_CREATE_RENDERER		Could not create renderer.
+ERROR_COULD_NOT_OPEN_RESOURCES		Could not open resource file.
+
+ERROR_CREATING_SOCKET				Error creating socket
+ERROR_CREATING_SERVER_SOCKET		Error creating server socket: {0}
+CONNECTION_TIMED_OUT				{0}:{1} - Connection timed out.
+SERVER_TIMED_OUT					Server timed out
+SERVER_DOES_NOT_RESPOND				{0}:{1} - Server does not respond: {2}
+ERROR_COULD_NOT_CONNECT				Error: Failed to connect to server.
+
+SERVER_LISTENING					Server listening on port {0}.
+SERVER_ACCEPTED						Server accepted: {0}
+SERVER_CONNECTED					Connected to {0}:{1}
+SERVER_REJECTED						Server rejected: {0}
+SERVER_DISCONNECTED					Disconnected.
+SERVER_CLOSED						Server closed.
+SERVER_FULL							Server is full.
+SERVER_WELCOME						Welcome to the server.
+SERVER_END  						Server quit, returned {0}
+
+ERROR_RECEIVING_PACKET				Error receiving packet ({0}): {1}
+ERROR_CHECKING_SOCKET				Error checking socket ({0}): {1}
+
+CLIENT_TIMED_OUT					{0} timed out from the server.
+CLIENT_KICKED						You were kicked from the server: {0}
+CLIENT_CONNECTED 					{0} connected.
+CLIENT_DISCONNECTED					{0} disconnected.
+CLIENT_JOINED						{0} joined the game.
+CLIENT_SPECTATING					{0} is spectating.
+CLIENT_WAS_KICKED					{0} was kicked from the server.
+CLIENT_ALREADY_CONNECTED			{0} is already connected.
+
+CLIENT_MESSAGE						{0} : {1}
+CLIENT_CHANGED_NAME					{0} changed name to {1}.
+
+ERROR_CREATING_LISTENSERVER			Could not create listen server: {0}
+
+NOT_A_NUMBER						"{0}" is not a number.
+
+VOLUME_SET_MUSIC					Set music volume: {0}
+VOLUME_SET_MAIN						Set sounds volume: {0}
+NAME_SET							Set name: {0}
+
+USAGE_connect						Usage: connect (address) [port]
+USAGE_name							Usage: name (new_name)
+USAGE_volume						Usage: volume (0-100) [music]
+USAGE_vote							Usage: vote (start | stop | reset | bot_add | bot_remove)
+USAGE_vote_kick						Usage: vote kick (user)
+USAGE_vote_zone						Usage: vote zone (zone_name)
+
+INVALID_IP							"{0}" is not a valid ip
+INVALID_ZONE_NAME					"{0}" is not a valid zone name
+INVALID_VOTE						"{0}" is not a valid vote command
+INVALID_COMMAND						"{0}" is not a valid command
+INVALID_USER						"{0}" is not a user.
+
+NOT_CONNECTED						You are not connected to a server.
+
+VOTE_START							{0} votes to start the game.
+VOTE_STOP							{0} votes to stop the server.
+VOTE_RESET							{0} votes to reset the game.
+VOTE_ADD_BOT						{0} votes to add {1} bots.
+VOTE_REMOVE_BOTS					{0} votes to remove all bots.
+VOTE_KICK 							{0} votes to kick {1}.
+VOTE_ZONE 							{0} votes to change the zone to {1}.
+VOTE_GENERIC						{0} voted {1}
+VOTE_YES							{0} voted yes.
+VOTE_NO 							{0} voted no.
+
+GAME_ALREADY_STARTED				Game has already started.
+VOTE_IS_UP							Another vote is up right now.
+VOTE_RECAP_SUCCEED					Yes: {0}, No: {1} - Vote succeeded.
+VOTE_RECAP_FAIL						Yes: {0}, No: {1} - Vote failed.
+KICKED_VOTED_OFF					You have been voted off.
+
+ROUND_START							Round {0}, fight!
+ROUND_BEGIN_TIME					Round {0} begins in {1} seconds.
+ROUND_VICTORY						{0} won round {1}!
+
+SUICIDE_MSG							{0} couldn't handle it and killed himself.
+SUICIDE_MSG							{0} forgot that his own bombs hurt.
+SUICIDE_MSG							{0} has an explosive personality.
+SUICIDE_MSG							{0} obviously is not fireproof.
+SUICIDE_MSG							{0} clicked the big red button.
+SUICIDE_MSG							{0} bid farewell, cruel world!
+SUICIDE_MSG							{0} fears explosions too much.
+SUICIDE_MSG							{0} cut the wrong wire.
+SUICIDE_MSG							{0} never learned not to play with fire.
+
+WORLD_DEATH_MSG						Life just isn't fair for {0}
+WORLD_DEATH_MSG						{0} was killed by the world.
+WORLD_DEATH_MSG						{0} was killed by the world. What a pity.
+WORLD_DEATH_MSG						{0} had it coming for him.
+WORLD_DEATH_MSG						{0} got hit by a stray bomb.
+WORLD_DEATH_MSG						{0} is having a really bad day.
+WORLD_DEATH_MSG						That, right there, is a bomb, {0}.
+
+MURDER_MSG							{0} was exploded by {1}.
+MURDER_MSG							{0}'s bits were sent everywhere by {1}.
+MURDER_MSG							{0} was killed to death by {1}.
+MURDER_MSG							{0} didn't pay enough attention to {1}.
+MURDER_MSG							{0} died at the sight of {1}.
+MURDER_MSG							{0} just wanted an hug from {1}.
+MURDER_MSG							{0} thinks that {1} is cheating.
+MURDER_MSG							{1} wondered what {1}'s bomb might be.

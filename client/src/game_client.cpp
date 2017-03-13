@@ -8,6 +8,7 @@
 #include "strings.h"
 
 #include <algorithm>
+#include <iostream>
 
 game_client::game_client() : g_chat(this), g_score(this) {
 	sock_set = SDLNet_AllocSocketSet(1);
@@ -35,7 +36,7 @@ bool game_client::connect(const char *address, uint16_t port) {
 	socket = SDLNet_UDP_Open(0);
 
 	if (!socket) {
-		g_chat.addLine(COLOR_RED, "%s: %s", STRING("ERROR_CREATING_SOCKET"), SDLNet_GetError());
+		g_chat.addLine(COLOR_RED, STRING("ERROR_CREATING_SOCKET", SDLNet_GetError()));
 		clear();
 		return false;
 	}
@@ -50,21 +51,21 @@ bool game_client::connect(const char *address, uint16_t port) {
 	SDLNet_UDP_AddSocket(sock_set, socket);
 
 	if (SDLNet_CheckSockets(sock_set, TIMEOUT) <= 0) {
-		g_chat.addLine(COLOR_RED, "%s:%d - %s", address, port, STRING("SERVER_TIMED_OUT_CONNECT"));
+		g_chat.addLine(COLOR_RED, STRING("CONNECTION_TIMED_OUT", address, port));
 		clear();
 		return false;
 	}
 
 	packet_ext accepter(socket, true);
 	if (accepter.receive() <= 0) {
-		g_chat.addLine(COLOR_RED, "%s:%d - %s: %s", address, port, STRING("SERVER_DOES_NOT_RESPOND"), SDLNet_GetError());
+		g_chat.addLine(COLOR_RED, STRING("SERVER_DOES_NOT_RESPOND", address, port, SDLNet_GetError()));
 		clear();
 		return false;
 	}
 
 	uint32_t magic = accepter.readInt();
 	if (magic != MAGIC) {
-		g_chat.addLine(COLOR_RED, "%s", STRING("ERROR_COULD_NOT_CONNECT"));
+		g_chat.addLine(COLOR_RED, STRING("ERROR_COULD_NOT_CONNECT"));
 		clear();
 		return false;
 	}
@@ -74,8 +75,8 @@ bool game_client::connect(const char *address, uint16_t port) {
 	switch (type) {
 	case SERV_ACCEPT:
 		message = accepter.readString();
-		g_chat.addLine(COLOR_CYAN, "%s: %s", STRING("SERVER_ACCEPTED"), message);
-		g_chat.addLine(COLOR_CYAN, "%s %s:%d", STRING("SERVER_CONNECTED"), address, port);
+		g_chat.addLine(COLOR_CYAN, STRING("SERVER_ACCEPTED", message));
+		g_chat.addLine(COLOR_CYAN, STRING("SERVER_CONNECTED", address, port));
 
 		sendJoinCmd();
 
@@ -88,7 +89,7 @@ bool game_client::connect(const char *address, uint16_t port) {
 		return true;
 	case SERV_REJECT:
 		message = accepter.readString();
-		g_chat.addLine(COLOR_RED, "%s: %s", STRING("SERVER_REJECTED"), message);
+		g_chat.addLine(COLOR_RED, STRING("SERVER_REJECTED", message));
 		clear();
 		return false;
 	}
@@ -105,7 +106,7 @@ void game_client::disconnect() {
 
 	clear();
 
-	g_chat.addLine(COLOR_CYAN, "%s", STRING("SERVER_DISCONNECTED"));
+	g_chat.addLine(COLOR_CYAN, STRING("SERVER_DISCONNECTED"));
 }
 
 void game_client::quit() {
@@ -183,7 +184,7 @@ int game_client::receiver_run() {
 			packet_ext packet(socket, true);
 			int err = packet.receive();
 			if (err < 0) {
-				fprintf(stderr, "%s %d: %s\n", STRING("ERROR_RECEIVING_PACKET"), err, SDLNet_GetError());
+				std::cerr << STRING("ERROR_RECEIVING_PACKET", err, SDLNet_GetError()) << std::endl;
 			} else {
 				int magic = packet.readInt();
 				if (magic == MAGIC) {
@@ -191,11 +192,11 @@ int game_client::receiver_run() {
 				}
 			}
 		} else if (numready == 0) {
-			g_chat.addLine(COLOR_RED, "%s", STRING("CLIENT_TIMED_OUT"));
+			g_chat.addLine(COLOR_RED, STRING("CLIENT_TIMED_OUT"));
 			clear();
 			break;
 		} else if (errno) {
-			fprintf(stderr, "%s %d: %s\n", STRING("ERROR_CHECKING_SOCKET"), numready, SDLNet_GetError());
+			std::cerr << STRING("ERROR_CHECKING_SOCKET", numready, SDLNet_GetError()) << std::endl;
 			clear();
 			err_ret = errno;
 			break;
@@ -276,20 +277,20 @@ void game_client::execCmd(const std::string &message) {
 			try {
 				port = std::stoi(port_str);
 			} catch (std::invalid_argument) {
-				g_chat.addLine(COLOR_RED, "%s: %s", STRING("NOT_A_NUMBER"), port_str.c_str());
+				g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", port_str.c_str()));
 			}
 		}
 
 		int err = startListenServer(port);
 		if (err) {
-			g_chat.addLine(COLOR_RED, "%s: %d", STRING("ERROR_CREATING_LISTENSERVER"), err);
+			g_chat.addLine(COLOR_RED, STRING("ERROR_CREATING_LISTENSERVER", err));
 		} else {
 			connect("localhost", port);
 		}
 	} else if (cmd == "connect") {
 		wbegin = message.find_first_not_of(SPACE, wend);
 		if (wbegin == std::string::npos) {
-			g_chat.addLine(COLOR_ORANGE, "%s", STRING("USAGE_connect"));
+			g_chat.addLine(COLOR_ORANGE, STRING("USAGE_connect"));
 			return;
 		}
 		wend = message.find_first_of(SPACE, wbegin);
@@ -306,7 +307,7 @@ void game_client::execCmd(const std::string &message) {
 		try {
 			connect(address.c_str(), std::stoi(port));
 		} catch (std::invalid_argument) {
-			g_chat.addLine(COLOR_RED, "%s: %s", STRING("NOT_A_NUMBER"), port.c_str());
+			g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", port.c_str()));
 		}
 	} else if (cmd == "join") {
 		sendJoinCmd();
@@ -317,7 +318,7 @@ void game_client::execCmd(const std::string &message) {
 	} else if (cmd == "name") {
 		wbegin = message.find_first_not_of(SPACE, wend);
 		if (wbegin == std::string::npos) {
-			g_chat.addLine(COLOR_ORANGE, "%s", STRING("USAGE_name"));
+			g_chat.addLine(COLOR_ORANGE, STRING("USAGE_name"));
 			return;
 		}
 		wend = message.find_last_not_of(SPACE);
@@ -327,7 +328,7 @@ void game_client::execCmd(const std::string &message) {
 	} else if (cmd == "volume") {
 		wbegin = message.find_first_not_of(' ', wend);
 		if (wbegin == std::string::npos) {
-			g_chat.addLine(COLOR_ORANGE, "%s", STRING("USAGE_volume"));
+			g_chat.addLine(COLOR_ORANGE, STRING("USAGE_volume"));
 			return;
 		}
 		wend = message.find_first_of(SPACE, wbegin);
@@ -349,21 +350,21 @@ void game_client::execCmd(const std::string &message) {
 				volume_int = 100;
 			}
 		} catch (std::invalid_argument) {
-			g_chat.addLine(COLOR_RED, "%s: %s", STRING("NOT_A_NUMBER"), arg1.c_str());
+			g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", arg1.c_str()));
 			return;
 		}
 
 		if (arg2 == "music") {
 			setMusicVolume(volume_int * MIX_MAX_VOLUME / 100);
-			g_chat.addLine(COLOR_ORANGE, "%s: %d", STRING("VOLUME_SET_MUSIC"), volume_int);
+			g_chat.addLine(COLOR_ORANGE, STRING("VOLUME_SET_MUSIC", volume_int));
 		} else {
 			setVolume(volume_int * MIX_MAX_VOLUME / 100);
-			g_chat.addLine(COLOR_ORANGE, "%s: %d", STRING("VOLUME_SET_MAIN"), volume_int);
+			g_chat.addLine(COLOR_ORANGE, STRING("VOLUME_SET_MAIN", volume_int));
 		}
 	} else if (cmd == "vote") {
 		wbegin = message.find_first_not_of(SPACE, wend);
 		if (wbegin == std::string::npos) {
-			g_chat.addLine(COLOR_ORANGE, "%s", STRING("USAGE_vote"));
+			g_chat.addLine(COLOR_ORANGE, STRING("USAGE_vote"));
 			return;
 		}
 		wend = message.find_first_of(SPACE, wbegin);
@@ -391,24 +392,24 @@ void game_client::execCmd(const std::string &message) {
 			} else try {
 				sendVoteCmd(VOTE_ADD_BOT, std::stoi(args));
 			} catch (std::invalid_argument) {
-				g_chat.addLine(COLOR_RED, "%s: %s", STRING("NOT_A_NUMBER"), args.c_str());
+				g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", args.c_str()));
 			}
 		} else if (vote_type == "bot_remove") {
 			sendVoteCmd(VOTE_REMOVE_BOTS, 0);
 		} else if (vote_type == "kick") {
 			if (args.empty()) {
-				g_chat.addLine(COLOR_ORANGE, "%s", STRING("USAGE_vote_kick"));
+				g_chat.addLine(COLOR_ORANGE, STRING("USAGE_vote_kick"));
 				return;
 			}
 			int user_id = g_score.findUserID(args.c_str());
 			if (user_id > 0) {
 				sendVoteCmd(VOTE_KICK, user_id);
 			} else {
-				g_chat.addLine(COLOR_ORANGE, "%s is not a user", args.c_str());
+				g_chat.addLine(COLOR_ORANGE, STRING("INVALID_USER", args.c_str()));
 			}
 		} else if (vote_type == "zone") {
 			if (args.empty()) {
-				g_chat.addLine(COLOR_ORANGE, "%s", STRING("USAGE_vote_zone"));
+				g_chat.addLine(COLOR_ORANGE, STRING("USAGE_vote_zone"));
 				return;
 			}
 			std::transform(args.begin(), args.end(), args.begin(), tolower);
@@ -416,21 +417,21 @@ void game_client::execCmd(const std::string &message) {
 			if (zone_id >= 0) {
 				sendVoteCmd(VOTE_ZONE, zone_id);
 			} else {
-				g_chat.addLine(COLOR_ORANGE, "%s: %s", STRING("INVALID_ZONE_NAME"), args.c_str());
+				g_chat.addLine(COLOR_ORANGE, STRING("INVALID_ZONE_NAME", args.c_str()));
 			}
 		} else if (vote_type == "yes") {
 			sendVoteCmd(VOTE_YES, 0);
 		} else if (vote_type == "no") {
 			sendVoteCmd(VOTE_NO, 0);
 		} else {
-			g_chat.addLine(COLOR_ORANGE, "%s: %s", STRING("INVALID_VOTE"), vote_type.c_str());
+			g_chat.addLine(COLOR_ORANGE, STRING("INVALID_VOTE", vote_type.c_str()));
 		}
 	} else if (cmd == "kill") {
 		sendKillCmd();
 	} else if (cmd == "quit") {
 		quit();
 	} else {
-		g_chat.addLine(COLOR_ORANGE, "%s: %s", STRING("INVALID_COMMAND"), cmd.c_str());
+		g_chat.addLine(COLOR_ORANGE, STRING("INVALID_COMMAND", cmd.c_str()));
 	}
 }
 
@@ -481,7 +482,7 @@ void game_client::handleEvent(const SDL_Event &event) {
 
 bool game_client::sendJoinCmd() {
 	if (socket == nullptr) {
-		g_chat.addLine(COLOR_RED, "%s", STRING("NOT_CONNECTED"));
+		g_chat.addLine(COLOR_RED, STRING("NOT_CONNECTED"));
 		return false;
 	}
 
@@ -492,7 +493,7 @@ bool game_client::sendJoinCmd() {
 
 bool game_client::sendLeaveCmd() {
 	if (socket == nullptr) {
-		g_chat.addLine(COLOR_RED, "%s", STRING("NOT_CONNECTED"));
+		g_chat.addLine(COLOR_RED, STRING("NOT_CONNECTED"));
 		return false;
 	}
 
@@ -503,7 +504,7 @@ bool game_client::sendLeaveCmd() {
 
 bool game_client::sendVoteCmd(uint32_t vote_type, uint32_t args) {
 	if (socket == nullptr) {
-		g_chat.addLine(COLOR_RED, "%s", STRING("NOT_CONNECTED"));
+		g_chat.addLine(COLOR_RED, STRING("NOT_CONNECTED"));
 		return false;
 	}
 
@@ -516,7 +517,7 @@ bool game_client::sendVoteCmd(uint32_t vote_type, uint32_t args) {
 
 bool game_client::sendKillCmd() {
 	if (socket == nullptr) {
-		g_chat.addLine(COLOR_RED, "%s", STRING("NOT_CONNECTED"));
+		g_chat.addLine(COLOR_RED, STRING("NOT_CONNECTED"));
 		return false;
 	}
 
@@ -527,7 +528,7 @@ bool game_client::sendKillCmd() {
 
 bool game_client::sendChatMessage(const char *message) {
 	if (socket == nullptr) {
-		g_chat.addLine(COLOR_RED, "%s", STRING("NOT_CONNECTED"));
+		g_chat.addLine(COLOR_RED, STRING("NOT_CONNECTED"));
 		return false;
 	}
 
@@ -539,7 +540,7 @@ bool game_client::sendChatMessage(const char *message) {
 
 bool game_client::sendScorePacket() {
 	if (socket == nullptr) {
-		//g_chat.addLine(COLOR_RED, "%s", STRING("NOT_CONNECTED"));
+		//g_chat.addLine(COLOR_RED, STRING("NOT_CONNECTED"));
 		return false;
 	}
 
@@ -550,7 +551,7 @@ bool game_client::sendScorePacket() {
 
 void game_client::setName(const std::string &name) {
 	user_name = name;
-	g_chat.addLine(COLOR_CYAN, "%s: %s", STRING("NAME_SET"), name.c_str());
+	g_chat.addLine(COLOR_CYAN, STRING("NAME_SET", name.c_str()));
 
 	if (socket == nullptr) return;
 
@@ -564,14 +565,14 @@ void game_client::messageCmd(byte_array &packet) {
 	char *message = packet.readString();
 	uint32_t color = packet.readInt();
 
-	printf("%s\n", message);
+	std::cout << message << std::endl;
 	g_chat.addLine(color, message);
 }
 
 void game_client::kickCmd(byte_array &packet) {
 	char *message = packet.readString();
 
-	g_chat.addLine(COLOR_RED, "%s: %s", STRING("CLIENT_KICKED"), message);
+	g_chat.addLine(COLOR_RED, STRING("CLIENT_KICKED", message));
 
 	clear();
 }

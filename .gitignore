@@ -14,7 +14,7 @@
 *.sublime-workspace
 *.d
 *.a
-client/resource_pack/bin/*
-client/bin/*
-server/bin/*
+resource_pack/bin/*
+bin/*
+bin/*
 

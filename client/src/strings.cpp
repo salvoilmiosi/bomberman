@@ -1,4 +1,4 @@
-#include "string.h"
+#include "strings.h"
 
 #include <string>
 #include <sstream>
@@ -8,13 +8,50 @@
 #include <locale>
 #include <map>
 
-static std::map<std::string, std::string> locales;
+static std::map<std::string, std::vector<std::string> > locales;
 
-const char *STRING(const char *ID) {
+std::string STRING(const char *ID) {
+	return STRING_NO(ID, 0);
+}
+
+std::string STRING(const char *ID, std::initializer_list<std::string> args) {
+	return STRING_NO(ID, 0, args);
+}
+
+std::string STRING_NO(const char *ID, int num) {
 	try {
-		return locales.at(ID).c_str();
+		return locales.at(ID).at(num);
 	} catch (std::out_of_range) {
 		return ID;
+	}
+}
+
+std::string STRING_NO(const char *ID, int num, std::initializer_list<std::string> args) {
+	std::string str = STRING_NO(ID, num);
+	if (str.empty()) return str;
+
+	int i=0;
+	for (auto to : args) {
+		char from_c[16];
+		snprintf(from_c, 16, "{%d}", i);
+		std::string from = from_c;
+
+		size_t start_pos = 0;
+		while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+			str.replace(start_pos, from.length(), to);
+			start_pos += to.length();
+		}
+		++i;
+	}
+
+	return str;
+}
+
+int STRING_COUNT(const char *ID) {
+	try {
+		return locales.at(ID).size();
+	} catch (std::out_of_range) {
+		return 0;
 	}
 }
 
@@ -46,7 +83,7 @@ bool load_locale(const std::string &locale) {
 
 		if (str_locale.empty()) continue;
 
-		locales[str_id] = str_locale;
+		locales[str_id].push_back(str_locale);
 	}
 
 	return true;

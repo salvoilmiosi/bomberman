@@ -64,13 +64,7 @@ public:
     virtual ~chat();
 
 public:
-    template<typename ... T> void addLine(uint32_t color, const char *format, T ... args) {
-        char line[CHAT_TYPING_SIZE];
-        snprintf(line, CHAT_TYPING_SIZE, format, args ...);
-        addLine(color, line);
-    }
-
-    void addLine(uint32_t color, const char *line);
+    void addLine(uint32_t color, const std::string &line);
 
     void tick();
 
