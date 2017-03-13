@@ -28,9 +28,7 @@ std::string STRING(const char *ID, const std::initializer_list<std::string> &arg
 
 	int i=0;
 	for (auto to : args) {
-		char from_c[16];
-		snprintf(from_c, 16, "{%d}", i);
-		std::string from = from_c;
+		std::string from = '{' + std::to_string(i) + '}';
 
 		size_t start_pos = 0;
 		while((start_pos = str.find(from, start_pos)) != std::string::npos) {
