@@ -21,7 +21,7 @@ broken_wall::broken_wall(game_world *world, tile *t, item_type type) : entity(wo
 void broken_wall::tick() {
     if (life_ticks == 0) {
         if (item != ITEM_NONE) {
-            world->addEntity(new game_item(world, world->getMap().getTile(tx,ty), item));
+            world->addEntity(std::make_shared<game_item>(world, world->getMap().getTile(tx,ty), item));
         }
         destroy();
     }

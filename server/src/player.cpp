@@ -101,19 +101,12 @@ void player::handleInput() {
 
 	if (skull_effect != SKULL_CONSTIPATION && (skull_effect == SKULL_DIARRHEA || handler->isPressed(USR_PLANT))) {
 		if (num_bombs > 0) {
-			entity **ents = world->findEntities(getTileX(), getTileY(), TYPE_BOMB);
-			bool found_bomb = false;
-			for (uint8_t i=0; i<SEARCH_SIZE; ++i) {
-				if (ents[i]) {
-					found_bomb = true;
-					break;
-				}
-			}
-			if (!found_bomb) {
-				bomb *b = new bomb(world, this);
+			auto ents = world->findEntities(getTileX(), getTileY(), TYPE_BOMB);
+			if (ents.empty()) {
+				auto b = std::make_shared<bomb>(world, this);
 				world->addEntity(b);
 				if (pickups & PICKUP_HAS_REMOCON) {
-					planted_bombs.push_back(b);
+					planted_bombs.push_back(b.get());
 				}
 				--num_bombs;
 			}
@@ -144,24 +137,22 @@ void player::handleInput() {
 			break;
 		}
 
-		ent_movable **mov_ents = world->findMovables(bx, by, TYPE_BOMB);
-		for (uint8_t i=0; i<SEARCH_SIZE; ++i) {
-			ent_movable *ent = mov_ents[i];
-			if (!ent) break;
-			bomb *b = dynamic_cast<bomb*>(ent);
+		auto mov_ents = world->findMovables(bx, by, TYPE_BOMB);
+		for (auto &ent : mov_ents) {
+			bomb *b = dynamic_cast<bomb*>(ent.get());
 			b->punch(this);
 		}
 	}
 
 	if (pickups & PICKUP_HAS_REMOCON && ! planted_bombs.empty() && handler->isPressed(USR_DETONATE)) {
-		bomb *b = planted_bombs.front();
+		auto b = planted_bombs.front();
 		if (b) {
 			b->explode();
 		}
 	}
 
 	if (pickups & PICKUP_HAS_KICK && ! kicked_bombs.empty() && handler->isPressed(USR_STOP_KICK)) {
-		bomb *b = kicked_bombs.back();
+		auto b = kicked_bombs.back();
 		if (b) {
 			b->stopKick();
 		}
@@ -228,12 +219,12 @@ bool player::player_move(float dx, float dy) {
 	}
 
 	if (alive && pickups & PICKUP_HAS_KICK) {
-		ent_movable **mov_ents = world->findMovables(bx, by, TYPE_BOMB);
-		if (*mov_ents) {
+		auto mov_ents = world->findMovables(bx, by, TYPE_BOMB);
+		if (!mov_ents.empty()) {
 			if (kick_ticks <= 0) {
-				bomb *b = dynamic_cast<bomb *>(*mov_ents);
+				auto b = std::dynamic_pointer_cast<bomb>(mov_ents.front());
 				if (b && b->kick(this, dx, dy)) {
-					kicked_bombs.push_back(b);
+					kicked_bombs.push_back(b.get());
 				}
 			} else {
 				--kick_ticks;
@@ -353,22 +344,18 @@ void player::tick() {
 			}
 		}
 
-		entity **ents = world->findEntities(getTileX(), getTileY(), TYPE_ITEM);
-		for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
-			entity *ent = ents[i];
-			if (!ent) break;
-			game_item *item = dynamic_cast<game_item*>(ent);
+		auto ents = world->findEntities(getTileX(), getTileY(), TYPE_ITEM);
+		for (auto &ent : ents) {
+			auto item = std::dynamic_pointer_cast<game_item>(ent);
 			if (item->pickup()) {
 				pickupItem(item->getItemType());
 			}
 		}
 		if (skull_ticks > 0) {
-			ent_movable **mov = world->findMovables(fx, fy, TYPE_PLAYER);
-			for (uint8_t i=0; i < SEARCH_SIZE; ++i) {
-				ent_movable *ent = mov[i];
-				if (!ent) break;
-				player *p = dynamic_cast<player*>(ent);
-				if (p == this) continue;
+			auto movs = world->findMovables(fx, fy, TYPE_PLAYER);
+			for (auto &ent : movs) {
+				auto p = std::dynamic_pointer_cast<player>(ent);
+				if (p.get() == this) continue;
 				if (!p->isAlive()) continue;
 				if (p->skull_ticks > 0) continue;
 				p->skull_ticks = SKULL_LIFE;
@@ -416,7 +403,7 @@ void player::spawnItems() {
 		}
 		item_type type = item_pickups.front();
 
-		world->addEntity(new game_item(world, tiles[i], type));
+		world->addEntity(std::make_shared<game_item>(world, tiles[i], type));
 		item_pickups.pop_front();
 		++i;
 	}

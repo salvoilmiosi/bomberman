@@ -13,320 +13,305 @@
 game_world::game_world(): server(this), g_map(this) {}
 
 game_world::~game_world() {
-    clear();
+	clear();
 }
 
 void game_world::clear() {
-    for (auto ent : entities) {
-        if (ent) delete ent;
-    }
-    entities.clear();
-    g_map.clear();
+	s_entities.clear();
+	g_map.clear();
 }
 
 int game_world::startServer(uint16_t port) {
-    server.openServer(port);
+	server.openServer(port);
 
-    if (server.isOpen()) {
-        std::cout << STRING("SERVER_LISTENING", port) << std::endl;
-    } else {
-        std::cerr << STRING("ERROR_CREATING_SERVER_SOCKET", SDLNet_GetError()) << std::endl;
-        return 1;
-    }
+	if (server.isOpen()) {
+		std::cout << STRING("SERVER_LISTENING", port) << std::endl;
+	} else {
+		std::cerr << STRING("ERROR_CREATING_SERVER_SOCKET", SDLNet_GetError()) << std::endl;
+		return 1;
+	}
 
-    return server.run();
+	return server.run();
 }
 
-void game_world::addEntity(entity *ent) {
-    if (!ent) return;
+void game_world::addEntity(entity_ptr ent) {
+	ents_to_add.push_back(ent);
 
-    entities.insert(ent);
-
-    server.sendAddPacket(ent);
+	server.sendAddPacket(ent.get());
 }
 
-void game_world::removeEntity(entity *ent) {
-    if (!ent) return;
+void game_world::removeEntity(entity_ptr ent) {
+	server.sendRemovePacket(ent.get());
 
-    server.sendRemovePacket(ent);
-
-    ent->destroy();
+	ent->destroy();
 }
 
 void game_world::tick() {
-    if (!round_started) return;
+	if (!round_started) return;
 
-    --ticks_to_start;
+	--ticks_to_start;
 
-    if (ticks_to_start == 0) {
-        server.messageToAll(COLOR_RED, STRING("ROUND_START", round_num));
-        countdownEnd();
-    } else if (ticks_to_start > 0 && ticks_to_start % TICKRATE == 0) {
-        int seconds = ticks_to_start / TICKRATE;
-        server.messageToAll(COLOR_GREEN, STRING("ROUND_BEGIN_TIME", round_num, seconds));
-    }
+	if (ticks_to_start == 0) {
+		server.messageToAll(COLOR_RED, STRING("ROUND_START", round_num));
+		countdownEnd();
+	} else if (ticks_to_start > 0 && ticks_to_start % TICKRATE == 0) {
+		int seconds = ticks_to_start / TICKRATE;
+		server.messageToAll(COLOR_GREEN, STRING("ROUND_BEGIN_TIME", round_num, seconds));
+	}
 
-    if (ticks_to_start < 0 && g_map.getZone() == ZONE_BOMB) {
-        if ((-ticks_to_start) % (TICKRATE * 6) == 0) {
-            int rand_x = random_engine() % (g_map.getWidth() - 4) + 2;
-            int rand_y = random_engine() % (g_map.getHeight() - 2) + 1;
-            addEntity(new bomb(this, rand_x, rand_y));
-        }
-    }
+	if (ticks_to_start < 0 && g_map.getZone() == ZONE_BOMB) {
+		if ((-ticks_to_start) % (TICKRATE * 6) == 0) {
+			int rand_x = random_engine() % (g_map.getWidth() - 4) + 2;
+			int rand_y = random_engine() % (g_map.getHeight() - 2) + 1;
+			addEntity(std::make_shared<bomb>(this, rand_x, rand_y));
+		}
+	}
 
-    int alive_players = 0;
-    int num_players = 0;
+	int alive_players = 0;
+	int num_players = 0;
 
-    g_map.tick();
+	g_map.tick();
 
-    auto it = entities.begin();
-    while (it != entities.end()) {
-        entity *ent = *it;
-        if (ent && ent->isNotDestroyed()) {
-            if (ent->getType() == TYPE_PLAYER) {
-                player *p = dynamic_cast<player*>(ent);
-                if (p->isAlive()) {
-                    ++alive_players;
-                }
-                ++num_players;
-            }
-            ent->tick();
-            ++it;
-        } else {
-            it = entities.erase(it);
-            removeEntity(ent);
-            if (ent) {
-                delete ent;
-            }
-        }
-    }
+	auto it = s_entities.begin();
+	while (it != s_entities.end()) {
+		auto ent = *it;
+		if (ent && ent->isNotDestroyed()) {
+			if (ent->getType() == TYPE_PLAYER) {
+				auto p = std::dynamic_pointer_cast<player>(ent);
+				if (p->isAlive()) {
+					++alive_players;
+				}
+				++num_players;
+			}
+			ent->tick();
+			++it;
+		} else {
+			it = s_entities.erase(it);
+			removeEntity(ent);
+		}
+	}
 
-    bool round_end = alive_players <= (num_users == 1 ? 0 : 1);
-    if (ticks_to_start < 0 && round_started && round_end) {
-        if (alive_players == 0) {
-            server.messageToAll(COLOR_RED, STRING("ROUND_DRAW"));
-        }
-        for (entity *ent : entities) {
-            if (ent && ent->isNotDestroyed() && ent->getType() == TYPE_PLAYER) {
-                player *p = dynamic_cast<player*>(ent);
-                if (p->isAlive()) {
-                    server.messageToAll(COLOR_RED, STRING("ROUND_VICTORY", p->getName(), round_num));
-                    p->addVictory();
-                    break;
-                }
-            }
-        }
-        round_started = false;
-        if (num_players == 0) {
-            // Everyone disconnected
-            server.sendResetPacket();
-            restartGame();
-            clear();
-        } else {
-            startRound(num_players);
-        }
-    }
+	bool round_end = alive_players <= (num_users == 1 ? 0 : 1);
+	if (ticks_to_start < 0 && round_started && round_end) {
+		if (alive_players == 0) {
+			server.messageToAll(COLOR_RED, STRING("ROUND_DRAW"));
+		}
+		for (auto &ent : s_entities) {
+			if (ent && ent->isNotDestroyed() && ent->getType() == TYPE_PLAYER) {
+				auto p = std::dynamic_pointer_cast<player>(ent);
+				if (p->isAlive()) {
+					server.messageToAll(COLOR_RED, STRING("ROUND_VICTORY", p->getName(), round_num));
+					p->addVictory();
+					break;
+				}
+			}
+		}
+		round_started = false;
+		if (num_players == 0) {
+			// Everyone disconnected
+			server.sendResetPacket();
+			restartGame();
+			clear();
+		} else {
+			startRound(num_players);
+		}
+	}
+
+	while (!ents_to_add.empty()) {
+		s_entities.insert(ents_to_add.front());
+		ents_to_add.pop_front();
+	}
 }
 
 void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
-    for(entity *ent : entities) {
-        if (ent && ent->isNotDestroyed() && (is_add || ent->doSendUpdates())) {
-            ent->writeToPacket(packet);
-        }
-    }
+	for (auto &ent : s_entities) {
+		if (ent && ent->isNotDestroyed() && (is_add || ent->doSendUpdates())) {
+			ent->writeToPacket(packet);
+		}
+	}
 }
 
 void game_world::sendKillMessage(player *killer, player *p) {
-    if (p == killer) {
-        server.messageToAll(COLOR_WHITE, STRING("SUICIDE_MSG", p->getName()));
-    } else if (killer == nullptr) {
-        server.messageToAll(COLOR_WHITE, STRING("WORLD_DEATH_MSG", p->getName()));
-    } else {
-        server.messageToAll(COLOR_WHITE, STRING("MURDER_MSG", p->getName(), killer->getName()));
-    }
+	if (p == killer) {
+		server.messageToAll(COLOR_WHITE, STRING("SUICIDE_MSG", p->getName()));
+	} else if (killer == nullptr) {
+		server.messageToAll(COLOR_WHITE, STRING("WORLD_DEATH_MSG", p->getName()));
+	} else {
+		server.messageToAll(COLOR_WHITE, STRING("MURDER_MSG", p->getName(), killer->getName()));
+	}
 }
 
 void game_world::restartGame() {
-    round_started = false;
-    round_num = 0;
-    ticks_to_start = 0;
+	round_started = false;
+	round_num = 0;
+	ticks_to_start = 0;
 }
 
 bool game_world::startRound(int num_u) {
-    if (round_started) return false;
-    if (ticks_to_start > 0) return false;
+	if (round_started) return false;
+	if (ticks_to_start > 0) return false;
 
-    num_users = num_u;
+	num_users = num_u;
 
-    ++round_num;
+	++round_num;
 
-    ticks_to_start = TICKRATE * COUNTDOWN_SECONDS;
-    round_started = true;
+	ticks_to_start = TICKRATE * COUNTDOWN_SECONDS;
+	round_started = true;
 
-    return true;
+	return true;
 }
 
 void game_world::countdownEnd() {
-    g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, selected_map_zone);
+	g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, selected_map_zone);
 
-    int num = 0;
+	int num = 0;
 
-    for (entity *ent : entities) {
-        if (ent && ent->isNotDestroyed()) {
-            switch (ent->getType()) {
-            case TYPE_PLAYER:
-                {
-                    player *p = dynamic_cast<player *>(ent);
-                    if (!p || !p->isNotDestroyed()) {
-                        continue;
-                    }
-                    p->setPlayerNum(num);
-                    try {
-                        point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
-                        p->respawn(spawn_pt.x, spawn_pt.y);
+	for (auto &ent : s_entities) {
+		if (ent && ent->isNotDestroyed()) {
+			switch (ent->getType()) {
+			case TYPE_PLAYER:
+				{
+					auto p = std::dynamic_pointer_cast<player>(ent);
+					if (!p || !p->isNotDestroyed()) {
+						continue;
+					}
+					p->setPlayerNum(num);
+					try {
+						point spawn_pt = g_map.getSpawnPt(p->getPlayerNum());
+						p->respawn(spawn_pt.x, spawn_pt.y);
 
-                        ++num;
-                    } catch (std::out_of_range) {
-                        p->setPlayerNum(0xff);
-                        // Could not spawn that player
-                    }
-                }
-                break;
-            default:
-                ent->destroy();
-                break;
-            }
-        }
-    }
+						++num;
+					} catch (std::out_of_range) {
+						p->setPlayerNum(0xff);
+						// Could not spawn that player
+					}
+				}
+				break;
+			default:
+				ent->destroy();
+				break;
+			}
+		}
+	}
 }
 
 uint8_t game_world::getStartPickups() {
-    switch(g_map.getZone()) {
-    case ZONE_SPEED:
-        return PICKUP_HAS_SPEED;
-    default:
-        return 0;
-    }
+	switch(g_map.getZone()) {
+	case ZONE_SPEED:
+		return PICKUP_HAS_SPEED;
+	default:
+		return 0;
+	}
 }
 
 std::map<item_type, uint8_t> game_world::getStartItems() {
-    switch(g_map.getZone()) {
-    case ZONE_POWER:
-        return {{ITEM_BOMB, 5}, {ITEM_FIRE, 9}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 1}, {ITEM_PUNCH, 1}};
-    default:
-        return {};
-    }
+	switch(g_map.getZone()) {
+	case ZONE_POWER:
+		return {{ITEM_BOMB, 5}, {ITEM_FIRE, 9}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 1}, {ITEM_PUNCH, 1}};
+	default:
+		return {};
+	}
 }
 
-entity **game_world::findEntities(int tx, int ty, entity_type type) {
-    static entity *ents[SEARCH_SIZE];
-    int i = 0;
+std::vector<entity_ptr> game_world::findEntities(int tx, int ty, entity_type type) {
+	std::vector<entity_ptr> ents;
+	for (auto &ent : s_entities) {
+		if (ent && ent->isNotDestroyed() && (type == TYPE_NONE ? true : ent->getType() == type) && ent->getTileX() == tx && ent->getTileY() == ty) {
+			ents.push_back(ent);
+		}
+	}
 
-    memset(ents, 0, sizeof(ents));
-    for (entity *ent : entities) {
-        if (ent && ent->isNotDestroyed() && (type == TYPE_NONE ? true : ent->getType() == type) && ent->getTileX() == tx && ent->getTileY() == ty) {
-            ents[i] = ent;
-            ++i;
-        }
-    }
-
-    return ents;
+	return ents;
 }
 
 template<typename T> const T ABS(T x) {
-    return x > 0 ? x : -x;
+	return x > 0 ? x : -x;
 }
 
-ent_movable **game_world::findMovables(float fx, float fy, entity_type type) {
-    static ent_movable *ents[SEARCH_SIZE];
-    int i = 0;
+std::vector<std::shared_ptr<ent_movable>> game_world::findMovables(float fx, float fy, entity_type type) {
+	std::vector<std::shared_ptr<ent_movable>> ents;
+	for (auto &ent : s_entities) {
+		auto mov = std::dynamic_pointer_cast<ent_movable>(ent);
+		if (mov && mov->isNotDestroyed() && (type == TYPE_NONE ? true : ent->getType() == type)) {
+			float dx = ABS(mov->getX() - fx);
+			float dy = ABS(mov->getY() - fy);
+			if (dx <= TILE_SIZE / 2 && dy <= TILE_SIZE / 2) {
+				ents.push_back(mov);
+			}
+		}
+	}
 
-    memset(ents, 0, sizeof(ents));
-    for (entity *ent : entities) {
-        ent_movable *mov = dynamic_cast<ent_movable *>(ent);
-        if (mov && mov->isNotDestroyed() && (type == TYPE_NONE ? true : ent->getType() == type)) {
-            float dx = ABS(mov->getX() - fx);
-            float dy = ABS(mov->getY() - fy);
-            if (dx <= TILE_SIZE / 2 && dy <= TILE_SIZE / 2) {
-                ents[i] = mov;
-                ++i;
-            }
-        }
-    }
-
-    return ents;
+	return ents;
 }
 
 bool game_world::isWalkable(float fx, float fy, uint8_t flags) {
-    int tx = fx / TILE_SIZE + 0.5f;
-    int ty = fy / TILE_SIZE + 0.5f;
+	int tx = fx / TILE_SIZE + 0.5f;
+	int ty = fy / TILE_SIZE + 0.5f;
 
-    tile *t = getMap().getTile(tx, ty);
-    if (!t) return false;
+	tile *t = getMap().getTile(tx, ty);
+	if (!t) return false;
 
-    entity **ents = findEntities(tx, ty);
-    for (uint8_t i = 0; i < SEARCH_SIZE; ++i) {
-        entity *ent = ents[i];
-        if (!ent) break;
-        switch (ent->getType()) {
-        case TYPE_ITEM:
-            if (flags & WALK_BLOCK_ITEMS) {
-                game_item *item = dynamic_cast<game_item *>(ent);
-                if (item && item->isAlive()) {
-                    return false;
-                }
-            }
-            break;
-        case TYPE_BROKEN_WALL:
-            return false;
-        default:
-            break;
-        }
-    }
+	auto ents = findEntities(tx, ty);
+	for (auto &ent : ents) {
+		switch (ent->getType()) {
+		case TYPE_ITEM:
+			if (flags & WALK_BLOCK_ITEMS) {
+				auto item = std::dynamic_pointer_cast<game_item>(ent);
+				if (item && item->isAlive()) {
+					return false;
+				}
+			}
+			break;
+		case TYPE_BROKEN_WALL:
+			return false;
+		default:
+			break;
+		}
+	}
 
-    ent_movable **ents_mov = findMovables(fx, fy);
-    for (size_t i=0; i<SEARCH_SIZE; ++i) {
-        ent_movable *mov = ents_mov[i];
-        if (!mov) break;
-        switch (mov->getType()) {
-        case TYPE_BOMB:
-            if (flags & WALK_IGNORE_BOMBS) {
-                break;
-            } else {
-                bomb *b = dynamic_cast<bomb*>(mov);
-                if (b && !b->isFlying()) {
-                    return false;
-                }
-            }
-            break;
-        case TYPE_PLAYER:
-            if (flags & WALK_BLOCK_PLAYERS) {
-                player *p = dynamic_cast<player *>(mov);
-                if (p && p->isAlive() && !p->isFlying()) {
-                    return false;
-                }
-            }
-            break;
-        default:
-            break;
-        }
-    }
+	auto ents_mov = findMovables(fx, fy);
+	for (auto &mov : ents_mov) {
+		switch (mov->getType()) {
+		case TYPE_BOMB:
+			if (flags & WALK_IGNORE_BOMBS) {
+				break;
+			} else {
+				auto b = std::dynamic_pointer_cast<bomb>(mov);
+				if (b && !b->isFlying()) {
+					return false;
+				}
+			}
+			break;
+		case TYPE_PLAYER:
+			if (flags & WALK_BLOCK_PLAYERS) {
+				auto p = std::dynamic_pointer_cast<player>(mov);
+				if (p && p->isAlive() && !p->isFlying()) {
+					return false;
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	}
 
-    switch(t->type) {
-    case TILE_WALL:
-    case TILE_BREAKABLE:
-        return false;
-    case TILE_SPECIAL:
-    {
-        tile_entity *special = g_map.getSpecial(t);
-        if (special) {
-            return special->isWalkable();
-        } else {
-            return true;
-        }
-        break;
-    }
-    default:
-        return true;
-    }
+	switch(t->type) {
+	case TILE_WALL:
+	case TILE_BREAKABLE:
+		return false;
+	case TILE_SPECIAL:
+	{
+		tile_entity *special = g_map.getSpecial(t);
+		if (special) {
+			return special->isWalkable();
+		} else {
+			return true;
+		}
+		break;
+	}
+	default:
+		return true;
+	}
+
+	return true;
 }

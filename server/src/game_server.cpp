@@ -326,13 +326,13 @@ void game_server::startGame() {
 void game_server::resetGame() {
 	for (auto it : users) {
 		if (it.second) {
-			player *p = it.second->getPlayer();
+			auto p = it.second->getPlayer();
 			if (p) p->resetScore();
 		}
 	}
 	for (user_bot* b : bots) {
 		if (b) {
-			player *p = b->getPlayer();
+			auto p = b->getPlayer();
 			if (p) p->resetScore();
 		}
 	}
@@ -468,7 +468,7 @@ void game_server::killCmd(packet_ext &packet) {
 		return;
 	}
 
-	player *p = u->getPlayer();
+	auto p = u->getPlayer();
 	if (p) p->kill(nullptr);
 }
 

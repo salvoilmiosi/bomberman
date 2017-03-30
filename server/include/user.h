@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL_net.h>
 #include <string>
+#include <memory>
 
 #include "input_net.h"
 
@@ -10,67 +11,66 @@ static const int MAX_PING_ATTEMPTS = 5;
 
 class user {
 private:
-    class game_server *server;
+	class game_server *server;
 
-    const IPaddress address;
-    std::string username;
+	const IPaddress address;
+	std::string username;
 
-    uint16_t userid;
+	uint16_t userid;
 
-    static uint16_t maxuserid;
+	static uint16_t maxuserid;
 
-    int ping_time;
-    bool has_pinged;
-    int ping_msecs;
+	int ping_time;
+	bool has_pinged;
+	int ping_msecs;
 
-    int attempts;
+	int attempts;
 
-    input_net handler;
-    class player *ent = nullptr;
-
-public:
-    user(class game_server *server, const IPaddress &address, const std::string &name);
-
-    virtual ~user();
+	input_net handler;
+	std::shared_ptr<class player> ent;
 
 public:
-    void createPlayer(class game_world *world);
-
-    const char *getName() {
-        return username.c_str();
-    }
-
-    void setName(const std::string &name);
-
-    const IPaddress &getAddress() {
-        return address;
-    }
+	user(class game_server *server, const IPaddress &address, const std::string &name);
+	virtual ~user();
 
 public:
-    void setPlayer(class player *p);
+	void createPlayer(class game_world *world);
 
-    class player *getPlayer() {
-        return ent;
-    }
+	const char *getName() {
+		return username.c_str();
+	}
 
-    bool tick();
+	void setName(const std::string &name);
 
-    void pongCmd();
+	const IPaddress &getAddress() {
+		return address;
+	}
 
-    void handleInputPacket(packet_ext &packet);
+public:
+	void setPlayer(std::shared_ptr<class player> p);
 
-    int getPing();
+	auto getPlayer() {
+		return ent;
+	}
 
-    int aliveTime();
+	bool tick();
 
-    uint16_t getID() {
-        return userid;
-    }
+	void pongCmd();
 
-    void destroyPlayer();
+	void handleInputPacket(packet_ext &packet);
+
+	int getPing();
+
+	int aliveTime();
+
+	uint16_t getID() {
+		return userid;
+	}
+
+	void destroyPlayer();
 
 private:
-    void sendPing(bool force = false);
+	void sendPing(bool force = false);
 };
 
 #endif // __USER_H__

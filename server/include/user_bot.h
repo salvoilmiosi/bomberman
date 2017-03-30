@@ -25,7 +25,7 @@ private:
 	class game_server *server;
 	std::string username;
 
-	class player *ent = nullptr;
+	std::shared_ptr<class player> ent;
 
 	bot_handler handler;
 
@@ -42,7 +42,7 @@ public:
 
 	void setName(const std::string &name);
 
-	class player *getPlayer() {
+	auto getPlayer() {
 		return ent;
 	}
 
