@@ -43,7 +43,7 @@ user_bot::~user_bot() {
 }
 
 void user_bot::createPlayer(game_world *world) {
-	ent = new player(world, &handler);
+	ent = std::make_shared<player>(world, &handler);
 	ent->setName(username);
 }
 

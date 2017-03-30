@@ -70,11 +70,11 @@ int user::getPing() {
 }
 
 void user::createPlayer(game_world *world) {
-    ent = new player(world, &handler);
+    ent = std::make_shared<player>(world, &handler);
     ent->setName(username);
 }
 
-void user::setPlayer(player *p) {
+void user::setPlayer(std::shared_ptr<player> p) {
     ent = p;
     username = p->getName();
 }

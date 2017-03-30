@@ -1,7 +1,7 @@
 CXX = g++
 LD = g++
 MAKE = make
-CFLAGS = -g -Wall --std=c++11
+CFLAGS = -g -Wall --std=c++14
 
 RESPACK_DIR = ../resource_pack
 RESPACK = $(RESPACK_DIR)/bin/resource_pack

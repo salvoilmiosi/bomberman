@@ -16,7 +16,7 @@ public:
     void tick() {
         if (item != ITEM_NONE) {
             game_world *world = g_map->getWorld();
-            world->addEntity(new game_item(world, t_tile, item));
+            world->addEntity(std::make_shared<game_item>(world, t_tile, item));
         }
         item = ITEM_NONE;
     }
