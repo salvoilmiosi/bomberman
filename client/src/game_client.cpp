@@ -600,13 +600,13 @@ void game_client::snapshotCmd(byte_array &packet) {
 
 		byte_array ba = packet.readByteArray();
 
-		entity *ent = world.findID(id);
+		auto ent = world.findID(id);
 		if (ent && ent->getType() == type) {
 			ent->readFromByteArray(ba);
 		} else {
-			ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
-			if (ent) {
-				world.addEntity(ent);
+			auto new_ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
+			if (new_ent) {
+				world.addEntity(new_ent);
 			}
 		}
 	}
@@ -618,7 +618,7 @@ void game_client::addCmd(byte_array &packet) {
 		if (! world.findID(id)) {
 			uint8_t type = packet.readChar();
 			byte_array ba = packet.readByteArray();
-			entity *ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
+			auto ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
 			if (ent) {
 				world.addEntity(ent);
 			}
@@ -636,9 +636,9 @@ void game_client::remCmd(byte_array &packet) {
 void game_client::selfCmd(byte_array &packet) {
 	uint16_t self_id = packet.readShort();
 
-	entity *ent = world.findID(self_id);
+	auto ent = world.findID(self_id);
 	if (ent && ent->getType() == TYPE_PLAYER) {
-		dynamic_cast<player *>(ent)->setSelf(true);
+		std::dynamic_pointer_cast<player>(ent)->setSelf(true);
 	}
 
 	g_score.setSelfID(packet.readShort());
