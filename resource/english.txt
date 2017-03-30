@@ -52,7 +52,7 @@ USAGE_name							Usage: name (new_name)
 USAGE_volume						Usage: volume (0-100) [music]
 USAGE_vote							Usage: vote (start | stop | reset | bot_add | bot_remove)
 USAGE_vote_kick						Usage: vote kick (user)
-USAGE_vote_zone						Usage: vote zone (zone_name)
+USAGE_vote_zone						Usage: vote zone (random | normal | western | bomb | jump | belt | duel | power | speed)
 
 INVALID_IP							"{0}" is not a valid IP.
 INVALID_ZONE_NAME					"{0}" is not a valid zone name.
@@ -90,7 +90,7 @@ ROUND_DRAW							Round draw! Everyone loses!
 SUICIDE_MSG							{0} couldn't handle it and killed himself.
 SUICIDE_MSG							{0} forgot that his own bombs hurt.
 SUICIDE_MSG							{0} has an explosive personality.
-SUICIDE_MSG							{0} obviously is not fireproof.
+SUICIDE_MSG							{0} obviously is not bombproof.
 SUICIDE_MSG							{0} clicked the big red button.
 SUICIDE_MSG							{0} bid farewell, cruel world!
 SUICIDE_MSG							{0} fears explosions too much.
@@ -106,7 +106,8 @@ WORLD_DEATH_MSG						{0} is having a really bad day.
 WORLD_DEATH_MSG						That, right there, is a bomb, {0}.
 
 MURDER_MSG							{0} was exploded by {1}.
-MURDER_MSG							{0}'s bits were sent everywhere by {1}.
+MURDER_MSG							{1} destroyed {0}'s hopes and dreams.
+MURDER_MSG							{1} sent {0}'s bits everywhere.
 MURDER_MSG							{0} was killed to death by {1}.
 MURDER_MSG							{0} didn't pay enough attention to {1}.
 MURDER_MSG							{0} died at the sight of {1}.

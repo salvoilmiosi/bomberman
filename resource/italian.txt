@@ -52,7 +52,7 @@ USAGE_name							Utilizzo: name (nome_nuovo)
 USAGE_volume						Utilizzo: volume (0-100) [music]
 USAGE_vote							Utilizzo: vote (start | stop | reset | bot_add | bot_remove)
 USAGE_vote_kick						Utilizzo: vote kick (utente)
-USAGE_vote_zone						Utilizzo: vote zone (nome_zona)
+USAGE_vote_zone						Utilizzo: vote zone (random | normal | western | bomb | jump | belt | duel | power | speed)
 
 INVALID_IP							"{0}" non è un IP valido.
 INVALID_ZONE_NAME					"{0}" non è un nome di zona valido.
