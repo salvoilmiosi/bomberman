@@ -52,6 +52,10 @@ void game_server::closeServer() {
 
 	SDLNet_UDP_Close(socket_serv);
 	open = false;
+
+	if (game_thread.joinable()) {
+		game_thread.join();
+	}
 }
 
 user *game_server::findUser(const IPaddress &address) {
@@ -139,6 +143,7 @@ int game_server::game_thread_run() {
 
 		++tick_count;
 	}
+	std::cout << "Game server thread out" << std::endl;
 	return 0;
 }
 
@@ -168,7 +173,6 @@ int game_server::run() {
 		repeater.sendPackets();
 		int err = receive(packet);
 		if (err > 0) {
-			//printf("%s sent %d bytes\n", ipString(packet->address), packet->len);
 			handlePacket(packet);
 		} else if (err < 0) {
 			std::cerr << STRING("ERROR_RECEIVING_PACKET", err, SDLNet_GetError()) << std::endl;

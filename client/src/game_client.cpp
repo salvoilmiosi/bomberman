@@ -25,6 +25,8 @@ game_client::~game_client() {
 		socket = nullptr;
 	}
 
+	clear();
+
 	if (receiver_thread.joinable()) {
 		receiver_thread.join();
 	}
@@ -82,6 +84,10 @@ bool game_client::connect(const char *address, uint16_t port) {
 
 		playMusic(music_battle);
 
+		if (receiver_thread.joinable()) {
+			receiver_thread.join();
+		}
+
 		receiver_thread = std::thread([this]{
 			receiver_run();
 		});
@@ -106,6 +112,10 @@ void game_client::disconnect() {
 
 	clear();
 
+	if (receiver_thread.joinable()) {
+		receiver_thread.join();
+	}
+
 	g_chat.addLine(COLOR_CYAN, STRING("SERVER_DISCONNECTED"));
 }
 
@@ -120,10 +130,6 @@ void game_client::clear() {
 	SDLNet_UDP_DelSocket(sock_set, socket);
 	SDLNet_UDP_Close(socket);
 	socket = nullptr;
-
-	if (receiver_thread.joinable()) {
-		receiver_thread.join();
-	}
 
 	world.clear();
 	g_score.clear();
@@ -203,7 +209,7 @@ int game_client::receiver_run() {
 		}
 	}
 
-	//g_chat.addLine(COLOR_YELLOW, "Receiver thread stopped.");
+	std::cout << "Game receiver thread out" << std::endl;
 
 	return err_ret;
 }

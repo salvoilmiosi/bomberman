@@ -7,8 +7,8 @@ RESPACK_DIR = ../resource_pack
 RESPACK = $(RESPACK_DIR)/bin/resource_pack
 RESLOAD = $(RESPACK_DIR)/bin/libresource_load.a
 
-LDFLAGS =
-LIBS = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf -pthread
+LDFLAGS = -pthread
+LIBS = -lSDL2 -lSDL2_net -lSDL2_image -lSDL2_mixer -lSDL2_ttf
 
 INCLUDE = -Iinclude -I$(RESPACK_DIR)/include
 BIN_DIR = ../bin
