@@ -34,7 +34,7 @@ public:
 	virtual ~user_bot();
 
 public:
-	void createPlayer(class game_world *world);
+	std::shared_ptr<class player> createPlayer(class game_world *world);
 
 	const char *getName() {
 		return username.c_str();

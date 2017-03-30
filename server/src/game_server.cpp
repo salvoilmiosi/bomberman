@@ -108,6 +108,16 @@ int game_server::game_thread_run() {
 		while(it != users.end()) {
 			user *u = it->second;
 			if (u->tick()) {
+				packet_ext packet_self(socket_serv);
+				packet_self.writeInt(SERV_SELF);
+				uint16_t player_id = 0;
+				if (u->getPlayer()) {
+					player_id = u->getPlayer()->getID();
+				}
+				packet_self.writeShort(player_id);
+				packet_self.writeShort(u->getID());
+				packet_self.sendTo(u->getAddress());
+
 				++it;
 			} else {
 				messageToAll(COLOR_YELLOW, STRING("CLIENT_TIMED_OUT", u->getName()));
@@ -228,8 +238,7 @@ void game_server::addBots(int num_bots) {
 		user_bot* b = new user_bot(this);
 		bots.push_back(b);
 
-		b->createPlayer(world);
-		world->addEntity(b->getPlayer());
+		world->addEntity(b->createPlayer(world));
 	}
 }
 
@@ -276,23 +285,13 @@ void game_server::joinCmd(packet_ext &from) {
 	if (!u) return;
 	if (u->getPlayer()) return;
 
-	uint16_t player_id = 0;
-
 	if (countUsers() < MAX_PLAYERS) {
-		u->createPlayer(world);
-		world->addEntity(u->getPlayer());
-		player_id = u->getPlayer()->getID();
+		world->addEntity(u->createPlayer(world));
 
 		messageToAll(COLOR_YELLOW, STRING("CLIENT_JOINED", u->getName()));
 	} else {
 		messageToAll(COLOR_YELLOW, STRING("CLIENT_SPECTATING", u->getName()));
 	}
-
-	packet_ext packet_self(socket_serv);
-	packet_self.writeInt(SERV_SELF);
-	packet_self.writeShort(player_id);
-	packet_self.writeShort(u->getID());
-	sendRepeatPacket(packet_self, from.getAddress());
 }
 
 void game_server::leaveCmd(packet_ext &from) {

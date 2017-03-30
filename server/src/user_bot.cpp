@@ -42,9 +42,10 @@ user_bot::~user_bot() {
 	//destroyPlayer();
 }
 
-void user_bot::createPlayer(game_world *world) {
+std::shared_ptr<player> user_bot::createPlayer(game_world *world) {
 	ent = std::make_shared<player>(world, &handler);
 	ent->setName(username);
+	return ent;
 }
 
 void user_bot::setName(const std::string &name) {

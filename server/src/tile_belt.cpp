@@ -22,7 +22,7 @@ tile_belt::tile_belt(tile *t_tile, game_map *g_map, direction belt_direction) : 
 }
 
 void tile_belt::tick() {
-	auto ents = g_map->getWorld()->findMovables(tx, ty);
+	auto ents = g_map->getWorld()->findMovables(tx * TILE_SIZE, ty * TILE_SIZE);
 	float speedx = 0;
 	float speedy = 0;
 	switch (belt_direction) {
