@@ -74,15 +74,19 @@ private:
 
 	game_map g_map;
 
+	bool toBeCleared = false;
+
 public:
 	game_world();
 	virtual ~game_world();
 
 public:
 	void clear();
+	void flagClear() {
+		toBeCleared = true;
+	}
 
 	void addEntity(entity_ptr ent);
-	void removeEntity(entity_ptr ent);
 
 	void render(SDL_Renderer *renderer);
 

@@ -27,14 +27,14 @@ entity_ptr entity::newObjFromByteArray(game_world *world, uint16_t id, entity_ty
 	}
 }
 
-tile_entity *tile_entity::newTileEntity(tile *t_tile) {
+special_ptr tile_entity::newTileEntity(tile *t_tile) {
 	special_type type = getSpecialType(t_tile->data);
 
 	switch (type) {
 	case SPECIAL_TRAMPOLINE:
-		return new tile_trampoline(t_tile);
+		return std::make_shared<tile_trampoline>(t_tile);
 	case SPECIAL_BELT:
-		return new tile_belt(t_tile);
+		return std::make_shared<tile_belt>(t_tile);
 	default:
 		return nullptr;
 	}
@@ -52,13 +52,9 @@ void game_world::clear() {
 }
 
 void game_world::addEntity(entity_ptr ent) {
-	ents_to_add.push_back(ent);
-}
-
-void game_world::removeEntity(entity_ptr ent) {
-	if (!ent) return;
-
-	ent->flagRemoved();
+	if (ent) {
+		ents_to_add.push_back(ent);
+	}
 }
 
 void game_world::render(SDL_Renderer *renderer) {
@@ -70,6 +66,11 @@ void game_world::render(SDL_Renderer *renderer) {
 }
 
 void game_world::tick() {
+	if (toBeCleared) {
+		clear();
+		toBeCleared = false;
+	}
+	
 	g_map.tick();
 
 	auto it = s_entities.begin();

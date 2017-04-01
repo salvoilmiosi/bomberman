@@ -18,43 +18,36 @@ game_map::~game_map() {
 }
 
 void game_map::clear() {
-	for (auto it : specials) {
-		if (it.second) {
-			delete it.second;
-		}
-	}
 	specials.clear();
-
-	delete[] tiles;
-	tiles = nullptr;
+	tiles.clear();
 	width = 0;
 	height = 0;
 }
 
-tile *game_map::getTile(int x, int y) {
+tile &game_map::getTile(int x, int y) {
 	if (x < 0 || x >= width) {
-		return nullptr;
+		throw std::out_of_range("");
 	}
 	if (y < 0 || y >= height) {
-		return nullptr;
+		throw std::out_of_range("");
 	}
-	return tiles + width * y + x;
+	return tiles[width * y + x];
 }
 
-int game_map::getTileX(tile *t) {
-	return (t - tiles) % width;
+int game_map::getTileX(const tile &t) {
+	return (&t - &tiles.front()) % width;
 }
 
-int game_map::getTileY(tile *t) {
-	return (t - tiles) / width;
+int game_map::getTileY(const tile &t) {
+	return (&t - &tiles.front()) / width;
 }
 
-int game_map::getTileID(tile *t) {
-	return t - tiles;
+int game_map::getTileID(const tile &t) {
+	return &t - &tiles.front();
 }
 
 void game_map::tick() {
-	for (auto it : specials) {
+	for (auto &it : specials) {
 		if (it.second) it.second->tick();
 	}
 }
@@ -67,10 +60,11 @@ void game_map::render(SDL_Renderer *renderer) {
 
 	for (int y=0; y<height; ++y) {
 		for (int x=0; x<width; ++x) {
-			tile *t = getTile(x, y);
-			tile *t_up = getTile(x, y-1);
-			if (!t) continue;
-			switch (t->type) {
+			const tile &t = getTile(x, y);
+			bool t_up_exists = y >= 0;
+			const tile &t_up = t_up_exists ? t : getTile(x, y-1);
+
+			switch (t.type) {
 			case TILE_SPECIAL:
 				try {
 					auto it = specials.at(getTileID(t));
@@ -86,25 +80,25 @@ void game_map::render(SDL_Renderer *renderer) {
 				case ZONE_RANDOM:
 				case ZONE_NORMAL:
 				case ZONE_SPEED: // TODO create speed zone tileset
-					if (t_up && (t_up->type == TILE_WALL || t_up->type == TILE_BREAKABLE)) {
+					if (t_up_exists && (t_up.type == TILE_WALL || t_up.type == TILE_BREAKABLE)) {
 						src_rect = TILE(4, 0);
 					} else {
 						src_rect = TILE(3, 0);
 					}
 					break;
 				case ZONE_WESTERN:
-					if (t_up && t_up->type == TILE_WALL && t_up->data == 0) {
+					if (t_up_exists && t_up.type == TILE_WALL && t_up.data == 0) {
 						src_rect = TILE(1, 3);
-					} else if (t_up && t_up->type == TILE_BREAKABLE) {
+					} else if (t_up_exists && t_up.type == TILE_BREAKABLE) {
 						src_rect = TILE(2, 3);
 					} else {
 						src_rect = TILE(3, 2);
 					}
 					break;
 				case ZONE_BOMB:
-					if (t_up && t_up->type == TILE_WALL) {
+					if (t_up_exists && t_up.type == TILE_WALL) {
 						src_rect = TILE(4, 1);
-					} else if (t_up && t_up->type == TILE_BREAKABLE) {
+					} else if (t_up_exists && t_up.type == TILE_BREAKABLE) {
 						src_rect = TILE(5, 1);
 					} else {
 						src_rect = TILE(3, 1);
@@ -114,21 +108,21 @@ void game_map::render(SDL_Renderer *renderer) {
 					src_rect = TILE(1, 2);
 					break;
 				case ZONE_BELT:
-					if (t_up && t_up->type == TILE_WALL && t_up->data == 0) {
+					if (t_up_exists && t_up.type == TILE_WALL && t_up.data == 0) {
 						src_rect = TILE(2, 2);
 					} else {
 						src_rect = TILE(7, 0);
 					}
 					break;
 				case ZONE_DUEL:
-					if (t_up && t_up->type == TILE_WALL && t_up->data == 0) {
+					if (t_up_exists && t_up.type == TILE_WALL && t_up.data == 0) {
 						src_rect = TILE(2, 2);
 					} else {
 						src_rect = TILE(3, 2);
 					}
 					break;
 				case ZONE_POWER:
-					if (t_up && t_up->type == TILE_WALL && t_up->data == 0) {
+					if (t_up_exists && t_up.type == TILE_WALL && t_up.data == 0) {
 						src_rect = TILE(3, 2);
 					} else {
 						src_rect = TILE(2, 2);
@@ -141,25 +135,25 @@ void game_map::render(SDL_Renderer *renderer) {
 				case ZONE_RANDOM:
 				case ZONE_NORMAL:
 				case ZONE_SPEED: // TODO create speed zone tileset
-					src_rect = TILE(t->data == 1 ? 0 : 1, 0);
+					src_rect = TILE(t.data == 1 ? 0 : 1, 0);
 					break;
 				case ZONE_WESTERN:
-					src_rect = TILE((t->data & 0x3f) % 5, (t->data & 0x3f) / 5);
+					src_rect = TILE((t.data & 0x3f) % 5, (t.data & 0x3f) / 5);
 					break;
 				case ZONE_BOMB:
-					src_rect = TILE((t->data & 0x3f) % 8, (t->data & 0x3f) / 8);
+					src_rect = TILE((t.data & 0x3f) % 8, (t.data & 0x3f) / 8);
 					break;
 				case ZONE_JUMP:
-					src_rect = TILE((t->data & 0x3f) % 7, (t->data & 0x3f) / 7);
+					src_rect = TILE((t.data & 0x3f) % 7, (t.data & 0x3f) / 7);
 					break;
 				case ZONE_BELT:
-					src_rect = TILE((t->data & 0x3f) % 3, (t->data & 0x3f) / 3);
+					src_rect = TILE((t.data & 0x3f) % 3, (t.data & 0x3f) / 3);
 					break;
 				case ZONE_DUEL:
-					src_rect = TILE((t->data & 0x3f) % 6, (t->data & 0x3f) / 6);
+					src_rect = TILE((t.data & 0x3f) % 6, (t.data & 0x3f) / 6);
 					break;
 				case ZONE_POWER:
-					src_rect = TILE((t->data & 0x3f) % 4, (t->data & 0x3f) / 4);
+					src_rect = TILE((t.data & 0x3f) % 4, (t.data & 0x3f) / 4);
 					break;
 				}
 				break;
@@ -171,7 +165,7 @@ void game_map::render(SDL_Renderer *renderer) {
 					src_rect = TILE(2, 0);
 					break;
 				case ZONE_WESTERN:
-					if (t_up && (t_up->type == TILE_BREAKABLE || (t_up->type == TILE_WALL && t_up->data == 0))) {
+					if (t_up_exists && (t_up.type == TILE_BREAKABLE || (t_up.type == TILE_WALL && t_up.data == 0))) {
 						src_rect = TILE(4, 2);
 					} else {
 						src_rect = TILE(2, 2);
@@ -179,7 +173,7 @@ void game_map::render(SDL_Renderer *renderer) {
 					break;
 				case ZONE_BOMB:
 					frame = (SDL_GetTicks() * 4 / 2000) % 4;
-					if (t_up && t_up->type == TILE_WALL) {
+					if (t_up_exists && t_up.type == TILE_WALL) {
 						src_rect = TILE(frame + 4, 2);
 					} else {
 						src_rect = TILE(frame, 2);
@@ -220,10 +214,10 @@ void game_map::render(SDL_Renderer *renderer) {
 			dst_rect.y = TILE_SIZE * y + top();
 
 			SDL_RendererFlip flip = SDL_FLIP_NONE;
-			if (t->data & 0x80) {
+			if (t.data & 0x80) {
 				flip = (SDL_RendererFlip) (flip | SDL_FLIP_HORIZONTAL);
 			}
-			if (t->data & 0x40) {
+			if (t.data & 0x40) {
 				flip = (SDL_RendererFlip) (flip | SDL_FLIP_VERTICAL);
 			}
 
@@ -255,7 +249,7 @@ SDL_Texture *game_map::getTileset(map_zone zone) {
 		return tilesets.at(zone);
 	} catch (std::out_of_range) {
 		return tilesets.at(ZONE_NORMAL);
-	}
+	} 
 }
 
 void game_map::readFromByteArray(byte_array &packet) {
@@ -263,12 +257,9 @@ void game_map::readFromByteArray(byte_array &packet) {
 	short h = packet.readShort();
 	zone = static_cast<map_zone>(packet.readChar());
 
-	if (w != width || h != height) {
-		if (tiles) {
-			delete[] tiles;
-		}
-		tiles = new tile[w * h];
-		memset(tiles, 0, w * h * sizeof(tile));
+	if (w * h > width * height) {
+		clear();
+		tiles.resize(w * h);
 	}
 
 	width = w;
@@ -285,16 +276,16 @@ void game_map::readFromByteArray(byte_array &packet) {
 			uint8_t type = packet.readChar();
 			uint16_t data = packet.readShort();
 
-			tile *t = getTile(x, y);
-			if (t) {
-				t->type = static_cast<tile_type>(type);
-				t->data = data;
-				if (t->type == TILE_SPECIAL) {
+			try {
+				tile &t = getTile(x, y);
+				t.type = static_cast<tile_type>(type);
+				t.data = data;
+				if (t.type == TILE_SPECIAL) {
 					uint8_t ent_type = tile_entity::getSpecialType(data);
 					auto it = specials.find(getTileID(t));
-					tile_entity *ent = nullptr;
+					special_ptr ent;
 					if (it == specials.end()) {
-						ent = tile_entity::newTileEntity(t);
+						ent = tile_entity::newTileEntity(&t);
 						if (ent) {
 							ent->used = true;
 							specials.insert({getTileID(t), ent});
@@ -302,8 +293,7 @@ void game_map::readFromByteArray(byte_array &packet) {
 					} else {
 						ent = it->second;
 						if (!ent || ent->type != ent_type) {
-							delete ent;
-							ent = tile_entity::newTileEntity(t);
+							ent = tile_entity::newTileEntity(&t);
 						}
 						if (ent) {
 							ent->used = true;
@@ -311,18 +301,18 @@ void game_map::readFromByteArray(byte_array &packet) {
 						}
 					}
 				}
+			} catch (std::out_of_range) {
 			}
 		}
 	}
 
 	auto it = specials.begin();
 	while (it != specials.end()) {
-		tile_entity *ent = it->second;
+		auto &ent = it->second;
 		if (ent && ent->used) {
 			++it;
 		} else {
 			it = specials.erase(it);
-			delete ent;
 		}
 	}
 }

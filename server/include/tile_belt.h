@@ -17,7 +17,7 @@ private:
     item_type item = ITEM_NONE;
 
 public:
-    tile_belt(tile *t_tile, game_map *g_map, direction belt_direction);
+    tile_belt(tile &t_tile, game_map *g_map, direction belt_direction);
 
     void tick();
 

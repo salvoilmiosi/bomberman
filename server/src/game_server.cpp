@@ -40,7 +40,7 @@ void game_server::closeServer() {
 	while(!users.empty()) {
 		auto it = users.begin();
 		if (it->second) {
-			kickUser(it->second, STRING("SERVER_CLOSED"));
+			kickUser(it->second.get(), STRING("SERVER_CLOSED"));
 		} else {
 			users.erase(it);
 		}
@@ -60,17 +60,17 @@ void game_server::closeServer() {
 
 user *game_server::findUser(const IPaddress &address) {
 	try {
-		return users.at(addrLong(address));
+		return users.at(addrLong(address)).get();
 	} catch (std::out_of_range) {
 		return nullptr;
 	}
 }
 
 user *game_server::findUserByID(int id) {
-	for (auto it : users) {
-		user *u = it.second;
+	for (auto &it : users) {
+		auto &u = it.second;
 		if (u && u->getID() == id) {
-			return u;
+			return u.get();
 		}
 	}
 	return nullptr;
@@ -85,8 +85,8 @@ void game_server::sendRepeatPacket(packet_ext &packet, const IPaddress &address,
 }
 
 void game_server::sendToAll(packet_ext &packet, int repeats) {
-	for (auto it : users) {
-		user *u = it.second;
+	for (auto &it : users) {
+		auto &u = it.second;
 		sendRepeatPacket(packet, u->getAddress(), repeats);
 	}
 }
@@ -110,7 +110,7 @@ int game_server::game_thread_run() {
 	while(open) {
 		auto it = users.begin();
 		while(it != users.end()) {
-			user *u = it->second;
+			auto &u = it->second;
 			if (u->tick()) {
 				packet_ext packet_self(socket_serv);
 				packet_self.writeInt(SERV_SELF);
@@ -127,7 +127,6 @@ int game_server::game_thread_run() {
 				messageToAll(COLOR_YELLOW, STRING("CLIENT_TIMED_OUT", u->getName()));
 				u->destroyPlayer();
 				it = users.erase(it);
-				delete u;
 			}
 		}
 
@@ -214,7 +213,6 @@ void game_server::kickUser(user *u, const std::string &message) {
 
 	u->destroyPlayer();
 	users.erase(addrLong(u->getAddress()));
-	delete u;
 }
 
 void game_server::sendSoundPacket(uint8_t sound_id) {
@@ -225,9 +223,9 @@ void game_server::sendSoundPacket(uint8_t sound_id) {
 }
 
 std::string game_server::findNewName(std::string username) {
-	for (auto it : users) {
-		user *u = it.second;
-		if (username == u->getName()) {
+	for (auto &it : users) {
+		auto &u = it.second;
+		if (u && username == u->getName()) {
 			username += '\'';
 		}
 	}
@@ -239,19 +237,16 @@ void game_server::addBots(int num_bots) {
 		if (countUsers(true) >= MAX_PLAYERS) {
 			break;
 		}
-		user_bot* b = new user_bot(this);
-		bots.push_back(b);
-
+		auto b = std::make_unique<user_bot>(this);
 		world->addEntity(b->createPlayer(world));
+		bots.push_back(std::move(b));
 	}
 }
 
 void game_server::removeBots() {
-	for (auto it : bots) {
-		if (it) {
+	for (auto &it : bots) {
+		if (it)
 			it->destroyPlayer();
-			delete it;
-		}
 	}
 	bots.clear();
 }
@@ -271,8 +266,7 @@ void game_server::connectCmd(packet_ext &from) {
 	}
 	std::string username = findNewName(from.readString());
 
-	user *u = new user(this, from.getAddress(), username);
-	users[addrLong(from.getAddress())] = u;
+	auto u = std::make_unique<user>(this, from.getAddress(), username);
 
 	packet_ext packet(socket_serv);
 	packet.writeInt(SERV_ACCEPT);
@@ -282,6 +276,7 @@ void game_server::connectCmd(packet_ext &from) {
 	snapshotPacket(true).sendTo(from.getAddress());
 
 	messageToAll(COLOR_YELLOW, STRING("CLIENT_CONNECTED", u->getName()).c_str());
+	users[addrLong(from.getAddress())] = std::move(u);
 }
 
 void game_server::joinCmd(packet_ext &from) {
@@ -309,7 +304,7 @@ void game_server::leaveCmd(packet_ext &from) {
 
 int game_server::countUsers(bool include_bots) {
 	int num_players = 0;
-	for (auto it : users) {
+	for (auto &it : users) {
 		if (it.second->getPlayer()) {
 			++num_players;
 		}
@@ -327,13 +322,13 @@ void game_server::startGame() {
 }
 
 void game_server::resetGame() {
-	for (auto it : users) {
+	for (auto &it : users) {
 		if (it.second) {
 			auto p = it.second->getPlayer();
 			if (p) p->resetScore();
 		}
 	}
-	for (user_bot* b : bots) {
+	for (auto &b : bots) {
 		if (b) {
 			auto p = b->getPlayer();
 			if (p) p->resetScore();
@@ -384,7 +379,6 @@ void game_server::disconnectCmd(packet_ext &packet) {
 
 	u->destroyPlayer();
 	users.erase(addrLong(packet.getAddress()));
-	delete u;
 }
 
 void game_server::pongCmd(packet_ext &from) {
@@ -407,8 +401,8 @@ void game_server::pongCmd(packet_ext &from) {
 packet_ext game_server::scorePacket() {
 	packet_ext packet(socket_serv);
 	packet.writeInt(SERV_SCORE);
-	for (auto it : users) {
-		user *u = it.second;
+	for (auto &it : users) {
+		auto &u = it.second;
 		packet.writeString(u->getName());
 		packet.writeShort(u->getPing());
 		if (u->getPlayer()) {
@@ -422,7 +416,7 @@ packet_ext game_server::scorePacket() {
 			packet.writeShort(u->getID());
 		}
 	}
-	for (user_bot *b : bots) {
+	for (auto &b : bots) {
 		if (b->getPlayer()) {
 			packet.writeString(b->getName());
 			packet.writeShort(0);

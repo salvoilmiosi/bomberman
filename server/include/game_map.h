@@ -3,46 +3,48 @@
 
 #include <vector>
 #include <map>
+#include <memory>
+#include <vector>
 
 #include <packet_io.h>
 
 enum tile_type {
-    TILE_FLOOR,
-    TILE_SPAWN,
-    TILE_WALL,
-    TILE_BREAKABLE,
-    TILE_SPECIAL,
+	TILE_FLOOR,
+	TILE_SPAWN,
+	TILE_WALL,
+	TILE_BREAKABLE,
+	TILE_SPECIAL,
 };
 
 enum map_zone {
-    ZONE_RANDOM,
-    ZONE_NORMAL,
-    ZONE_WESTERN,
-    ZONE_BOMB,
-    ZONE_JUMP,
-    ZONE_BELT,
-    ZONE_DUEL,
-    ZONE_POWER,
-    ZONE_SPEED,
+	ZONE_RANDOM,
+	ZONE_NORMAL,
+	ZONE_WESTERN,
+	ZONE_BOMB,
+	ZONE_JUMP,
+	ZONE_BELT,
+	ZONE_DUEL,
+	ZONE_POWER,
+	ZONE_SPEED,
 };
 
 static const std::map<map_zone, const char *> zone_by_id = {
-    {ZONE_RANDOM, "random"},
-    {ZONE_NORMAL, "normal"},
-    {ZONE_WESTERN, "western"},
-    {ZONE_BOMB, "bomb"},
-    {ZONE_JUMP, "jump"},
-    {ZONE_BELT, "belt"},
-    {ZONE_DUEL, "duel"},
-    {ZONE_POWER, "power"},
-    {ZONE_SPEED, "speed"},
+	{ZONE_RANDOM, "random"},
+	{ZONE_NORMAL, "normal"},
+	{ZONE_WESTERN, "western"},
+	{ZONE_BOMB, "bomb"},
+	{ZONE_JUMP, "jump"},
+	{ZONE_BELT, "belt"},
+	{ZONE_DUEL, "duel"},
+	{ZONE_POWER, "power"},
+	{ZONE_SPEED, "speed"},
 };
 
 enum special_type {
-    SPECIAL_NONE,
-    SPECIAL_TRAMPOLINE,
-    SPECIAL_BELT,
-    SPECIAL_ITEM_SPAWNER,
+	SPECIAL_NONE,
+	SPECIAL_TRAMPOLINE,
+	SPECIAL_BELT,
+	SPECIAL_ITEM_SPAWNER,
 };
 
 static const int MAP_WIDTH = 17;
@@ -51,105 +53,120 @@ static const int MAP_HEIGHT = 13;
 static const int TILE_SIZE = 100;
 
 struct tile {
-    tile_type type;
-    uint16_t data;
+	tile_type type;
+	uint16_t data;
+
+	tile() {
+		type = TILE_FLOOR;
+		data = 0;
+	}
 };
 
 struct point {
-    int x, y;
+	int x, y;
 };
 
 class tile_entity {
 private:
-    const special_type type;
+	const special_type type;
 
 protected:
-    tile *t_tile;
-    class game_map *g_map;
+	tile &t_tile;
+	class game_map *g_map;
 
 public:
-    tile_entity(const special_type type, tile *t_tile, game_map *g_map) : type(type), t_tile(t_tile), g_map(g_map) {}
+	tile_entity(const special_type type, tile &t_tile, game_map *g_map) : type(type), t_tile(t_tile), g_map(g_map) {}
 
-    virtual ~tile_entity() {}
+	virtual ~tile_entity() {}
 
 public:
-    virtual void tick() = 0;
+	virtual void tick() = 0;
 
-    const uint8_t getType() {
-        return type;
-    }
+	const uint8_t getType() {
+		return type;
+	}
 
-    virtual bool isWalkable() {
-        return true;
-    }
+	virtual bool isWalkable() {
+		return true;
+	}
 
-    virtual bool bombHit() {
-        return false;
-    }
+	virtual bool bombHit() {
+		return false;
+	}
+
+	tile &getTile() const {
+		return t_tile;
+	}
 
 protected:
-    void setData(uint16_t data) {
-        t_tile->type = TILE_SPECIAL;
-        t_tile->data = ((type & 0x7) << 13) | (data & 0x1fff);
-    }
+	void setData(uint16_t data) {
+		t_tile.type = TILE_SPECIAL;
+		t_tile.data = ((type & 0x7) << 13) | (data & 0x1fff);
+	}
 };
+
+typedef std::shared_ptr<tile_entity> special_ptr;
 
 class game_map {
 private:
-    tile *tiles = nullptr;
+	std::vector<tile> tiles;
 
-    int width = 0;
-    int height = 0;
+	int width = 0;
+	int height = 0;
 
-    map_zone zone;
+	map_zone zone;
 
-    std::vector<point> spawn_pts;
+	std::vector<point> spawn_pts;
 
-    std::map<tile *, tile_entity *> specials;
+	std::map<const tile *, special_ptr> specials;
 
-    class game_world *world;
-
-public:
-    game_map(game_world *world);
-    virtual ~game_map();
+	class game_world *world;
 
 public:
-    static const char *getZoneName(map_zone zone);
+	game_map(game_world *world);
+	virtual ~game_map();
 
-    void createMap(int w, int h, int num_players, map_zone zone = ZONE_RANDOM);
-    void clear();
+public:
+	static const char *getZoneName(map_zone zone);
 
-    void tick();
+	void createMap(int w, int h, int num_players, map_zone zone = ZONE_RANDOM);
+	void clear();
 
-    uint8_t getZone() const {
-        return zone;
-    }
+	void tick();
 
-    tile *getTile(int x, int y) const;
+	uint8_t getZone() const {
+		return zone;
+	}
 
-    int getTileX(tile *t) const;
-    int getTileY(tile *t) const;
+	tile &getTile(int x, int y);
 
-    tile_entity *getSpecial(tile *t) const;
+	int getTileX(const tile &t) const;
+	int getTileY(const tile &t) const;
 
-    int getWidth() const {
-        return width;
-    }
+	special_ptr getSpecial(const tile &t) const;
 
-    int getHeight() const {
-        return height;
-    }
+	int getWidth() const {
+		return width;
+	}
 
-    game_world *getWorld() {
-        return world;
-    }
+	int getHeight() const {
+		return height;
+	}
 
-    point getSpawnPt(unsigned int numt);
+	game_world *getWorld() {
+		return world;
+	}
 
-    void writeToPacket(packet_ext &packet);
+	point getSpawnPt(unsigned int numt);
+
+	void writeToPacket(packet_ext &packet);
 
 private:
-    void createDuelMap();
+	void createDuelMap();
+
+	void addSpecial(special_ptr special) {
+		specials[& special->getTile()] = special;
+	}
 };
 
 #endif // __GAME_MAP_H__

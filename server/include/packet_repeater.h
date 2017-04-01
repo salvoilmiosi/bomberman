@@ -4,13 +4,14 @@
 #include "packet_io.h"
 
 #include <deque>
+#include <memory>
 
 static const int DEFAULT_REPEATS = 5;
 
 class packet_repeater {
 private:
 	struct repeated {
-		packet_ext *packet;
+		std::unique_ptr<packet_ext> packet;
 		IPaddress address;
 
 		int packet_id;

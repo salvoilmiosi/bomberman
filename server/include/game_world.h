@@ -170,7 +170,7 @@ public:
 		server.sendSoundPacket(sound_id);
 	}
 
-	const game_map &getMap() {
+	game_map &getMap() {
 		return g_map;
 	}
 

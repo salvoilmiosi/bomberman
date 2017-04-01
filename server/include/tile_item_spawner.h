@@ -9,7 +9,7 @@ private:
     item_type item;
 
 public:
-    tile_item_spawner(tile *t_tile, game_map *g_map, item_type item) : tile_entity(SPECIAL_ITEM_SPAWNER, t_tile, g_map), item(item) {
+    tile_item_spawner(tile &t_tile, game_map *g_map, item_type item) : tile_entity(SPECIAL_ITEM_SPAWNER, t_tile, g_map), item(item) {
         setData(item);
     }
 

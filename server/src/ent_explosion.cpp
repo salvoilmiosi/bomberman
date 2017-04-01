@@ -31,18 +31,16 @@ explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION)
 
 	do_send_updates = false;
 
-	tile *t = world->getMap().getTile(tx, ty);
-	if (t) {
-		switch (t->type) {
-		case TILE_WALL:
-			return;
-		case TILE_BREAKABLE:
-			world->addEntity(std::make_shared<broken_wall>(world, t));
-			t->type = TILE_FLOOR;
-			return;
-		default:
-			break;
-		}
+	tile &t = world->getMap().getTile(tx, ty);
+	switch (t.type) {
+	case TILE_WALL:
+		return;
+	case TILE_BREAKABLE:
+		world->addEntity(std::make_shared<broken_wall>(world, t));
+		t.type = TILE_FLOOR;
+		return;
+	default:
+		break;
 	}
 
 	len_l = destroyTiles(-explode_size, 0, &trunc_l);
@@ -102,39 +100,40 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
 			}
 		}
 
-		tile *t = world->getMap().getTile(x, y);
-		if (!t) {
-			*trunc = true;
-			break;
-		}
-		switch (t->type) {
-		case TILE_BREAKABLE:
-			world->addEntity(std::make_shared<broken_wall>(world, t));
-			t->type = TILE_FLOOR;
-			if (piercing) {
-				break;
-			} else {
-				*trunc = true;
-			}
-		case TILE_WALL:
-			*trunc = true;
-			return i;
-		case TILE_SPECIAL:
-		{
-			tile_entity *special = world->getMap().getSpecial(t);
-			if (!special) break;
-			if (special->bombHit()) {
+		try {
+			tile &t = world->getMap().getTile(x, y);
+			switch (t.type) {
+			case TILE_BREAKABLE:
+				world->addEntity(std::make_shared<broken_wall>(world, t));
+				t.type = TILE_FLOOR;
 				if (piercing) {
 					break;
 				} else {
 					*trunc = true;
-					return i;
 				}
-			} else {
+			case TILE_WALL:
+				*trunc = true;
+				return i;
+			case TILE_SPECIAL:
+			{
+				special_ptr special = world->getMap().getSpecial(t);
+				if (!special) break;
+				if (special->bombHit()) {
+					if (piercing) {
+						break;
+					} else {
+						*trunc = true;
+						return i;
+					}
+				} else {
+					break;
+				}
+			}
+			default:
 				break;
 			}
-		}
-		default:
+		} catch (std::out_of_range) {
+			*trunc = true;
 			break;
 		}
 		++i;

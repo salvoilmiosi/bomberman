@@ -248,69 +248,72 @@ bool game_world::isWalkable(float fx, float fy, uint8_t flags) {
 	int tx = fx / TILE_SIZE + 0.5f;
 	int ty = fy / TILE_SIZE + 0.5f;
 
-	tile *t = getMap().getTile(tx, ty);
-	if (!t) return false;
-
-	auto ents = findEntities(tx, ty);
-	for (auto &ent : ents) {
-		switch (ent->getType()) {
-		case TYPE_ITEM:
-			if (flags & WALK_BLOCK_ITEMS) {
-				auto item = std::dynamic_pointer_cast<game_item>(ent);
-				if (item && item->isAlive()) {
-					return false;
+	try {
+		auto ents = findEntities(tx, ty);
+		for (auto &ent : ents) {
+			switch (ent->getType()) {
+			case TYPE_ITEM:
+				if (flags & WALK_BLOCK_ITEMS) {
+					auto item = std::dynamic_pointer_cast<game_item>(ent);
+					if (item && item->isAlive()) {
+						return false;
+					}
 				}
-			}
-			break;
-		case TYPE_BROKEN_WALL:
-			return false;
-		default:
-			break;
-		}
-	}
-
-	auto ents_mov = findMovables(fx, fy);
-	for (auto &mov : ents_mov) {
-		switch (mov->getType()) {
-		case TYPE_BOMB:
-			if (flags & WALK_IGNORE_BOMBS) {
 				break;
+			case TYPE_BROKEN_WALL:
+				return false;
+			default:
+				break;
+			}
+		}
+
+		auto ents_mov = findMovables(fx, fy);
+		for (auto &mov : ents_mov) {
+			switch (mov->getType()) {
+			case TYPE_BOMB:
+				if (flags & WALK_IGNORE_BOMBS) {
+					break;
+				} else {
+					auto b = std::dynamic_pointer_cast<bomb>(mov);
+					if (b && !b->isFlying()) {
+						return false;
+					}
+				}
+				break;
+			case TYPE_PLAYER:
+				if (flags & WALK_BLOCK_PLAYERS) {
+					auto p = std::dynamic_pointer_cast<player>(mov);
+					if (p && p->isAlive() && !p->isFlying()) {
+						return false;
+					}
+				}
+				break;
+			default:
+				break;
+			}
+		}
+
+		const tile &t = getMap().getTile(tx, ty);
+
+		switch(t.type) {
+		case TILE_WALL:
+		case TILE_BREAKABLE:
+			return false;
+		case TILE_SPECIAL:
+		{
+			special_ptr special = g_map.getSpecial(t);
+			if (special) {
+				return special->isWalkable();
 			} else {
-				auto b = std::dynamic_pointer_cast<bomb>(mov);
-				if (b && !b->isFlying()) {
-					return false;
-				}
+				return true;
 			}
-			break;
-		case TYPE_PLAYER:
-			if (flags & WALK_BLOCK_PLAYERS) {
-				auto p = std::dynamic_pointer_cast<player>(mov);
-				if (p && p->isAlive() && !p->isFlying()) {
-					return false;
-				}
-			}
-			break;
-		default:
 			break;
 		}
-	}
-
-	switch(t->type) {
-	case TILE_WALL:
-	case TILE_BREAKABLE:
-		return false;
-	case TILE_SPECIAL:
-	{
-		tile_entity *special = g_map.getSpecial(t);
-		if (special) {
-			return special->isWalkable();
-		} else {
+		default:
 			return true;
 		}
-		break;
-	}
-	default:
-		return true;
+	} catch (std::out_of_range) {
+		return false;
 	}
 
 	return true;

@@ -2,16 +2,16 @@
 
 #include "ent_movable.h"
 
-tile_belt::tile_belt(tile *t_tile, game_map *g_map, direction belt_direction) : tile_entity(SPECIAL_BELT, t_tile, g_map), belt_direction(belt_direction) {
+tile_belt::tile_belt(tile &t_tile, game_map *g_map, direction belt_direction) : tile_entity(SPECIAL_BELT, t_tile, g_map), belt_direction(belt_direction) {
 	tx = g_map->getTileX(t_tile);
 	ty = g_map->getTileY(t_tile);
 
 	uint16_t data = (belt_direction & 0x3) << 10;
 
-	switch(t_tile->type) {
+	switch(t_tile.type) {
 	case TILE_BREAKABLE:
 		is_breakable = true;
-		item = static_cast<item_type>(t_tile->data & 0xff);
+		item = static_cast<item_type>(t_tile.data & 0xff);
 		data |= 0x1000;
 		break;
 	default:

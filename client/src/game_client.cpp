@@ -635,7 +635,10 @@ void game_client::addCmd(byte_array &packet) {
 void game_client::remCmd(byte_array &packet) {
 	while (!packet.atEnd()) {
 		uint16_t id = packet.readShort();
-		world.removeEntity(world.findID(id));
+		auto ent = world.findID(id);
+		if (ent) {
+			ent->flagRemoved();
+		}
 	}
 }
 
@@ -660,7 +663,7 @@ void game_client::soundCmd(byte_array &packet) {
 }
 
 void game_client::resetCmd(byte_array &packet) {
-	world.clear();
+	world.flagClear();
 }
 
 void game_client::repeatCmd(byte_array &packet) {

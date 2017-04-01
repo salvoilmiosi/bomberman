@@ -311,11 +311,11 @@ void player::pickupItem(item_type type, bool add_to_pickups) {
 void player::checkTrampoline() {
 	if (jumping) return;
 
-	tile *walkingon = world->getMap().getTile(getTileX(), getTileY());
-	if (walkingon->type == TILE_SPECIAL) {
-		tile_entity *ent = world->getMap().getSpecial(walkingon);
+	const tile &walkingon = world->getMap().getTile(getTileX(), getTileY());
+	if (walkingon.type == TILE_SPECIAL) {
+		special_ptr ent = world->getMap().getSpecial(walkingon);
 		if (ent && ent->getType() == SPECIAL_TRAMPOLINE) {
-			tile_trampoline *tramp = dynamic_cast<tile_trampoline *>(ent);
+			auto tramp = std::dynamic_pointer_cast<tile_trampoline>(ent);
 			if (! on_trampoline && tramp->jump()) {
 				world->playWave(WAV_JUMP);
 				jumping = true;
@@ -385,11 +385,11 @@ void player::tick() {
 }
 
 void player::spawnItems() {
-	std::vector<tile *> tiles;
+	std::vector<const tile *> tiles;
 	for (int ty = 0; ty < MAP_HEIGHT; ++ty) {
 		for (int tx = 0; tx < MAP_WIDTH; ++tx) {
 			if (world->isWalkable(tx * TILE_SIZE, ty * TILE_SIZE)) {
-				tiles.push_back(world->getMap().getTile(tx, ty));
+				tiles.push_back(& world->getMap().getTile(tx, ty));
 			}
 		}
 	}
@@ -403,7 +403,7 @@ void player::spawnItems() {
 		}
 		item_type type = item_pickups.front();
 
-		world->addEntity(std::make_shared<game_item>(world, tiles[i], type));
+		world->addEntity(std::make_shared<game_item>(world, *tiles[i], type));
 		item_pickups.pop_front();
 		++i;
 	}

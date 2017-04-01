@@ -4,7 +4,7 @@
 #include "player.h"
 #include "game_sound.h"
 
-game_item::game_item(game_world *world, tile *t, item_type type) : entity(world, TYPE_ITEM), type(type) {
+game_item::game_item(game_world *world, const tile &t, item_type type) : entity(world, TYPE_ITEM), type(type) {
     tx = world->getMap().getTileX(t);
     ty = world->getMap().getTileY(t);
 

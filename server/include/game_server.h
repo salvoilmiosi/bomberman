@@ -73,8 +73,8 @@ private:
 
 	class game_world *world;
 
-	std::map<uint64_t, user *> users;
-	std::vector<user_bot *> bots;
+	std::map<uint64_t, std::unique_ptr<user>> users;
+	std::vector<std::unique_ptr<user_bot>> bots;
 
 	SDLNet_SocketSet sock_set;
 	UDPsocket socket_serv;
