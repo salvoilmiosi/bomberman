@@ -72,6 +72,8 @@ void game_world::tick() {
 
 	g_map.tick();
 
+	entities_mutex.lock();
+
 	auto it = s_entities.begin();
 	while (it != s_entities.end()) {
 		auto ent = *it;
@@ -121,14 +123,20 @@ void game_world::tick() {
 		s_entities.insert(ents_to_add.front());
 		ents_to_add.pop_front();
 	}
+
+	entities_mutex.unlock();
 }
 
 void game_world::writeEntitiesToPacket(packet_ext &packet, bool is_add) {
+	entities_mutex.lock();
+
 	for (auto &ent : s_entities) {
 		if (ent && ent->isNotDestroyed() && (is_add || ent->doSendUpdates())) {
 			ent->writeToPacket(packet);
 		}
 	}
+
+	entities_mutex.unlock();
 }
 
 void game_world::sendKillMessage(player *killer, player *p) {

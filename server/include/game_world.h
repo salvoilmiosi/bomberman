@@ -7,6 +7,7 @@
 #include <deque>
 #include <memory>
 #include <vector>
+#include <mutex>
 
 #include "game_map.h"
 #include "game_server.h"
@@ -120,6 +121,8 @@ private:
 
 	std::set <entity_ptr> s_entities;
 	std::deque <entity_ptr> ents_to_add;
+
+	std::mutex entities_mutex;
 
 	game_map g_map;
 
