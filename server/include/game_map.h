@@ -72,10 +72,10 @@ private:
 
 protected:
 	tile &t_tile;
-	class game_map *g_map;
+	class game_map &g_map;
 
 public:
-	tile_entity(const special_type type, tile &t_tile, game_map *g_map) : type(type), t_tile(t_tile), g_map(g_map) {}
+	tile_entity(const special_type type, tile &t_tile, game_map &g_map) : type(type), t_tile(t_tile), g_map(g_map) {}
 
 	virtual ~tile_entity() {}
 
@@ -120,10 +120,10 @@ private:
 
 	std::map<const tile *, special_ptr> specials;
 
-	class game_world *world;
+	class game_world &world;
 
 public:
-	game_map(game_world *world);
+	game_map(game_world &world);
 	virtual ~game_map();
 
 public:
@@ -153,7 +153,7 @@ public:
 		return height;
 	}
 
-	game_world *getWorld() {
+	game_world &getWorld() {
 		return world;
 	}
 

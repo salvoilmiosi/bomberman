@@ -66,10 +66,10 @@ private:
 protected:
 	bool do_send_updates;
 
-	class game_world *world;
+	class game_world &world;
 
 public:
-	entity(class game_world *world, const entity_type type) : type(type), world(world) {
+	entity(class game_world &world, const entity_type type) : type(type), world(world) {
 		static uint16_t max_id = 1;
 		id = max_id++;
 		destroyed = false;

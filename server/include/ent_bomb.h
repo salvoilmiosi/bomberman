@@ -38,9 +38,9 @@ private:
     friend class explosion;
 
 public:
-    bomb(game_world *world, class player *p);
+    bomb(game_world &world, class player *p);
 
-    bomb(game_world *world, int tx, int ty);
+    bomb(game_world &world, int tx, int ty);
 
 public:
     void tick();

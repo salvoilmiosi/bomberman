@@ -34,22 +34,22 @@ public:
 	virtual ~user();
 
 public:
-	std::shared_ptr<class player> createPlayer(class game_world *world);
+	std::shared_ptr<class player> createPlayer(class game_world &world);
 
-	const char *getName() {
-		return username.c_str();
+	const std::string getName() const {
+		return username;
 	}
 
 	void setName(const std::string &name);
 
-	const IPaddress &getAddress() {
+	const IPaddress &getAddress() const {
 		return address;
 	}
 
 public:
 	void setPlayer(std::shared_ptr<class player> p);
 
-	auto getPlayer() {
+	auto getPlayer() const {
 		return ent;
 	}
 
@@ -63,7 +63,7 @@ public:
 
 	int aliveTime();
 
-	uint16_t getID() {
+	uint16_t getID() const {
 		return userid;
 	}
 

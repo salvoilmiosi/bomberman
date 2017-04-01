@@ -7,7 +7,7 @@
 #include "player.h"
 #include "game_sound.h"
 
-explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION) {
+explosion::explosion(game_world &world, bomb *b) : entity(world, TYPE_EXPLOSION) {
 	planter = b->planter;
 
 	tx = b->getTileX();
@@ -24,19 +24,19 @@ explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION)
 	trunc_r = false;
 	trunc_b = false;
 
-	auto ents = world->findEntities(tx, ty, TYPE_ITEM);
+	auto ents = world.findEntities(tx, ty, TYPE_ITEM);
 	for (auto &ent : ents) {
 		std::dynamic_pointer_cast<game_item>(ent)->explode();
 	}
 
 	do_send_updates = false;
 
-	tile &t = world->getMap().getTile(tx, ty);
+	tile &t = world.getMap().getTile(tx, ty);
 	switch (t.type) {
 	case TILE_WALL:
 		return;
 	case TILE_BREAKABLE:
-		world->addEntity(std::make_shared<broken_wall>(world, t));
+		world.addEntity(std::make_shared<broken_wall>(world, t));
 		t.type = TILE_FLOOR;
 		return;
 	default:
@@ -48,7 +48,7 @@ explosion::explosion(game_world *world, bomb *b) : entity(world, TYPE_EXPLOSION)
 	len_r = destroyTiles(explode_size, 0, &trunc_r);
 	len_b = destroyTiles(0, explode_size, &trunc_b);
 
-	world->playWave(WAV_EXPLODE);
+	world.playWave(WAV_EXPLODE);
 }
 
 uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
@@ -72,7 +72,7 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
 			break;
 		}
 
-		auto tile_ents = world->findEntities(x, y);
+		auto tile_ents = world.findEntities(x, y);
 		for (auto &ent : tile_ents) {
 			switch (ent->getType()) {
 			case TYPE_BOMB:
@@ -101,10 +101,10 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
 		}
 
 		try {
-			tile &t = world->getMap().getTile(x, y);
+			tile &t = world.getMap().getTile(x, y);
 			switch (t.type) {
 			case TILE_BREAKABLE:
-				world->addEntity(std::make_shared<broken_wall>(world, t));
+				world.addEntity(std::make_shared<broken_wall>(world, t));
 				t.type = TILE_FLOOR;
 				if (piercing) {
 					break;
@@ -116,7 +116,7 @@ uint8_t explosion::destroyTiles(int dx, int dy, bool *trunc) {
 				return i;
 			case TILE_SPECIAL:
 			{
-				special_ptr special = world->getMap().getSpecial(t);
+				special_ptr special = world.getMap().getSpecial(t);
 				if (!special) break;
 				if (special->bombHit()) {
 					if (piercing) {
@@ -161,7 +161,7 @@ void explosion::checkEntities(int dx, int dy) {
 			break;
 		}
 
-		auto ents = world->findEntities(x, y);
+		auto ents = world.findEntities(x, y);
 		for (auto &ent : ents) {
 			switch(ent->getType()) {
 			case TYPE_PLAYER:
@@ -183,7 +183,7 @@ void explosion::checkEntities(int dx, int dy) {
 }
 
 void explosion::tick() {
-	auto ents = world->findEntities(tx, ty, TYPE_PLAYER);
+	auto ents = world.findEntities(tx, ty, TYPE_PLAYER);
 	for (auto &ent : ents) {
 		std::dynamic_pointer_cast<player>(ent)->kill(planter);
 	}

@@ -18,7 +18,7 @@ private:
     item_type item = ITEM_NONE;
 
 public:
-    broken_wall(game_world *world, tile &t, item_type item = ITEM_NONE);
+    broken_wall(game_world &world, tile &t, item_type item = ITEM_NONE);
 
 public:
     void tick();

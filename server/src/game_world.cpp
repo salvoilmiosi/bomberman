@@ -10,7 +10,7 @@
 #include "main.h"
 #include "strings.h"
 
-game_world::game_world(): server(this), g_map(this) {}
+game_world::game_world(): server(*this), g_map(*this) {}
 
 game_world::~game_world() {
 	clear();
@@ -63,7 +63,7 @@ void game_world::tick() {
 		if ((-ticks_to_start) % (TICKRATE * 6) == 0) {
 			int rand_x = random_engine() % (g_map.getWidth() - 4) + 2;
 			int rand_y = random_engine() % (g_map.getHeight() - 2) + 1;
-			addEntity(std::make_shared<bomb>(this, rand_x, rand_y));
+			addEntity(std::make_shared<bomb>(*this, rand_x, rand_y));
 		}
 	}
 

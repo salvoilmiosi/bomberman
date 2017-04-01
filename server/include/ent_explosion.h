@@ -21,7 +21,7 @@ private:
     bool piercing;
 
 public:
-    explosion(game_world *world, class bomb *b);
+    explosion(game_world &world, class bomb *b);
 
 public:
     void tick();

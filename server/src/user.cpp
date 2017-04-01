@@ -69,7 +69,7 @@ int user::getPing() {
     return ping_msecs;
 }
 
-std::shared_ptr<player> user::createPlayer(game_world *world) {
+std::shared_ptr<player> user::createPlayer(game_world &world) {
     ent = std::make_shared<player>(world, &handler);
     ent->setName(username);
     return ent;

@@ -6,7 +6,7 @@
 #include "main.h"
 #include "game_sound.h"
 
-bomb::bomb(game_world *world, player *p) : ent_movable(world, TYPE_BOMB), planter(p) {
+bomb::bomb(game_world &world, player *p) : ent_movable(world, TYPE_BOMB), planter(p) {
 	fx = p->getTileX() * TILE_SIZE;
 	fy = p->getTileY() * TILE_SIZE;
 	fz = 0.f;
@@ -30,10 +30,10 @@ bomb::bomb(game_world *world, player *p) : ent_movable(world, TYPE_BOMB), plante
 	speedx = 0.f;
 	speedy = 0.f;
 
-	world->playWave(WAV_PLANT);
+	world.playWave(WAV_PLANT);
 }
 
-bomb::bomb(game_world *world, int tx, int ty) : ent_movable(world, TYPE_BOMB), planter(nullptr) {
+bomb::bomb(game_world &world, int tx, int ty) : ent_movable(world, TYPE_BOMB), planter(nullptr) {
 	fx = tx * TILE_SIZE;
 	fy = ty * TILE_SIZE;
 	fz = BOMB_HEIGHT;
@@ -108,7 +108,7 @@ bool bomb::punch(player *p) {
 		kicker = nullptr;
 	}
 
-	world->playWave(WAV_PUNCH);
+	world.playWave(WAV_PUNCH);
 
 	speedx = 0;
 	speedy = 0;
@@ -143,7 +143,7 @@ void bomb::stopKick() {
 	fx = getTileX() * TILE_SIZE;
 	fy = getTileY() * TILE_SIZE;
 	if (kick_ticks > 1) {
-		world->playWave(WAV_HARDHIT);
+		world.playWave(WAV_HARDHIT);
 	}
 	if (kicker) {
 		kicker->stoppedKick(this);
@@ -163,7 +163,7 @@ void bomb::tick() {
 			} else {
 				++kick_ticks;
 				if (kick_ticks % 5 == 0) {
-					world->playWave(WAV_SLIDE);
+					world.playWave(WAV_SLIDE);
 				}
 			}
 		}
@@ -189,15 +189,15 @@ void bomb::tick() {
 
 		if (fz <= 0) {
 			fz = 0.f;
-			world->playWave(WAV_BOUNCE);
+			world.playWave(WAV_BOUNCE);
 			float to_fx = getTileX() * TILE_SIZE;
 			float to_fy = getTileY() * TILE_SIZE;
-			if (world->isWalkable(to_fx, to_fy, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
+			if (world.isWalkable(to_fx, to_fy, WALK_BLOCK_PLAYERS | WALK_BLOCK_ITEMS)) {
 				fx = to_fx;
 				fy = to_fy;
 				flying = false;
 			} else {
-				auto ents = world->findMovables(fx, fy, TYPE_PLAYER);
+				auto ents = world.findMovables(fx, fy, TYPE_PLAYER);
 				for (auto &ent : ents) {
 					std::dynamic_pointer_cast<player>(ent)->stun();
 				}
@@ -231,7 +231,7 @@ void bomb::explode() {
 
 	exploded = true;
 	destroy();
-	world->addEntity(std::make_shared<explosion>(world, this));
+	world.addEntity(std::make_shared<explosion>(world, this));
 }
 
 byte_array bomb::toByteArray() {

@@ -10,7 +10,7 @@ protected:
 	float fz = 0.f;
 
 public:
-	ent_movable(game_world *world, entity_type type);
+	ent_movable(game_world &world, entity_type type);
 
 	virtual bool move(float dx, float dy) = 0;
 

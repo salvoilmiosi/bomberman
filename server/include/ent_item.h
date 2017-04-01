@@ -17,7 +17,7 @@ private:
     item_type type;
 
 public:
-    game_item(game_world *world, const tile &t, item_type type);
+    game_item(game_world &world, const tile &t, item_type type);
 
 public:
     void tick();

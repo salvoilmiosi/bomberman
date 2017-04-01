@@ -35,7 +35,7 @@ public:
     void tick();
     void reset();
 
-    void sendVote(user *u, uint32_t vote_type, uint32_t args);
+    void sendVote(const user &u, uint32_t vote_type, uint32_t args);
 };
 
 #endif // __VOTE_HANDLER_H__

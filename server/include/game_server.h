@@ -71,10 +71,10 @@ class game_server {
 private:
 	bool open;
 
-	class game_world *world;
+	class game_world &world;
 
-	std::map<uint64_t, std::unique_ptr<user>> users;
-	std::vector<std::unique_ptr<user_bot>> bots;
+	std::map<uint64_t, user> users;
+	std::vector<user_bot> bots;
 
 	SDLNet_SocketSet sock_set;
 	UDPsocket socket_serv;
@@ -84,7 +84,7 @@ private:
 	vote_handler voter;
 
 public:
-	game_server(class game_world *world);
+	game_server(class game_world &world);
 	virtual ~game_server();
 
 public:
@@ -111,7 +111,7 @@ public:
 	void sendSoundPacket(uint8_t sound_id);
 	void sendPingPacket(const IPaddress &address);
 
-	void kickUser(user *u, const std::string &message);
+	void kickUser(user &u, const std::string &message);
 
 	int countUsers(bool include_bots = true);
 
@@ -131,7 +131,7 @@ public:
 		sendRepeatPacket(packet, address);
 	}
 
-	user *findUserByID(int id);
+	user &findUserByID(int id);
 
 	void setZone(map_zone zone);
 
@@ -144,7 +144,7 @@ private:
 
 	std::string findNewName(std::string username);
 
-	user *findUser(const IPaddress &address);
+	user &findUser(const IPaddress &address);
 
 	packet_ext snapshotPacket(bool is_add = false);
 	packet_ext scorePacket();

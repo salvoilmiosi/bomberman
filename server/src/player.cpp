@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-player::player(game_world *world, input_handler *handler) : ent_movable(world, TYPE_PLAYER), handler(handler) {
+player::player(game_world &world, input_handler *handler) : ent_movable(world, TYPE_PLAYER), handler(handler) {
 	do_send_updates = false;
 
 	victories = 0;
@@ -27,7 +27,7 @@ void player::respawn(int tx, int ty) {
 	alive = true;
 	on_trampoline = false;
 
-	pickups = world->getStartPickups();
+	pickups = world.getStartPickups();
 
 	speed = 300.f;
 	explosion_size = 2;
@@ -47,7 +47,7 @@ void player::respawn(int tx, int ty) {
 	planted_bombs.clear();
 	kicked_bombs.clear();
 
-	auto start_items = world->getStartItems();
+	auto start_items = world.getStartItems();
 	for (auto item : start_items) {
 		for (int i=0; i<item.second; ++i) {
 			pickupItem(item.first, false);
@@ -65,9 +65,9 @@ void player::kill(player *killer) {
 	alive = false;
 	death_ticks = PLAYER_DEATH_TICKS;
 
-	world->playWave(WAV_DEATH);
+	world.playWave(WAV_DEATH);
 
-	world->sendKillMessage(killer, this);
+	world.sendKillMessage(killer, this);
 }
 
 void player::makeInvulnerable() {
@@ -101,10 +101,10 @@ void player::handleInput() {
 
 	if (skull_effect != SKULL_CONSTIPATION && (skull_effect == SKULL_DIARRHEA || handler->isPressed(USR_PLANT))) {
 		if (num_bombs > 0) {
-			auto ents = world->findEntities(getTileX(), getTileY(), TYPE_BOMB);
+			auto ents = world.findEntities(getTileX(), getTileY(), TYPE_BOMB);
 			if (ents.empty()) {
 				auto b = std::make_shared<bomb>(world, this);
-				world->addEntity(b);
+				world.addEntity(b);
 				if (pickups & PICKUP_HAS_REMOCON) {
 					planted_bombs.push_back(b.get());
 				}
@@ -137,7 +137,7 @@ void player::handleInput() {
 			break;
 		}
 
-		auto mov_ents = world->findMovables(bx, by, TYPE_BOMB);
+		auto mov_ents = world.findMovables(bx, by, TYPE_BOMB);
 		for (auto &ent : mov_ents) {
 			bomb *b = dynamic_cast<bomb*>(ent.get());
 			b->punch(this);
@@ -219,7 +219,7 @@ bool player::player_move(float dx, float dy) {
 	}
 
 	if (alive && pickups & PICKUP_HAS_KICK) {
-		auto mov_ents = world->findMovables(bx, by, TYPE_BOMB);
+		auto mov_ents = world.findMovables(bx, by, TYPE_BOMB);
 		if (!mov_ents.empty()) {
 			if (kick_ticks <= 0) {
 				auto b = std::dynamic_pointer_cast<bomb>(mov_ents.front());
@@ -311,13 +311,13 @@ void player::pickupItem(item_type type, bool add_to_pickups) {
 void player::checkTrampoline() {
 	if (jumping) return;
 
-	const tile &walkingon = world->getMap().getTile(getTileX(), getTileY());
+	const tile &walkingon = world.getMap().getTile(getTileX(), getTileY());
 	if (walkingon.type == TILE_SPECIAL) {
-		special_ptr ent = world->getMap().getSpecial(walkingon);
+		special_ptr ent = world.getMap().getSpecial(walkingon);
 		if (ent && ent->getType() == SPECIAL_TRAMPOLINE) {
 			auto tramp = std::dynamic_pointer_cast<tile_trampoline>(ent);
 			if (! on_trampoline && tramp->jump()) {
-				world->playWave(WAV_JUMP);
+				world.playWave(WAV_JUMP);
 				jumping = true;
 
 				speedz = PLAYER_JUMP_SPEED / TICKRATE;
@@ -344,7 +344,7 @@ void player::tick() {
 			}
 		}
 
-		auto ents = world->findEntities(getTileX(), getTileY(), TYPE_ITEM);
+		auto ents = world.findEntities(getTileX(), getTileY(), TYPE_ITEM);
 		for (auto &ent : ents) {
 			auto item = std::dynamic_pointer_cast<game_item>(ent);
 			if (item->pickup()) {
@@ -352,7 +352,7 @@ void player::tick() {
 			}
 		}
 		if (skull_ticks > 0) {
-			auto movs = world->findMovables(fx, fy, TYPE_PLAYER);
+			auto movs = world.findMovables(fx, fy, TYPE_PLAYER);
 			for (auto &ent : movs) {
 				auto p = std::dynamic_pointer_cast<player>(ent);
 				if (p.get() == this) continue;
@@ -360,7 +360,7 @@ void player::tick() {
 				if (p->skull_ticks > 0) continue;
 				p->skull_ticks = SKULL_LIFE;
 				p->skull_effect = skull_effect;
-				world->playWave(WAV_SKULL);
+				world.playWave(WAV_SKULL);
 			}
 			--skull_ticks;
 		} else {
@@ -388,8 +388,8 @@ void player::spawnItems() {
 	std::vector<const tile *> tiles;
 	for (int ty = 0; ty < MAP_HEIGHT; ++ty) {
 		for (int tx = 0; tx < MAP_WIDTH; ++tx) {
-			if (world->isWalkable(tx * TILE_SIZE, ty * TILE_SIZE)) {
-				tiles.push_back(& world->getMap().getTile(tx, ty));
+			if (world.isWalkable(tx * TILE_SIZE, ty * TILE_SIZE)) {
+				tiles.push_back(& world.getMap().getTile(tx, ty));
 			}
 		}
 	}
@@ -403,7 +403,7 @@ void player::spawnItems() {
 		}
 		item_type type = item_pickups.front();
 
-		world->addEntity(std::make_shared<game_item>(world, *tiles[i], type));
+		world.addEntity(std::make_shared<game_item>(world, *tiles[i], type));
 		item_pickups.pop_front();
 		++i;
 	}

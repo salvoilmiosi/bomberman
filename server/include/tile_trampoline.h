@@ -10,7 +10,7 @@ private:
     int jump_ticks = 0;
 
 public:
-    tile_trampoline(tile &t_tile, game_map *g_map) : tile_entity(SPECIAL_TRAMPOLINE, t_tile, g_map) {
+    tile_trampoline(tile &t_tile, game_map &g_map) : tile_entity(SPECIAL_TRAMPOLINE, t_tile, g_map) {
         setData(0);
     }
 

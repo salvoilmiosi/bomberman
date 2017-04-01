@@ -4,9 +4,9 @@
 #include "player.h"
 #include "game_sound.h"
 
-game_item::game_item(game_world *world, const tile &t, item_type type) : entity(world, TYPE_ITEM), type(type) {
-    tx = world->getMap().getTileX(t);
-    ty = world->getMap().getTileY(t);
+game_item::game_item(game_world &world, const tile &t, item_type type) : entity(world, TYPE_ITEM), type(type) {
+    tx = world.getMap().getTileX(t);
+    ty = world.getMap().getTileY(t);
 
     exploded = false;
     life_ticks = TICKRATE * 2 / 3;
@@ -29,10 +29,10 @@ bool game_item::pickup() {
         destroy();
         return false;
     case ITEM_SKULL:
-        world->playWave(WAV_SKULL);
+        world.playWave(WAV_SKULL);
         break;
     default:
-        world->playWave(WAV_PICKUP);
+        world.playWave(WAV_PICKUP);
         break;
     }
 

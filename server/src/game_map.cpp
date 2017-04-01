@@ -12,7 +12,7 @@
 #include "tile_belt.h"
 #include "tile_item_spawner.h"
 
-game_map::game_map(game_world *world) : world(world) {
+game_map::game_map(game_world &world) : world(world) {
 	width = 0;
 	height = 0;
 }
@@ -343,23 +343,23 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 		int num_trampolines = 12 + random_engine() % 4;
 		for (int i=0; i<num_trampolines; ++i) {
 			tile *t = floor_tiles.back();
-			specials[t] = std::make_shared<tile_trampoline>(*t, this);
+			specials[t] = std::make_shared<tile_trampoline>(*t, *this);
 			floor_tiles.pop_back();
 		}
 		break;
 	}
 	case ZONE_BELT:
 		for (int x = 4; x <= width - 6; ++x) {
-			addSpecial(std::make_shared<tile_belt>(getTile(x, 3), this, DIR_RIGHT));
+			addSpecial(std::make_shared<tile_belt>(getTile(x, 3), *this, DIR_RIGHT));
 		}
 		for (int x = 5; x <= width - 5; ++x) {
-			addSpecial(std::make_shared<tile_belt>(getTile(x, height - 4), this, DIR_LEFT));
+			addSpecial(std::make_shared<tile_belt>(getTile(x, height - 4), *this, DIR_LEFT));
 		}
 		for (int y = 4; y <= height - 4; ++y) {
-			addSpecial(std::make_shared<tile_belt>(getTile(4, y), this, DIR_UP));
+			addSpecial(std::make_shared<tile_belt>(getTile(4, y), *this, DIR_UP));
 		}
 		for (int y = 3; y <= height - 5; ++y) {
-			addSpecial(std::make_shared<tile_belt>(getTile(width - 5, y), this, DIR_DOWN));
+			addSpecial(std::make_shared<tile_belt>(getTile(width - 5, y), *this, DIR_DOWN));
 		}
 		break;
 	case ZONE_DUEL:
@@ -407,16 +407,16 @@ void game_map::createDuelMap() {
 
 	const item_type *item_it = border_items_h;
 	for (int x = 2; x <= width - 3; x += 2) {
-		addSpecial(std::make_shared<tile_item_spawner>(getTile(x, 1), this, *item_it));
-		addSpecial(std::make_shared<tile_item_spawner>(getTile(x, height - 2), this, *item_it));
+		addSpecial(std::make_shared<tile_item_spawner>(getTile(x, 1), *this, *item_it));
+		addSpecial(std::make_shared<tile_item_spawner>(getTile(x, height - 2), *this, *item_it));
 
 		++item_it;
 	}
 
 	item_it = border_items_v;
 	for (int y = 3; y <= height - 4; y += 2) {
-		addSpecial(std::make_shared<tile_item_spawner>(getTile(2, y), this, *item_it));
-		addSpecial(std::make_shared<tile_item_spawner>(getTile(width - 3, height - y - 1), this, *item_it));
+		addSpecial(std::make_shared<tile_item_spawner>(getTile(2, y), *this, *item_it));
+		addSpecial(std::make_shared<tile_item_spawner>(getTile(width - 3, height - y - 1), *this, *item_it));
 
 		++item_it;
 	}

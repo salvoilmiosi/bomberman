@@ -77,7 +77,7 @@ private:
     int victories;
 
 public:
-    player(game_world *world, input_handler *handler);
+    player(game_world &world, input_handler *handler);
 
 public:
     void tick();

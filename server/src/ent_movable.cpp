@@ -1,6 +1,6 @@
 #include "ent_movable.h"
 
-ent_movable::ent_movable(game_world *world, entity_type type) : entity(world, type) {}
+ent_movable::ent_movable(game_world &world, entity_type type) : entity(world, type) {}
 
 bool ent_movable::std_move(float dx, float dy, uint8_t flags) {
     do_send_updates = true;
@@ -42,8 +42,8 @@ bool ent_movable::std_move(float dx, float dy, uint8_t flags) {
     int to_tx = check_fx / TILE_SIZE + 0.5f;
     int to_ty = check_fy / TILE_SIZE + 0.5f;
 
-    if ((to_tx == getTileX() && to_ty == getTileY() && !world->isWalkable(fx, fy, flags)) ||
-        world->isWalkable(check_fx, check_fy, flags)) {
+    if ((to_tx == getTileX() && to_ty == getTileY() && !world.isWalkable(fx, fy, flags)) ||
+        world.isWalkable(check_fx, check_fy, flags)) {
 
         fx = to_fx;
         fy = to_fy;
