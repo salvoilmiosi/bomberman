@@ -221,47 +221,129 @@ void game_client::render(SDL_Renderer *renderer) {
 }
 
 void game_client::handlePacket(byte_array &packet) {
-	int message = packet.readInt();
-	switch (message) {
-	case SERV_MESSAGE:
-		messageCmd(packet);
-		break;
-	case SERV_KICK:
-		kickCmd(packet);
-		break;
-	case SERV_PING:
-		pingCmd(packet);
-		break;
-	case SERV_PING_MSECS:
-		msecCmd(packet);
-		break;
-	case SERV_SCORE:
-		scoreCmd(packet);
-		break;
-	case SERV_SNAPSHOT:
-		snapshotCmd(packet);
-		break;
-	case SERV_ADD_ENT:
-		addCmd(packet);
-		break;
-	case SERV_REM_ENT:
-		remCmd(packet);
-		break;
-	case SERV_SELF:
-		selfCmd(packet);
-		break;
-	case SERV_MAP:
-		mapCmd(packet);
-		break;
-	case SERV_SOUND:
-		soundCmd(packet);
-		break;
-	case SERV_RESET:
-		resetCmd(packet);
-		break;
-	case SERV_REPEAT:
-		repeatCmd(packet);
-		break;
+	using cmd_func = std::function<void(byte_array &)>;
+	static std::map<uint32_t, cmd_func> funcs;
+
+	if (funcs.empty()) {
+		funcs[SERV_MESSAGE] = [this](byte_array &ba) {
+			char *message = ba.readString();
+			uint32_t color = ba.readInt();
+
+			std::cout << message << std::endl;
+			g_chat.addLine(color, message);
+		};
+
+		funcs[SERV_KICK] = [this](byte_array &ba) {
+			char *message = ba.readString();
+
+			g_chat.addLine(COLOR_RED, STRING("CLIENT_KICKED", message));
+
+			clear();
+		};
+
+		funcs[SERV_PING] = [this](byte_array &ba) {
+			if (socket == nullptr) return;
+
+			packet_ext packet(socket);
+			packet.writeInt(CMD_PONG);
+			packet.sendTo(server_ip);
+		};
+
+		funcs[SERV_PING_MSECS] = [this](byte_array &ba) {
+			ping_msecs = ba.readShort();
+		};
+
+		funcs[SERV_SCORE] = [this](byte_array &ba) {
+			g_score.handlePacket(ba);
+		};
+
+		funcs[SERV_SNAPSHOT] = [this](byte_array &packet) {
+			while(!packet.atEnd()) {
+				uint16_t id = packet.readShort();
+				uint8_t type = packet.readChar();
+
+				byte_array ba = packet.readByteArray();
+
+				auto ent = world.findID(id);
+				if (ent && ent->getType() == type) {
+					ent->readFromByteArray(ba);
+				} else {
+					auto new_ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
+					if (new_ent) {
+						world.addEntity(new_ent);
+					}
+				}
+			}
+		};
+
+		funcs[SERV_ADD_ENT] = [this](byte_array &packet) {
+			while(!packet.atEnd()) {
+				uint16_t id = packet.readShort();
+				if (! world.findID(id)) {
+					uint8_t type = packet.readChar();
+					byte_array ba = packet.readByteArray();
+					auto ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
+					if (ent) {
+						world.addEntity(ent);
+					}
+				}
+			}
+		};
+
+		funcs[SERV_REM_ENT] = [this](byte_array &packet) {
+			while (!packet.atEnd()) {
+				uint16_t id = packet.readShort();
+				auto ent = world.findID(id);
+				if (ent) {
+					ent->flagRemoved();
+				}
+			}
+		};
+
+		funcs[SERV_SELF] = [this](byte_array &packet) {
+			uint16_t self_id = packet.readShort();
+
+			auto ent = world.findID(self_id);
+			if (ent && ent->getType() == TYPE_PLAYER) {
+				std::dynamic_pointer_cast<player>(ent)->setSelf(true);
+			}
+
+			g_score.setSelfID(packet.readShort());
+		};
+
+		funcs[SERV_MAP] = [this](byte_array &packet) {
+			world.handleMapPacket(packet);
+		};
+
+		funcs[SERV_SOUND] = [this](byte_array &packet) {
+			uint8_t id = packet.readChar();
+			playWave(static_cast<wave_id>(id));
+		};
+
+		funcs[SERV_RESET] = [this](byte_array &) {
+			world.flagClear();
+		};
+
+		funcs[SERV_REPEAT] = [this](byte_array &packet) {
+			int packet_id = packet.readInt();
+
+			if (packet_repeat_ids.find(packet_id) == packet_repeat_ids.end()) {
+				byte_array ba = packet.readByteArray();
+				int magic = ba.readInt();
+				if (magic == MAGIC) {
+					handlePacket(ba);
+				}
+				packet_repeat_ids[packet_id] = SDL_GetTicks();
+			}
+		};
+	}
+
+	uint32_t cmd = packet.readInt();
+	try {
+		auto func = funcs.at(cmd);
+		func(packet);
+	} catch (std::out_of_range) {
+		std::cerr << STRING("INVALID_SERVER_COMMAND", cmd) << std::endl;
 	}
 }
 
@@ -565,116 +647,4 @@ void game_client::setName(const std::string &name) {
 	packet.writeInt(CMD_NAME);
 	packet.writeString(name.c_str());
 	packet.sendTo(server_ip);
-}
-
-void game_client::messageCmd(byte_array &packet) {
-	char *message = packet.readString();
-	uint32_t color = packet.readInt();
-
-	std::cout << message << std::endl;
-	g_chat.addLine(color, message);
-}
-
-void game_client::kickCmd(byte_array &packet) {
-	char *message = packet.readString();
-
-	g_chat.addLine(COLOR_RED, STRING("CLIENT_KICKED", message));
-
-	clear();
-}
-
-void game_client::pingCmd(byte_array &from) {
-	if (socket == nullptr) return;
-
-	packet_ext packet(socket);
-	packet.writeInt(CMD_PONG);
-	packet.sendTo(server_ip);
-}
-
-void game_client::msecCmd(byte_array &from) {
-	ping_msecs = from.readShort();
-}
-
-void game_client::scoreCmd(byte_array &packet) {
-	g_score.handlePacket(packet);
-}
-
-void game_client::snapshotCmd(byte_array &packet) {
-	while(!packet.atEnd()) {
-		uint16_t id = packet.readShort();
-		uint8_t type = packet.readChar();
-
-		byte_array ba = packet.readByteArray();
-
-		auto ent = world.findID(id);
-		if (ent && ent->getType() == type) {
-			ent->readFromByteArray(ba);
-		} else {
-			auto new_ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
-			if (new_ent) {
-				world.addEntity(new_ent);
-			}
-		}
-	}
-}
-
-void game_client::addCmd(byte_array &packet) {
-	while(!packet.atEnd()) {
-		uint16_t id = packet.readShort();
-		if (! world.findID(id)) {
-			uint8_t type = packet.readChar();
-			byte_array ba = packet.readByteArray();
-			auto ent = entity::newObjFromByteArray(&world, id, static_cast<entity_type>(type), ba);
-			if (ent) {
-				world.addEntity(ent);
-			}
-		}
-	}
-}
-
-void game_client::remCmd(byte_array &packet) {
-	while (!packet.atEnd()) {
-		uint16_t id = packet.readShort();
-		auto ent = world.findID(id);
-		if (ent) {
-			ent->flagRemoved();
-		}
-	}
-}
-
-void game_client::selfCmd(byte_array &packet) {
-	uint16_t self_id = packet.readShort();
-
-	auto ent = world.findID(self_id);
-	if (ent && ent->getType() == TYPE_PLAYER) {
-		std::dynamic_pointer_cast<player>(ent)->setSelf(true);
-	}
-
-	g_score.setSelfID(packet.readShort());
-}
-
-void game_client::mapCmd(byte_array &packet) {
-	world.handleMapPacket(packet);
-}
-
-void game_client::soundCmd(byte_array &packet) {
-	uint8_t id = packet.readChar();
-	playWave(static_cast<wave_id>(id));
-}
-
-void game_client::resetCmd(byte_array &packet) {
-	world.flagClear();
-}
-
-void game_client::repeatCmd(byte_array &packet) {
-	int packet_id = packet.readInt();
-
-	if (packet_repeat_ids.find(packet_id) == packet_repeat_ids.end()) {
-		byte_array ba = packet.readByteArray();
-		int magic = ba.readInt();
-		if (magic == MAGIC) {
-			handlePacket(ba);
-		}
-		packet_repeat_ids[packet_id] = SDL_GetTicks();
-	}
 }

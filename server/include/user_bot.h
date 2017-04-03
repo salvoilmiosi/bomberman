@@ -36,8 +36,8 @@ public:
 public:
 	std::shared_ptr<class player> createPlayer(class game_world &world);
 
-	const char *getName() {
-		return username.c_str();
+	const std::string &getName() const {
+		return username;
 	}
 
 	void setName(const std::string &name);

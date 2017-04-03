@@ -56,87 +56,73 @@ static const uint32_t VOTE_ZONE        = str2int("ZONE");
 
 class game_client {
 private:
-    UDPsocket socket = nullptr;
-    SDLNet_SocketSet sock_set = nullptr;
-    IPaddress server_ip;
+	UDPsocket socket = nullptr;
+	SDLNet_SocketSet sock_set = nullptr;
+	IPaddress server_ip;
 
-    short ping_msecs;
+	short ping_msecs;
 
-    std::string user_name = "Player";
+	std::string user_name = "Player";
 
-    std::map<int, int> packet_repeat_ids;
-
-private:
-    game_world world;
-
-    chat g_chat;
-    score g_score;
-
-    bool is_open = true;
-
-    std::thread receiver_thread;
-
-    int receiver_run();
-
-public:
-    game_client();
-
-    virtual ~game_client();
-
-public:
-    bool connect(const char *address, uint16_t port = DEFAULT_PORT);
-    void disconnect();
-
-    void clear();
-
-    void tick();
-
-    void render(SDL_Renderer *renderer);
-
-    void handleEvent(const SDL_Event &event);
-
-    void execCmd(const std::string &message);
-
-    bool sendInput(uint8_t cmd, bool down);
-    bool sendMouse(int x, int y);
-    bool sendJoinCmd();
-    bool sendLeaveCmd();
-    bool sendVoteCmd(uint32_t vote_type, uint32_t args);
-    bool sendKillCmd();
-    bool sendChatMessage(const char *message);
-    bool sendScorePacket();
-
-    short getPingMsecs() {
-        return ping_msecs;
-    }
-
-    game_world &getWorld() {
-        return world;
-    }
-
-    void setName(const std::string &name);
-    void quit();
-
-    bool isOpen() {
-        return is_open;
-    }
+	std::map<int, int> packet_repeat_ids;
 
 private:
-    void handlePacket(byte_array &);
+	game_world world;
 
-    void messageCmd(byte_array &);
-    void kickCmd(byte_array &);
-    void pingCmd(byte_array &);
-    void msecCmd(byte_array &);
-    void scoreCmd(byte_array &);
-    void snapshotCmd(byte_array &);
-    void addCmd(byte_array &);
-    void remCmd(byte_array &);
-    void selfCmd(byte_array &);
-    void mapCmd(byte_array &);
-    void soundCmd(byte_array &);
-    void resetCmd(byte_array &);
-    void repeatCmd(byte_array &);
+	chat g_chat;
+	score g_score;
+
+	bool is_open = true;
+
+	std::thread receiver_thread;
+
+	int receiver_run();
+
+public:
+	game_client();
+
+	virtual ~game_client();
+
+public:
+	bool connect(const char *address, uint16_t port = DEFAULT_PORT);
+	void disconnect();
+
+	void clear();
+
+	void tick();
+
+	void render(SDL_Renderer *renderer);
+
+	void handleEvent(const SDL_Event &event);
+
+	void execCmd(const std::string &message);
+
+	bool sendInput(uint8_t cmd, bool down);
+	bool sendMouse(int x, int y);
+	bool sendJoinCmd();
+	bool sendLeaveCmd();
+	bool sendVoteCmd(uint32_t vote_type, uint32_t args);
+	bool sendKillCmd();
+	bool sendChatMessage(const char *message);
+	bool sendScorePacket();
+
+	short getPingMsecs() {
+		return ping_msecs;
+	}
+
+	game_world &getWorld() {
+		return world;
+	}
+
+	void setName(const std::string &name);
+	void quit();
+
+	bool isOpen() {
+		return is_open;
+	}
+
+private:
+	void handlePacket(byte_array &);
 };
 
 #endif // __GAME_CLIENT_H__

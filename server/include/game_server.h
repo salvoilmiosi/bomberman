@@ -142,6 +142,8 @@ private:
 	int receive(packet_ext &packet);
 	void handlePacket(packet_ext &packet);
 
+	void handleConnect(packet_ext &packet);
+
 	std::string findNewName(std::string username);
 
 	user &findUser(const IPaddress &address);
@@ -149,20 +151,6 @@ private:
 	packet_ext snapshotPacket(bool is_add = false);
 	packet_ext scorePacket();
 	packet_ext mapPacket();
-
-private:
-	void connectCmd(packet_ext&);
-	void joinCmd(packet_ext&);
-	void leaveCmd(packet_ext&);
-	void chatCmd(packet_ext&);
-	void nameCmd(packet_ext&);
-	void disconnectCmd(packet_ext&);
-	void pongCmd(packet_ext&);
-	void scoreCmd(packet_ext&);
-	void quitCmd(packet_ext&);
-	void inputCmd(packet_ext&);
-	void voteCmd(packet_ext&);
-	void killCmd(packet_ext&);
 };
 
 #endif // __SERVER_H__

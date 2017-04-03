@@ -91,8 +91,8 @@ public:
         player_name = name;
     }
 
-    const char *getName() {
-        return player_name.c_str();
+    const std::string &getName() const {
+        return player_name;
     }
 
     bool isAlive() {
