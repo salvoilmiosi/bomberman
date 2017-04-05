@@ -19,6 +19,7 @@ SERVER_ACCEPTED						Server accepted: {0}
 SERVER_CONNECTED					Connected to {0}:{1}
 SERVER_REJECTED						Server rejected: {0}
 SERVER_DISCONNECTED					Disconnected.
+SERVER_TIMED_OUT					Timed out.
 SERVER_CLOSED						Server closed.
 SERVER_FULL							Server is full.
 SERVER_WELCOME						Welcome to the server.
