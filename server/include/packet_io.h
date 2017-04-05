@@ -59,8 +59,8 @@ public:
     void writeLong(const uint64_t num);
     uint64_t readLong();
 
-    void writeString(const char *str, short max_len = 0);
-    char *readString();
+    void writeString(const std::string &str);
+    std::string readString();
 
     void writeByteArray(const byte_array &ba);
     byte_array readByteArray();

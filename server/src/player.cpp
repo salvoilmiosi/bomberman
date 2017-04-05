@@ -416,7 +416,7 @@ byte_array player::toByteArray() {
 	ba.writeInt(fy);
 	ba.writeInt(fz);
 
-	ba.writeString(player_name.c_str(), MAX_NAME_SIZE);
+	ba.writeString(player_name);
 	ba.writeChar(player_num);
 
 	uint16_t flags = 0;

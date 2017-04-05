@@ -3,7 +3,7 @@
 
 #include "game_world.h"
 
-#include <cstdlib>
+#include <string>
 
 #include "interpolator.h"
 
@@ -36,7 +36,7 @@ private:
     bool invulnerable;
     bool stunned;
 
-    char player_name[NAME_SIZE];
+    std::string player_name;
 
     int death_time;
 
@@ -50,8 +50,8 @@ public:
 
     void render(SDL_Renderer *renderer);
 
-    void setName(const char *name);
-    const char *getName();
+    void setName(const std::string &name);
+    const std::string &getName();
 
     void setSelf(bool s) {
         is_self = s;

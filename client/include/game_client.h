@@ -103,7 +103,7 @@ public:
 	bool sendLeaveCmd();
 	bool sendVoteCmd(uint32_t vote_type, uint32_t args);
 	bool sendKillCmd();
-	bool sendChatMessage(const char *message);
+	bool sendChatMessage(const std::string &message);
 	bool sendScorePacket();
 
 	short getPingMsecs() {

@@ -70,7 +70,7 @@ public:
         self_id = id;
     }
 
-    int findUserID(const char *name);
+    int findUserID(std::string name);
 };
 
 #endif // __SCORE_H__

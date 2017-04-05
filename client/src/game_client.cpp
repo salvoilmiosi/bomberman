@@ -47,7 +47,7 @@ bool game_client::connect(const char *address, uint16_t port) {
 
 	packet_ext packet(socket);
 	packet.writeInt(CMD_CONNECT);
-	packet.writeString(user_name.c_str());
+	packet.writeString(user_name);
 	packet.sendTo(server_ip);
 
 	SDLNet_UDP_AddSocket(sock_set, socket);
@@ -73,7 +73,7 @@ bool game_client::connect(const char *address, uint16_t port) {
 	}
 
 	uint32_t type = accepter.readInt();
-	char *message;
+	std::string message;
 	switch (type) {
 	case SERV_ACCEPT:
 		message = accepter.readString();
@@ -226,7 +226,7 @@ void game_client::handlePacket(byte_array &packet) {
 
 	if (funcs.empty()) {
 		funcs[SERV_MESSAGE] = [this](byte_array &ba) {
-			char *message = ba.readString();
+			std::string message = ba.readString();
 			uint32_t color = ba.readInt();
 
 			std::cout << message << std::endl;
@@ -234,7 +234,7 @@ void game_client::handlePacket(byte_array &packet) {
 		};
 
 		funcs[SERV_KICK] = [this](byte_array &ba) {
-			char *message = ba.readString();
+			std::string message = ba.readString();
 
 			g_chat.addLine(COLOR_RED, STRING("CLIENT_KICKED", message));
 
@@ -365,7 +365,7 @@ void game_client::execCmd(const std::string &message) {
 			try {
 				port = std::stoi(port_str);
 			} catch (std::invalid_argument) {
-				g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", port_str.c_str()));
+				g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", port_str));
 			}
 		}
 
@@ -395,7 +395,7 @@ void game_client::execCmd(const std::string &message) {
 		try {
 			connect(address.c_str(), std::stoi(port));
 		} catch (std::invalid_argument) {
-			g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", port.c_str()));
+			g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", port));
 		}
 	} else if (cmd == "join") {
 		sendJoinCmd();
@@ -438,7 +438,7 @@ void game_client::execCmd(const std::string &message) {
 				volume_int = 100;
 			}
 		} catch (std::invalid_argument) {
-			g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", arg1.c_str()));
+			g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", arg1));
 			return;
 		}
 
@@ -480,7 +480,7 @@ void game_client::execCmd(const std::string &message) {
 			} else try {
 				sendVoteCmd(VOTE_ADD_BOT, std::stoi(args));
 			} catch (std::invalid_argument) {
-				g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", args.c_str()));
+				g_chat.addLine(COLOR_RED, STRING("NOT_A_NUMBER", args));
 			}
 		} else if (vote_type == "bot_remove") {
 			sendVoteCmd(VOTE_REMOVE_BOTS, 0);
@@ -489,11 +489,11 @@ void game_client::execCmd(const std::string &message) {
 				g_chat.addLine(COLOR_ORANGE, STRING("USAGE_vote_kick"));
 				return;
 			}
-			int user_id = g_score.findUserID(args.c_str());
+			int user_id = g_score.findUserID(args);
 			if (user_id > 0) {
 				sendVoteCmd(VOTE_KICK, user_id);
 			} else {
-				g_chat.addLine(COLOR_ORANGE, STRING("INVALID_USER", args.c_str()));
+				g_chat.addLine(COLOR_ORANGE, STRING("INVALID_USER", args));
 			}
 		} else if (vote_type == "zone") {
 			if (args.empty()) {
@@ -505,21 +505,21 @@ void game_client::execCmd(const std::string &message) {
 			if (zone_id >= 0) {
 				sendVoteCmd(VOTE_ZONE, zone_id);
 			} else {
-				g_chat.addLine(COLOR_ORANGE, STRING("INVALID_ZONE_NAME", args.c_str()));
+				g_chat.addLine(COLOR_ORANGE, STRING("INVALID_ZONE_NAME", args));
 			}
 		} else if (vote_type == "yes") {
 			sendVoteCmd(VOTE_YES, 0);
 		} else if (vote_type == "no") {
 			sendVoteCmd(VOTE_NO, 0);
 		} else {
-			g_chat.addLine(COLOR_ORANGE, STRING("INVALID_VOTE", vote_type.c_str()));
+			g_chat.addLine(COLOR_ORANGE, STRING("INVALID_VOTE", vote_type));
 		}
 	} else if (cmd == "kill") {
 		sendKillCmd();
 	} else if (cmd == "quit") {
 		quit();
 	} else {
-		g_chat.addLine(COLOR_ORANGE, STRING("INVALID_COMMAND", cmd.c_str()));
+		g_chat.addLine(COLOR_ORANGE, STRING("INVALID_COMMAND", cmd));
 	}
 }
 
@@ -614,7 +614,7 @@ bool game_client::sendKillCmd() {
 	return packet.sendTo(server_ip);
 }
 
-bool game_client::sendChatMessage(const char *message) {
+bool game_client::sendChatMessage(const std::string &message) {
 	if (socket == nullptr) {
 		g_chat.addLine(COLOR_RED, STRING("NOT_CONNECTED"));
 		return false;
@@ -639,12 +639,12 @@ bool game_client::sendScorePacket() {
 
 void game_client::setName(const std::string &name) {
 	user_name = name;
-	g_chat.addLine(COLOR_CYAN, STRING("NAME_SET", name.c_str()));
+	g_chat.addLine(COLOR_CYAN, STRING("NAME_SET", name));
 
 	if (socket == nullptr) return;
 
 	packet_ext packet(socket);
 	packet.writeInt(CMD_NAME);
-	packet.writeString(name.c_str());
+	packet.writeString(name);
 	packet.sendTo(server_ip);
 }

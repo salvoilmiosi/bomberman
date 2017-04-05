@@ -96,7 +96,7 @@ void chat::stopTyping() {
     if (typing_text[0] == '/') {
         client->execCmd(typing_text.substr(1));
     } else {
-        client->sendChatMessage(typing_text.c_str());
+        client->sendChatMessage(typing_text);
     }
 }
 

@@ -37,11 +37,10 @@ void game_server::closeServer() {
 	if (!open)
 		return;
 
-	for (auto &it : users) {
-		kickUser(it.second, STRING("SERVER_CLOSED"));
+	while (!users.empty()) {
+		kickUser(users.begin()->second, STRING("SERVER_CLOSED"));
 	}
 
-	users.clear();
 	repeater.clear();
 
 	removeBots();
@@ -196,7 +195,7 @@ void game_server::sendResetPacket() {
 void game_server::kickUser(user &u, const std::string &message) {
 	packet_ext packet(socket_serv);
 	packet.writeInt(SERV_KICK);
-	packet.writeString(message.c_str());
+	packet.writeString(message);
 	sendRepeatPacket(packet, u.getAddress());
 
 	messageToAll(COLOR_YELLOW, STRING("CLIENT_WAS_KICKED", u.getName()));
@@ -280,7 +279,7 @@ packet_ext game_server::scorePacket() {
 	packet.writeInt(SERV_SCORE);
 	for (auto &it : users) {
 		auto &u = it.second;
-		packet.writeString(u.getName().c_str());
+		packet.writeString(u.getName());
 		packet.writeShort(u.getPing());
 		if (u.getPlayer()) {
 			packet.writeChar(SCORE_PLAYER);
@@ -295,7 +294,7 @@ packet_ext game_server::scorePacket() {
 	}
 	for (auto &b : bots) {
 		if (b.getPlayer()) {
-			packet.writeString(b.getName().c_str());
+			packet.writeString(b.getName());
 			packet.writeShort(0);
 			packet.writeChar(SCORE_BOT);
 			packet.writeShort(0);
@@ -318,7 +317,7 @@ void game_server::handlePacket(packet_ext &packet) {
 
 	if (userFunctions.empty()) {
 		userFunctions[CMD_CHAT] = [this](packet_ext &packet, user &u) {
-			char *message = packet.readString();
+			std::string message = packet.readString();
 
 			messageToAll(COLOR_WHITE, STRING("CLIENT_MESSAGE", u.getName(), message));
 		};
@@ -412,7 +411,7 @@ void game_server::handleConnect(packet_ext &from) {
 		if (users.size() > MAX_USERS) {
 			packet_ext packet(socket_serv);
 			packet.writeInt(SERV_REJECT);
-			packet.writeString(STRING("SERVER_FULL").c_str());
+			packet.writeString(STRING("SERVER_FULL"));
 			packet.sendTo(from.getAddress());
 			return;
 		}
@@ -422,7 +421,7 @@ void game_server::handleConnect(packet_ext &from) {
 
 		packet_ext packet(socket_serv);
 		packet.writeInt(SERV_ACCEPT);
-		packet.writeString(STRING("SERVER_WELCOME").c_str());
+		packet.writeString(STRING("SERVER_WELCOME"));
 		packet.sendTo(from.getAddress());
 
 		snapshotPacket(true).sendTo(from.getAddress());
@@ -434,7 +433,7 @@ void game_server::handleConnect(packet_ext &from) {
 packet_ext game_server::messagePacket(uint32_t color, const std::string &message) {
 	packet_ext packet(socket_serv);
 	packet.writeInt(SERV_MESSAGE);
-	packet.writeString(message.c_str());
+	packet.writeString(message);
 	packet.writeInt(color);
 
 	std::cout << message << std::endl;
