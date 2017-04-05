@@ -155,7 +155,7 @@ int packet_ext::receive() {
     return err;
 }
 
-#include "main.h"
+#include "random.h"
 
 int packet_ext::sendTo(const IPaddress &addr) {
     /*if ((random_engine() % 1000) > 1000) {

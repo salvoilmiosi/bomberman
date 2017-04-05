@@ -4,9 +4,8 @@
 #include "game_world.h"
 #include "player.h"
 #include "input_handler.h"
-#include "main.h"
+#include "strings.h"
 
-#include <cstring>
 #include <vector>
 
 bool user_bot::bot_handler::isDown(usr_input input_cmd) {
@@ -33,9 +32,7 @@ int user_bot::bot_handler::getMouseY() {
 }
 
 user_bot::user_bot(game_server *server) : server(server), handler(this) {
-	static const std::vector<const char *> NAMES = {"Bud", "Milan", "Rolland", "Don", "Milford", "Gayle", "Alberto", "Alec", "Bennett", "Eloy", "Marcel", "Mathew", "Wilbert", "Charlie", "Mikel", "Olen", "Lincoln", "Hai", "Sam", "Angelo", "Elmer", "Lance", "Leandro", "Alexander", "Carlo", "Heath", "Boyd", "Cameron", "Sang", "Julius", "Robt", "Damien", "Eduardo", "Wilford", "Graig", "Jonas", "Rusty", "Norbert", "Billy", "Abe", "David", "Orval", "Joesph", "Anibal", "Josue", "Leonel", "Jefferson", "Robby", "Sydney", "Darren"};
-
-	username = std::string("BOT ") + NAMES[random_engine() % NAMES.size()];
+	username = std::string("BOT ") + STRING("BOT_NAME");
 }
 
 user_bot::~user_bot() {

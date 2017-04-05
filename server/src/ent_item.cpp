@@ -1,6 +1,6 @@
 #include "ent_item.h"
 
-#include "main.h"
+#include "random.h"
 #include "player.h"
 #include "game_sound.h"
 

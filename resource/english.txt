@@ -114,3 +114,54 @@ MURDER_MSG							{0} didn't pay enough attention to {1}.
 MURDER_MSG							{0} died at the sight of {1}.
 MURDER_MSG							{0} just wanted an hug from {1}.
 MURDER_MSG							{0} thinks that {1} is cheating.
+
+BOT_NAME							Bud
+BOT_NAME							Milan
+BOT_NAME							Rolland
+BOT_NAME							Don
+BOT_NAME							Milford
+BOT_NAME							Gayle
+BOT_NAME							Alberto
+BOT_NAME							Alec
+BOT_NAME							Bennett
+BOT_NAME							Eloy
+BOT_NAME							Marcel
+BOT_NAME							Mathew
+BOT_NAME							Wilbert
+BOT_NAME							Charlie
+BOT_NAME							Mikel
+BOT_NAME							Olen
+BOT_NAME							Lincoln
+BOT_NAME							Hai
+BOT_NAME							Sam
+BOT_NAME							Angelo
+BOT_NAME							Elmer
+BOT_NAME							Lance
+BOT_NAME							Leandro
+BOT_NAME							Alexander
+BOT_NAME							Carlo
+BOT_NAME							Heath
+BOT_NAME							Boyd
+BOT_NAME							Cameron
+BOT_NAME							Sang
+BOT_NAME							Julius
+BOT_NAME							Robt
+BOT_NAME							Eduardo
+BOT_NAME							Damien
+BOT_NAME							Wilford
+BOT_NAME							Graig
+BOT_NAME							Jonas
+BOT_NAME							Rusty
+BOT_NAME							Norbert
+BOT_NAME							Billy
+BOT_NAME							Abe
+BOT_NAME							David
+BOT_NAME							Orval
+BOT_NAME							Joesph
+BOT_NAME							Anibal
+BOT_NAME							Josue
+BOT_NAME							Leonel
+BOT_NAME							Jefferson
+BOT_NAME							Robby
+BOT_NAME							Sydney
+BOT_NAME							Darren

@@ -5,7 +5,7 @@
 #include <random>
 #include <cstdlib>
 
-#include "main.h"
+#include "random.h"
 #include "ent_item.h"
 
 #include "tile_trampoline.h"
@@ -46,7 +46,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 	clear();
 
 	if (m_zone == ZONE_RANDOM) {
-		m_zone = static_cast<map_zone>(random_engine() % 8 + 1);
+		m_zone = static_cast<map_zone>(rand_num(8) + 1);
 	}
 
 	width = w;
@@ -66,7 +66,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 		spawns = {{2, 1}, {width - 3, 1}, {2, height - 2}, {width - 3, height - 2}};
 		break;
 	}
-	std::shuffle(spawns.begin(), spawns.end(), random_engine);
+	rand_shuffle(spawns);
 
 	spawn_pts.clear();
 
@@ -290,7 +290,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 		}
 	}
 
-	std::shuffle(floor_tiles.begin(), floor_tiles.end(), random_engine);
+	rand_shuffle(floor_tiles);
 
 	static const std::map<map_zone, int> breakables_per_zone = {
 		{ZONE_NORMAL, 80}, {ZONE_WESTERN, 65}, {ZONE_BOMB, 60}, {ZONE_JUMP, 55}, {ZONE_BELT, 55}, {ZONE_SPEED, 80}
@@ -317,7 +317,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 		{ZONE_SPEED, {{ITEM_BOMB, 6}, {ITEM_FIRE, 6}, {ITEM_FULL_FIRE, 2}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_REMOCON, 2}, {ITEM_SKULL, 1}}},
 	};
 
-	std::shuffle(breakables.begin(), breakables.end(), random_engine);
+	rand_shuffle(breakables);
 
 	try {
 		const auto num_items = item_numbers_per_zone.at(zone);
@@ -340,7 +340,7 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 	switch (zone) {
 	case ZONE_JUMP:
 	{
-		int num_trampolines = 12 + random_engine() % 4;
+		int num_trampolines = 12 + rand_num(4);
 		for (int i=0; i<num_trampolines; ++i) {
 			tile *t = floor_tiles.back();
 			specials[t] = std::make_shared<tile_trampoline>(*t, *this);

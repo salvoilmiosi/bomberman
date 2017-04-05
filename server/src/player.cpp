@@ -2,7 +2,7 @@
 
 #include "ent_bomb.h"
 #include "ent_item.h"
-#include "main.h"
+#include "random.h"
 
 #include "tile_trampoline.h"
 #include "game_sound.h"
@@ -291,7 +291,7 @@ void player::pickupItem(item_type type, bool add_to_pickups) {
 		break;
 	case ITEM_SKULL:
 		skull_ticks = SKULL_LIFE;
-		skull_effect = random_engine() % 5 + 1;
+		skull_effect = rand_num(5) + 1;
 		break;
 	case ITEM_FULL_FIRE:
 		explosion_size = 10;
@@ -394,7 +394,7 @@ void player::spawnItems() {
 		}
 	}
 
-	std::shuffle(tiles.begin(), tiles.end(), random_engine);
+	rand_shuffle(tiles);
 
 	uint32_t i = 0;
 	while(!item_pickups.empty()) {

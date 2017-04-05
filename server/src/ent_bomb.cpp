@@ -3,7 +3,7 @@
 #include "ent_item.h"
 
 #include "player.h"
-#include "main.h"
+#include "random.h"
 #include "game_sound.h"
 
 bomb::bomb(game_world &world, player *p) : ent_movable(world, TYPE_BOMB), planter(p) {
@@ -52,7 +52,7 @@ bomb::bomb(game_world &world, int tx, int ty) : ent_movable(world, TYPE_BOMB), p
 	kicked = false;
 	do_send_updates = true;
 
-	int dir = random_engine() % 4;
+	int dir = rand_num(4);
 	switch(dir) {
 	case 0:
 		speedx = 1.f;
