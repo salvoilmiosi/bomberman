@@ -198,7 +198,7 @@ int game_client::receiver_run() {
 				}
 			}
 		} else if (numready == 0) {
-			g_chat.addLine(COLOR_RED, STRING("CLIENT_TIMED_OUT"));
+			g_chat.addLine(COLOR_RED, STRING("SERVER_TIMED_OUT"));
 			clear();
 			break;
 		} else if (errno) {
