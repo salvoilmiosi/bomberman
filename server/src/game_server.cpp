@@ -37,7 +37,7 @@ void game_server::closeServer() {
 	if (!open)
 		return;
 
-	while (!users.empty()) {
+	while (!users.empty()) { // NOTE: kickUser erases user from the map.
 		kickUser(users.begin()->second, STRING("SERVER_CLOSED"));
 	}
 
@@ -103,15 +103,13 @@ int game_server::game_thread_run() {
 		while(it != users.end()) {
 			auto &u = it->second;
 			if (u.tick()) {
-				packet_ext packet_self(socket_serv);
-				packet_self.writeInt(SERV_SELF);
-				uint16_t player_id = 0;
 				if (u.getPlayer()) {
-					player_id = u.getPlayer()->getID();
+					packet_ext packet_self(socket_serv);
+					packet_self.writeInt(SERV_SELF);
+					packet_self.writeShort(u.getPlayer()->getID());
+					packet_self.writeShort(u.getID());
+					packet_self.sendTo(u.getAddress());
 				}
-				packet_self.writeShort(player_id);
-				packet_self.writeShort(u.getID());
-				packet_self.sendTo(u.getAddress());
 
 				++it;
 			} else {
