@@ -6,16 +6,12 @@
 #include <cstdlib>
 
 #include "random.h"
-#include "ent_item.h"
 
 #include "tile_trampoline.h"
 #include "tile_belt.h"
 #include "tile_item_spawner.h"
 
-game_map::game_map(game_world &world) : world(world) {
-	width = 0;
-	height = 0;
-}
+game_map::game_map(game_world &world) : world(&world) {}
 
 game_map::~game_map() {
 	clear();
@@ -42,7 +38,7 @@ void game_map::tick() {
 	}
 }
 
-void game_map::createMap(int w, int h, int np, map_zone m_zone) {
+void game_map::createMap(int w, int h, map_zone m_zone) {
 	clear();
 
 	if (m_zone == ZONE_RANDOM) {
@@ -54,8 +50,6 @@ void game_map::createMap(int w, int h, int np, map_zone m_zone) {
 	zone = m_zone;
 
 	tiles.resize(w * h);
-
-	num_players = np;
 
 	switch (zone) {
 	case ZONE_WESTERN:
@@ -298,17 +292,6 @@ void game_map::createMap(int w, int h, int np, map_zone m_zone) {
 	} catch (std::out_of_range) {}
 
 	switch (zone) {
-	case ZONE_JUMP:
-	{
-		/*
-		int num_trampolines = 12 + rand_num(4);
-		for (int i=0; i<num_trampolines; ++i) {
-			tile *t = floor_tiles.back();
-			specials[t] = std::make_shared<tile_trampoline>(*t, *this);
-			floor_tiles.pop_back();
-		}*/
-		break;
-	}
 	case ZONE_BELT:
 		for (int x = 4; x <= width - 6; ++x) {
 			addSpecial(std::make_shared<tile_belt>(getTile(x, 3), *this, DIR_RIGHT));
@@ -331,7 +314,7 @@ void game_map::createMap(int w, int h, int np, map_zone m_zone) {
 	}
 }
 
-void game_map::randomize() {
+void game_map::randomize(size_t num_players) {
 	rand_shuffle(spawn_pts);
 
 	while (spawn_pts.size() > num_players) {
@@ -357,13 +340,48 @@ void game_map::randomize() {
 	std::vector<tile *> floor_tiles;
 	for (tile &t : tiles) {
 		if (t.type == TILE_FLOOR && t.randomize) {
-			floor_tiles.push_back(t);
+			floor_tiles.push_back(&t);
 		}
 	}
 
-	rand_shuffle(floor_tiles);
+	std::vector<tile *> breakables;
 	for (int i=0; i<num_breakables; ++i) {
-		floor_tiles[i].type = TILE_BREAKABLE;
+		tile *t = floor_tiles.back();
+		t->type = TILE_BREAKABLE;
+		breakables.push_back(t);
+		floor_tiles.pop_back();
+	}
+
+	rand_shuffle(breakables);
+
+	for (auto item_pair : num_items) {
+		for (int i=0; i<item_pair.second; ++i) {
+			tile *t = breakables.back();
+			if (t) {
+				t->data = item_pair.first;
+			}
+			breakables.pop_back();
+			if (breakables.empty()) {
+				goto end_items;
+			}
+		}
+	}
+	end_items:
+
+
+	switch (zone) {
+	case ZONE_JUMP:
+	{
+		int num_trampolines = 12 + rand_num(4);
+		for (int i=0; i<num_trampolines; ++i) {
+			tile *t = floor_tiles.back();
+			specials[t] = std::make_shared<tile_trampoline>(*t, *this);
+			floor_tiles.pop_back();
+		}
+		break;
+	}
+	default:
+		break;
 	}
 }
 
@@ -454,7 +472,19 @@ point game_map::getSpawnPt(unsigned int num) {
 	return spawn_pts[num];
 }
 
-void game_map::writeToPacket(packet_ext &packet) {
+void game_map::writeToPacket(byte_array &packet) {
+	packet.writeChar(num_breakables);
+	packet.writeChar(num_items.size());
+	for (auto &p : num_items) {
+		packet.writeChar(static_cast<uint8_t>(p.first));
+		packet.writeChar(p.second);
+	}
+	packet.writeChar(spawn_pts.size());
+	for (auto &p : spawn_pts) {
+		packet.writeChar(p.x);
+		packet.writeChar(p.y);
+	}
+
 	packet.writeShort(width);
 	packet.writeShort(height);
 	packet.writeChar(zone);
@@ -463,10 +493,12 @@ void game_map::writeToPacket(packet_ext &packet) {
 		case TILE_BREAKABLE:
 			packet.writeChar(TILE_BREAKABLE);
 			packet.writeShort(0);
+			packet.writeChar(t.randomize);
 			break;
 		default:
 			packet.writeChar(t.type);
 			packet.writeShort(t.data);
+			packet.writeChar(t.randomize);
 			break;
 		}
 	}

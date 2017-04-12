@@ -3,6 +3,12 @@
 #include "random.h"
 #include "player.h"
 #include "game_sound.h"
+#include "game_world.h"
+#include "tile_trampoline.h"
+
+const int SKULL_LIFE = TICKRATE * 20;
+const int ITEM_EXPLOSION_LIFE = TICKRATE * 2 / 3;
+const int TRAMPOLINE_JUMP_TICKS = TICKRATE * 5 / 2;
 
 game_item::game_item(game_world &world, const tile &t, item_type type) : entity(world, TYPE_ITEM), type(type) {
     tx = world.getMap().getTileX(t);

@@ -8,6 +8,8 @@
 
 #include <packet_io.h>
 
+#include "ent_item.h"
+
 enum tile_type {
 	TILE_FLOOR,
 	TILE_SPAWN,
@@ -116,24 +118,24 @@ private:
 
 	std::map<const tile *, special_ptr> specials;
 
-	class game_world &world;
+	class game_world *world = nullptr;
 
 	uint8_t num_breakables = 0;
-	uint8_t num_players = 0;
 
-	typedef std::map<item_type, int> item_map;
+	typedef std::map<item_type, uint8_t> item_map;
 
 	item_map num_items;
 
 public:
+	game_map() {}
 	game_map(game_world &world);
 	virtual ~game_map();
 
 public:
 	static const char *getZoneName(map_zone zone);
 
-	void createMap(int w, int h, int num_players, map_zone zone = ZONE_RANDOM);
-	void randomize();
+	void createMap(int w, int h, map_zone zone = ZONE_RANDOM);
+	void randomize(size_t num_players);
 
 	void clear();
 
@@ -159,12 +161,12 @@ public:
 	}
 
 	game_world &getWorld() {
-		return world;
+		return *world;
 	}
 
 	point getSpawnPt(unsigned int numt);
 
-	void writeToPacket(packet_ext &packet);
+	void writeToPacket(byte_array &packet);
 
 private:
 	void createDuelMap();

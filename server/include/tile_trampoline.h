@@ -3,7 +3,7 @@
 
 #include "game_map.h"
 
-static const int TRAMPOLINE_JUMP_TICKS = TICKRATE * 5 / 2;
+extern const int TRAMPOLINE_JUMP_TICKS; // defined in ent_item.cpp
 
 class tile_trampoline : public tile_entity {
 private:

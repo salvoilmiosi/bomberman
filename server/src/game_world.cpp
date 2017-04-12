@@ -170,7 +170,8 @@ bool game_world::startRound(int num_u) {
 }
 
 void game_world::countdownEnd() {
-	g_map.createMap(MAP_WIDTH, MAP_HEIGHT, num_users, selected_map_zone);
+	g_map.createMap(MAP_WIDTH, MAP_HEIGHT, selected_map_zone);
+	g_map.randomize(num_users);
 
 	int num = 0;
 

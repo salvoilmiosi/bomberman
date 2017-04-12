@@ -1,11 +1,24 @@
 #ifndef __ENT_ITEM_H__
 #define __ENT_ITEM_H__
 
-#include "game_world.h"
+#include "entity.h"
 
-static const int SKULL_LIFE = TICKRATE * 20;
+extern const int SKULL_LIFE;
 
-static const int ITEM_EXPLOSION_LIFE = TICKRATE * 2 / 3;
+extern const int ITEM_EXPLOSION_LIFE;
+
+enum item_type {
+    ITEM_NONE,
+    ITEM_BOMB,
+    ITEM_FIRE,
+    ITEM_ROLLERBLADE,
+    ITEM_KICK,
+    ITEM_PUNCH,
+    ITEM_SKULL,
+    ITEM_FULL_FIRE,
+    ITEM_REDBOMB,
+    ITEM_REMOCON
+};
 
 class game_item : public entity {
 private:
@@ -17,7 +30,7 @@ private:
     item_type type;
 
 public:
-    game_item(game_world &world, const tile &t, item_type type);
+    game_item(class game_world &world, const class tile &t, item_type type);
 
 public:
     void tick();
