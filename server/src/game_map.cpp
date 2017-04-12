@@ -42,7 +42,7 @@ void game_map::tick() {
 	}
 }
 
-void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
+void game_map::createMap(int w, int h, int np, map_zone m_zone) {
 	clear();
 
 	if (m_zone == ZONE_RANDOM) {
@@ -55,24 +55,16 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 
 	tiles.resize(w * h);
 
-	std::vector<point> spawns;
+	num_players = np;
 
 	switch (zone) {
 	case ZONE_WESTERN:
 	case ZONE_DUEL:
-		spawns = {{6, 5}, {width - 7, 5}, {6, height - 6}, {width - 7, height - 6}};
+		spawn_pts = {{6, 5}, {width - 7, 5}, {6, height - 6}, {width - 7, height - 6}};
 		break;
 	default:
-		spawns = {{2, 1}, {width - 3, 1}, {2, height - 2}, {width - 3, height - 2}};
+		spawn_pts = {{2, 1}, {width - 3, 1}, {2, height - 2}, {width - 3, height - 2}};
 		break;
-	}
-	rand_shuffle(spawns);
-
-	spawn_pts.clear();
-
-	for (;num_players > 0; --num_players) {
-		spawn_pts.push_back(spawns.back());
-		spawns.pop_back();
 	}
 
 	switch (zone) {
@@ -86,18 +78,9 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 		}
 		break;
 	default:
-		for (const point &pt : spawn_pts) {
-			for (int y = pt.y - 1; y <= pt.y + 1; ++y) {
-				for (int x = pt.x - 1; x <= pt.x + 1; ++x) {
-					tile &t = getTile(x, y);
-					t.type = TILE_SPAWN;
-				}
-			}
-		}
 		break;
 	}
 
-	std::vector<tile *> floor_tiles;
 	for (int y=0; y<height; ++y) {
 		for (int x=0; x<width; ++x) {
 			tile &t = getTile(x, y);
@@ -285,12 +268,10 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 			} else if (x % 2 == 1 && y % 2 == 0) {
 				t.type = TILE_WALL;
 			} else if (t.type == TILE_FLOOR) {
-				floor_tiles.push_back(&t);
+				t.randomize = true;
 			}
 		}
 	}
-
-	rand_shuffle(floor_tiles);
 
 	static const std::map<map_zone, int> breakables_per_zone = {
 		{ZONE_NORMAL, 80}, {ZONE_WESTERN, 65}, {ZONE_BOMB, 60}, {ZONE_JUMP, 55}, {ZONE_BELT, 55}, {ZONE_SPEED, 80}
@@ -298,17 +279,10 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 
 	std::vector<tile *> breakables;
 	try {
-		const auto num_breakables = breakables_per_zone.at(zone);
-
-		for (int i=0; i<num_breakables; ++i) {
-			tile *t = floor_tiles.back();
-			t->type = TILE_BREAKABLE;
-			breakables.push_back(t);
-			floor_tiles.pop_back();
-		}
+		num_breakables = breakables_per_zone.at(zone);
 	} catch (std::out_of_range) {}
 
-	static const std::map<map_zone, std::map<item_type, int> > item_numbers_per_zone = {
+	static const std::map<map_zone, item_map> item_numbers_per_zone = {
 		{ZONE_NORMAL, {{ITEM_BOMB, 7}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2}}},
 		{ZONE_WESTERN, {{ITEM_BOMB, 4}, {ITEM_FIRE, 3}, {ITEM_ROLLERBLADE, 2}, {ITEM_FULL_FIRE, 2}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 1}}},
 		{ZONE_BOMB, {{ITEM_BOMB, 3}, {ITEM_FIRE, 5}, {ITEM_ROLLERBLADE, 3}, {ITEM_KICK, 3}, {ITEM_PUNCH, 3}, {ITEM_SKULL, 2}}},
@@ -320,32 +294,19 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 	rand_shuffle(breakables);
 
 	try {
-		const auto num_items = item_numbers_per_zone.at(zone);
-
-		for (auto item_pair : num_items) {
-			for (int i=0; i<item_pair.second; ++i) {
-				tile *t = breakables.back();
-				if (t) {
-					t->data = item_pair.first;
-				}
-				breakables.pop_back();
-				if (breakables.empty()) {
-					goto end_items;
-				}
-			}
-		}
+		num_items = item_numbers_per_zone.at(zone);
 	} catch (std::out_of_range) {}
-	end_items:
 
 	switch (zone) {
 	case ZONE_JUMP:
 	{
+		/*
 		int num_trampolines = 12 + rand_num(4);
 		for (int i=0; i<num_trampolines; ++i) {
 			tile *t = floor_tiles.back();
 			specials[t] = std::make_shared<tile_trampoline>(*t, *this);
 			floor_tiles.pop_back();
-		}
+		}*/
 		break;
 	}
 	case ZONE_BELT:
@@ -367,6 +328,42 @@ void game_map::createMap(int w, int h, int num_players, map_zone m_zone) {
 		break;
 	default:
 		break;
+	}
+}
+
+void game_map::randomize() {
+	rand_shuffle(spawn_pts);
+
+	while (spawn_pts.size() > num_players) {
+		spawn_pts.pop_back();
+	}
+
+	switch (zone) {
+	case ZONE_WESTERN:
+	case ZONE_DUEL:
+		break;
+	default:
+		for (const point &pt : spawn_pts) {
+			for (int y = pt.y - 1; y <= pt.y + 1; ++y) {
+				for (int x = pt.x - 1; x <= pt.x + 1; ++x) {
+					tile &t = getTile(x, y);
+					t.type = TILE_SPAWN;
+				}
+			}
+		}
+		break;
+	}
+
+	std::vector<tile *> floor_tiles;
+	for (tile &t : tiles) {
+		if (t.type == TILE_FLOOR && t.randomize) {
+			floor_tiles.push_back(t);
+		}
+	}
+
+	rand_shuffle(floor_tiles);
+	for (int i=0; i<num_breakables; ++i) {
+		floor_tiles[i].type = TILE_BREAKABLE;
 	}
 }
 
