@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 
 int main(int argc, char **argv) {
 	game_map g_map;
-	for (int i=0; i<8; ++i) {
+	for (int i=1; i<=8; ++i) {
 		map_zone zone = static_cast<map_zone>(i);
 		g_map.createMap(MAP_WIDTH, MAP_HEIGHT, zone);
 

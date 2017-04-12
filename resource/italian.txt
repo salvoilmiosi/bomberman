@@ -79,8 +79,7 @@ VOTE_RECAP_SUCCEED					Sì: {0}, No: {1} - Voto passato.
 VOTE_RECAP_FAIL						Sì: {0}, No: {1} - Vote fallito.
 KICKED_VOTED_OFF					Sei stato votato via dal server.
 
-ROUND_START							Round {0}, Combatti!
-ROUND_START							Il round {0} inizia ora!
+ROUND_START							Il round {0} inizia ora, zona {1}!
 
 ROUND_BEGIN_TIME					Round {0} --- {1}.
 

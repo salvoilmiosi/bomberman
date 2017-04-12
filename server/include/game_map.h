@@ -154,7 +154,7 @@ public:
 
 	void tick();
 
-	uint8_t getZone() const {
+	map_zone getZone() const {
 		return zone;
 	}
 

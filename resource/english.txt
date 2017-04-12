@@ -79,8 +79,8 @@ VOTE_RECAP_SUCCEED					Yes: {0}, No: {1} - Vote succeeded.
 VOTE_RECAP_FAIL						Yes: {0}, No: {1} - Vote failed.
 KICKED_VOTED_OFF					You have been voted off.
 
-ROUND_START							Round {0}, fight!
-ROUND_START							Round {0} begins now!
+ROUND_START							Round {0} - {1} zone, fight!
+ROUND_START							Round {0} begins now in {1} zone!
 
 ROUND_BEGIN_TIME					Round {0} --- {1}.
 ROUND_VICTORY						{0} won round {1}!

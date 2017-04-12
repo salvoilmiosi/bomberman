@@ -42,6 +42,8 @@ bool game_map::loadMap(map_zone m_zone) {
 		m_zone = static_cast<map_zone>(rand_num(8) + 1);
 	}
 
+	zone = m_zone;
+
 	std::string filename = "zones/";
 	filename += getZoneName(m_zone);
 	filename += ".zml";
@@ -213,7 +215,7 @@ void game_map::writeToPacket(byte_array &packet) {
 
 	packet.writeShort(width);
 	packet.writeShort(height);
-	packet.writeChar(zone);
+	packet.writeChar(static_cast<uint8_t>(zone));
 	for (auto &t : tiles) {
 		switch (t.type) {
 		case TILE_BREAKABLE:

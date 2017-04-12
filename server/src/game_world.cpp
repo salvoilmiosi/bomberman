@@ -52,8 +52,8 @@ void game_world::tick() {
 	--ticks_to_start;
 
 	if (ticks_to_start == 0) {
-		server.messageToAll(COLOR_RED, STRING("ROUND_START", round_num));
 		countdownEnd();
+		server.messageToAll(COLOR_RED, STRING("ROUND_START", round_num, g_map.getZoneName(g_map.getZone())));
 	} else if (ticks_to_start > 0 && ticks_to_start % TICKRATE == 0) {
 		int seconds = ticks_to_start / TICKRATE;
 		server.messageToAll(COLOR_GREEN, STRING("ROUND_BEGIN_TIME", round_num, seconds));
