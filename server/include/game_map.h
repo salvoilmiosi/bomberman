@@ -55,14 +55,22 @@ static const int MAP_HEIGHT = 13;
 static const int TILE_SIZE = 100;
 
 struct tile {
-	tile_type type = TILE_FLOOR;
-	uint16_t data = 0;
-	bool randomize = false;
+	tile_type type;
+	uint16_t data;
+	bool randomize;
+
+	tile() {
+		type = TILE_FLOOR;
+		data = 0;
+		randomize = false;
+	}
 };
 
 struct point {
 	int x, y;
 };
+
+typedef std::shared_ptr<class tile_entity> special_ptr;
 
 class tile_entity {
 private:
@@ -84,6 +92,10 @@ public:
 		return type;
 	}
 
+	static special_type getSpecialType(uint16_t data) {
+		return static_cast<special_type>((data & 0xe000) >> 13);
+	}
+
 	virtual bool isWalkable() {
 		return true;
 	}
@@ -102,8 +114,6 @@ protected:
 		t_tile.data = ((type & 0x7) << 13) | (data & 0x1fff);
 	}
 };
-
-typedef std::shared_ptr<tile_entity> special_ptr;
 
 class game_map {
 private:
@@ -134,8 +144,11 @@ public:
 public:
 	static const char *getZoneName(map_zone zone);
 
+	void loadMap(map_zone zone = ZONE_RANDOM);
 	void createMap(int w, int h, map_zone zone = ZONE_RANDOM);
 	void randomize(size_t num_players);
+	
+	special_ptr newTileEntity(tile &t);
 
 	void clear();
 
@@ -167,6 +180,8 @@ public:
 	point getSpawnPt(unsigned int numt);
 
 	void writeToPacket(byte_array &packet);
+
+	void readFromByteArray(byte_array &ba);
 
 private:
 	void createDuelMap();
