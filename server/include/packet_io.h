@@ -2,6 +2,7 @@
 #define __PACKET_IO_H__
 
 #include <SDL2/SDL_net.h>
+#include <string>
 
 static constexpr uint32_t str2int(const char *str) {
     return
