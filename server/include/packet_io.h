@@ -11,7 +11,7 @@ static constexpr uint32_t str2int(const char *str) {
         str[3] << (8 * 0);
 }
 
-static const int PACKET_SIZE = 1024;
+static const size_t PACKET_SIZE = 1024;
 
 static const uint32_t MAGIC = str2int("GAME");
 
