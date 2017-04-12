@@ -261,7 +261,7 @@ void game_map::createDuelMap() {
 		true, false, false,
 		true, false, true, false, true,
 		false, true, true,
-		true, true,
+		true, true, false, false,
 	};
 	bool *break_it = corner_breakables;
 

@@ -144,7 +144,7 @@ public:
 public:
 	static const char *getZoneName(map_zone zone);
 
-	void loadMap(map_zone zone = ZONE_RANDOM);
+	bool loadMap(map_zone zone = ZONE_RANDOM);
 	void createMap(int w, int h, map_zone zone = ZONE_RANDOM);
 	void randomize(size_t num_players);
 	
@@ -181,7 +181,7 @@ public:
 
 	void writeToPacket(byte_array &packet);
 
-	void readFromByteArray(byte_array &ba);
+	bool readFromByteArray(byte_array &ba);
 
 private:
 	void createDuelMap();

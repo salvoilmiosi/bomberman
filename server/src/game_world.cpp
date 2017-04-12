@@ -170,7 +170,12 @@ bool game_world::startRound(int num_u) {
 }
 
 void game_world::countdownEnd() {
-	g_map.loadMap(selected_map_zone);
+	if (!g_map.loadMap(selected_map_zone)) {
+		std::cerr << STRING("ERROR_CANT_LOAD_MAP", g_map.getZoneName(selected_map_zone)) << std::endl;
+		server.closeServer();
+		return;
+	}
+
 	g_map.randomize(num_users);
 
 	int num = 0;

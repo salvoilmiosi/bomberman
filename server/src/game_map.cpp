@@ -37,7 +37,7 @@ void game_map::tick() {
 	}
 }
 
-void game_map::loadMap(map_zone m_zone) {
+bool game_map::loadMap(map_zone m_zone) {
 	if (m_zone == ZONE_RANDOM) {
 		m_zone = static_cast<map_zone>(rand_num(8) + 1);
 	}
@@ -49,7 +49,7 @@ void game_map::loadMap(map_zone m_zone) {
 	std::ifstream ifs(filename, std::ios::binary | std::ios::in | std::ios::ate);
 
 	if (ifs.fail()) {
-		return;
+		return false;
 	}
 
 	size_t len = ifs.tellg();
@@ -61,7 +61,7 @@ void game_map::loadMap(map_zone m_zone) {
 	ifs.close();
 
 	byte_array ba(reinterpret_cast<const uint8_t *>(data.data()), len);
-	readFromByteArray(ba);
+	return readFromByteArray(ba);
 }
 
 void game_map::randomize(size_t num_players) {
@@ -77,7 +77,9 @@ void game_map::randomize(size_t num_players) {
 		for (int y = 5; y < height-5; ++y) {
 			for (int x = 6; x < width-6; ++x) {
 				tile &t = getTile(x, y);
-				t.type = TILE_SPAWN;
+				if (t.type == TILE_FLOOR) {
+					t.type = TILE_SPAWN;
+				}
 			}
 		}
 		break;
@@ -228,7 +230,7 @@ void game_map::writeToPacket(byte_array &packet) {
 	}
 }
 
-void game_map::readFromByteArray(byte_array &packet) {
+bool game_map::readFromByteArray(byte_array &packet) {
 	num_breakables = packet.readChar();
 
 	num_items.clear();
@@ -270,6 +272,8 @@ void game_map::readFromByteArray(byte_array &packet) {
 			addSpecial(newTileEntity(t));
 		}
 	}
+
+	return true;
 }
 
 special_ptr game_map::newTileEntity(tile &t) {
