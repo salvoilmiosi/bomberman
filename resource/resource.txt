@@ -20,7 +20,7 @@ IDB_TEXT "text.png"
 IDF_FONT "font/perfect-dos-vga.ttf"
 #IDF_FONT "font/roboto-bold.ttf"
 
-IDM_BATTLE "sound/ogg/sbm-12.ogg"
+#IDM_BATTLE "sound/ogg/sbm-12.ogg"
 
 IDW_PLANT "sound/plant.wav"
 IDW_EXPLODE "sound/explode.wav"
